@@ -3,6 +3,7 @@ services:
     build:
       args:
         DEFRA_NUGET_PAT: ${DEFRA_NUGET_PAT}
+    image: trade-imports-reporting-api:latest
     depends_on:
       localstack:
         condition: service_healthy
