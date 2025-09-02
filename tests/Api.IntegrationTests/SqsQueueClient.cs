@@ -2,16 +2,14 @@ using System.Security.Cryptography;
 using Amazon.Runtime;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Defra.TradeImportsReportingApi.Api.IntegrationTests.Helpers;
-using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 
-public class SqsTestBase(ITestOutputHelper output) : TestBase
+#pragma warning disable S3881
+public class SqsQueueClient(string queueName) : IDisposable
+#pragma warning restore S3881
 {
-    protected const string ResourceEventsQueueUrl =
-        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_data_upserted_reporting_api";
-
+    private readonly string _queueUrl = $"http://sqs.eu-west-2.127.0.0.1:4566/000000000000/{queueName}";
     private readonly AmazonSQSClient _sqsClient = new(
         new BasicAWSCredentials("test", "test"),
         new AmazonSQSConfig
@@ -23,73 +21,64 @@ public class SqsTestBase(ITestOutputHelper output) : TestBase
         }
     );
 
-    private Task<ReceiveMessageResponse> ReceiveMessage(string queueUrl)
-    {
-        return _sqsClient.ReceiveMessageAsync(
+    public void Dispose() => _sqsClient.Dispose();
+
+    public Task<ReceiveMessageResponse> ReceiveMessage() =>
+        _sqsClient.ReceiveMessageAsync(
             new ReceiveMessageRequest
             {
-                QueueUrl = queueUrl,
+                QueueUrl = _queueUrl,
                 MaxNumberOfMessages = 10,
                 WaitTimeSeconds = 0,
             },
             CancellationToken.None
         );
-    }
 
-    protected Task<GetQueueAttributesResponse> GetQueueAttributes(string queueUrl)
-    {
-        return _sqsClient.GetQueueAttributesAsync(
-            new GetQueueAttributesRequest { AttributeNames = ["ApproximateNumberOfMessages"], QueueUrl = queueUrl },
+    public Task<GetQueueAttributesResponse> GetQueueAttributes() =>
+        _sqsClient.GetQueueAttributesAsync(
+            new GetQueueAttributesRequest { AttributeNames = ["ApproximateNumberOfMessages"], QueueUrl = _queueUrl },
             CancellationToken.None
         );
-    }
 
-    protected async Task DrainAllMessages(string queueUrl)
+    public async Task DrainAllMessages()
     {
         Assert.True(
             await AsyncWaiter.WaitForAsync(async () =>
             {
-                var response = await ReceiveMessage(queueUrl);
+                var response = await ReceiveMessage();
 
                 foreach (var message in response.Messages)
                 {
-                    output?.WriteLine("Drain message: {0} {1}", message.MessageId, message.Body);
-
                     await _sqsClient.DeleteMessageAsync(
-                        new DeleteMessageRequest { QueueUrl = queueUrl, ReceiptHandle = message.ReceiptHandle },
+                        new DeleteMessageRequest { QueueUrl = _queueUrl, ReceiptHandle = message.ReceiptHandle },
                         CancellationToken.None
                     );
                 }
 
-                var approximateNumberOfMessages = (await GetQueueAttributes(queueUrl)).ApproximateNumberOfMessages;
-
-                output?.WriteLine("ApproximateNumberOfMessages: {0}", approximateNumberOfMessages);
+                var approximateNumberOfMessages = (await GetQueueAttributes()).ApproximateNumberOfMessages;
 
                 return approximateNumberOfMessages == 0;
             })
         );
     }
 
-    protected async Task<string> SendMessage(
-        string messageGroupId,
+    public async Task<string> SendMessage(
         string body,
-        string queueUrl,
         Dictionary<string, MessageAttributeValue>? messageAttributes = null,
-        bool usesFifo = true
+        bool usesFifo = false,
+        string? messageGroupId = null
     )
     {
         var request = new SendMessageRequest
         {
-            MessageAttributes = messageAttributes,
             MessageBody = body,
+            MessageAttributes = messageAttributes,
             MessageDeduplicationId = usesFifo ? RandomNumberGenerator.GetString("abcdefg", 20) : null,
             MessageGroupId = usesFifo ? messageGroupId : null,
-            QueueUrl = queueUrl,
+            QueueUrl = _queueUrl,
         };
 
         var result = await _sqsClient.SendMessageAsync(request, CancellationToken.None);
-
-        output.WriteLine("Sent {0} to {1}", result.MessageId, queueUrl);
 
         return result.MessageId;
     }

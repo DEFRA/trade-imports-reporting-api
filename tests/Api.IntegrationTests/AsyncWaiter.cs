@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Helpers;
+namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 
 public static class AsyncWaiter
 {

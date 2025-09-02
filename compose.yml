@@ -20,6 +20,8 @@ services:
       PORT: 8080
       SQS_ENDPOINT: http://localstack:4566
       AWS_EMF_ENVIRONMENT: Local
+      # enable the following to reduce container noise
+      # AWS_EMF_ENABLED: false
       Mongo__DatabaseUri: mongodb://mongodb:27017/?directConnection=true
       Acl__Clients__IntegrationTests__Secret: integration-tests-pwd
     ports:
