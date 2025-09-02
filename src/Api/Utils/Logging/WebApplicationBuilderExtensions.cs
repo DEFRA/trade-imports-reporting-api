@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
-using SlimMessageBus.Host.AzureServiceBus.Consumer;
 
 namespace Defra.TradeImportsReportingApi.Api.Utils.Logging;
 
@@ -73,19 +72,9 @@ public static class WebApplicationBuilderExtensions
             // Integration tests run with SERVICE_VERSION of local (see compose.yml)
             // so we can skip the filters below and show all errors
             if (serviceVersion != "local")
-                config
-                    .Filter.ByExcluding(x =>
-                        x.Level == LogEventLevel.Error
-                        && x.Properties.TryGetValue("SourceContext", out var sourceContext)
-                        && sourceContext.ToString().Contains(typeof(AsbTopicSubscriptionConsumer).FullName!)
-                        && x.MessageTemplate.Text.StartsWith("Dead letter message")
-                    )
-                    .Filter.ByExcluding(x =>
-                        x.Level == LogEventLevel.Error
-                        && x.Properties.TryGetValue("SourceContext", out var sourceContext)
-                        && sourceContext.ToString().Contains(typeof(AsbTopicSubscriptionConsumer).FullName!)
-                        && x.MessageTemplate.Text.StartsWith("Abandon message (exception occurred while processing)")
-                    );
+            {
+                // Add any logging filters as needed
+            }
         }
 
         if (traceIdHeader != null)
