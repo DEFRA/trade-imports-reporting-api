@@ -5,7 +5,7 @@ using Amazon.SQS.Model;
 using Defra.TradeImportsReportingApi.Api.IntegrationTests.Helpers;
 using Xunit.Abstractions;
 
-namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.TestBase;
+namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 
 public class SqsTestBase(ITestOutputHelper output) : TestBase
 {

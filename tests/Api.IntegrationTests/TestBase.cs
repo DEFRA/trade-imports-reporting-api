@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 
-namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.TestBase;
+namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 
 public abstract class TestBase
 {
