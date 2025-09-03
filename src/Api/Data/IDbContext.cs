@@ -1,14 +1,9 @@
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
 public interface IDbContext
 {
-    IMongoCollectionSet<RawMessageEntity> RawMessages { get; }
-
-    Task SaveChanges(CancellationToken cancellationToken);
-
-    Task StartTransaction(CancellationToken cancellationToken);
-
-    Task CommitTransaction(CancellationToken cancellationToken);
+    IMongoCollection<Finalisation> Finalisations { get; }
 }

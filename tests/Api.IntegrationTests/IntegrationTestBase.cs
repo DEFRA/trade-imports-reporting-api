@@ -22,7 +22,7 @@ public abstract class IntegrationTestBase
         return httpClient;
     }
 
-    protected static IMongoDatabase GetMongoDatabase()
+    private static IMongoDatabase GetMongoDatabase()
     {
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017/?directConnection=true");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
@@ -33,11 +33,10 @@ public abstract class IntegrationTestBase
     }
 
     protected static IMongoCollection<T> GetMongoCollection<T>()
-        where T : IDataEntity
     {
         var db = GetMongoDatabase();
 
-        return db.GetCollection<T>(typeof(T).DataEntityName());
+        return db.GetCollection<T>(typeof(T).Name);
     }
 
     protected IntegrationTestBase()

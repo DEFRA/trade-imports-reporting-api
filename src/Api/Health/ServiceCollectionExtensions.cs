@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Configuration;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.Health;
 
@@ -11,6 +12,11 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddHealthChecks()
+            .AddMongoDb(
+                provider => provider.GetRequiredService<IMongoDatabase>(),
+                timeout: TimeSpan.FromSeconds(10),
+                tags: [WebApplicationExtensions.Extended]
+            )
             .AddSqs(
                 configuration,
                 "Resource events",

@@ -1,0 +1,6 @@
+﻿{
+  Id: {Scrubbed},
+  Timestamp: 2025-07-03 13:42 Utc,
+  Mrn: mrn,
+  ReleaseType: Unknown
+}
