@@ -42,11 +42,11 @@ public static class ServiceCollectionExtensions
             .Get();
 
         // The order of interceptors is important here!
-
-        // Consumers
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(TraceContextInterceptor<>));
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(LoggingInterceptor<>));
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(ConsumerMetricsInterceptor<>));
+
+        services.AddTransient<ResourceEventsConsumer>();
 
         services.AddSlimMessageBus(smb =>
         {
