@@ -9,6 +9,8 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("releases/summary", ReleasesSummary).RequireAuthorization();
         app.MapGet("matches/summary", MatchesSummary).RequireAuthorization();
+
+        app.MapGet("summary", Summary).RequireAuthorization();
     }
 
     [HttpGet]
@@ -27,9 +29,7 @@ public static class EndpointRouteBuilderExtensions
 
         var releasesSummary = await reportRepository.GetReleasesSummary(from, to, cancellationToken);
 
-        return Results.Ok(
-            new ReleasesSummaryResponse(releasesSummary.Automatic, releasesSummary.Manual, releasesSummary.Total)
-        );
+        return Results.Ok(releasesSummary.ToResponse());
     }
 
     [HttpGet]
@@ -48,9 +48,32 @@ public static class EndpointRouteBuilderExtensions
 
         var matchesSummary = await reportRepository.GetMatchesSummary(from, to, cancellationToken);
 
-        return Results.Ok(
-            new MatchesSummaryResponse(matchesSummary.Match, matchesSummary.NoMatch, matchesSummary.Total)
-        );
+        return Results.Ok(matchesSummary.ToResponse());
+    }
+
+    [HttpGet]
+    private static async Task<IResult> Summary(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesSummaryTask = reportRepository.GetReleasesSummary(from, to, cancellationToken);
+        var matchesSummaryTask = reportRepository.GetMatchesSummary(from, to, cancellationToken);
+
+        await Task.WhenAll(releasesSummaryTask, matchesSummaryTask);
+
+        var releasesSummary = await releasesSummaryTask;
+        var matchesSummary = await matchesSummaryTask;
+
+        return Results.Ok(new SummaryResponse(releasesSummary.ToResponse(), matchesSummary.ToResponse()));
     }
 
     private static Dictionary<string, string[]> ValidateRequest(DateTime from, DateTime to)
