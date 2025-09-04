@@ -1,5 +1,7 @@
+using Argon;
 using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Testing;
 using MongoDB.Driver;
 
@@ -34,15 +36,27 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         var client = CreateHttpClient();
 
+        var from = messageSentAt.AddHours(-1);
+        var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
             Testing.Endpoints.ReleasesSummary.Get(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(messageSentAt.AddHours(-1)))
-                    .Where(EndpointFilter.To(messageSentAt.AddHours(1)))
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetReleasesBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName($"{nameof(WhenSingleFinalisation_ShouldBeSingleCount)}_buckets")
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -88,15 +102,27 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         var client = CreateHttpClient();
 
+        var from = messageSentAt.AddHours(-1);
+        var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
             Testing.Endpoints.ReleasesSummary.Get(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(messageSentAt.AddHours(-1)))
-                    .Where(EndpointFilter.To(messageSentAt.AddHours(1)))
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetReleasesBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName($"{nameof(WhenMultipleFinalisationForSameMrn_ShouldBeSingleCount)}_buckets")
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -142,15 +168,29 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         var client = CreateHttpClient();
 
+        var from = messageSentAt.AddHours(-1);
+        var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
             Testing.Endpoints.ReleasesSummary.Get(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(messageSentAt.AddHours(-1)))
-                    .Where(EndpointFilter.To(messageSentAt.AddHours(1)))
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetReleasesBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName(
+                $"{nameof(WhenMultipleFinalisationForSameMrn_AndChangeFromAutomaticToManual_ShouldBeSingleCount)}_buckets"
+            )
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -198,15 +238,29 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         var client = CreateHttpClient();
 
+        var from = messageSentAt.AddHours(-1);
+        var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
             Testing.Endpoints.ReleasesSummary.Get(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(messageSentAt.AddHours(-1)))
-                    .Where(EndpointFilter.To(messageSentAt.AddHours(1)))
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetReleasesBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName(
+                $"{nameof(WhenMultipleFinalisationForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
+            )
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     private async Task WaitForMrn(string mrn, int count = 1)
