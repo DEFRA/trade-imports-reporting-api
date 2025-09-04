@@ -50,4 +50,18 @@ public class FinalisationExtensionsTests
 
         subject.Id.Should().NotBeEmpty();
     }
+
+    [Theory]
+    [InlineData(ReleaseType.Unknown, false)]
+    [InlineData(ReleaseType.Automatic, true)]
+    [InlineData(ReleaseType.Manual, true)]
+    public void ShouldBeStored_AsExpected(string releaseType, bool shouldStore)
+    {
+        var finalisation = FinalisationEntityFixtures
+            .FinalisationFixture()
+            .With(x => x.ReleaseType, releaseType)
+            .Create();
+
+        finalisation.ShouldBeStored().Should().Be(shouldStore);
+    }
 }

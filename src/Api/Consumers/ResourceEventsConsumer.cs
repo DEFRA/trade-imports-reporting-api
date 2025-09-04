@@ -47,17 +47,20 @@ public class ResourceEventsConsumer(
         if (customsDeclaration.Resource?.Finalisation is null)
             throw new InvalidOperationException("Finalisation is null");
 
-        var finalisation = customsDeclaration.Resource.Finalisation.ToFinalisation(customsDeclaration.ResourceId);
-        if (finalisation.ReleaseType is not ReleaseType.Automatic && finalisation.ReleaseType is not ReleaseType.Manual)
+        var incomingFinalisation = customsDeclaration.Resource.Finalisation;
+        var entityFinalisation = incomingFinalisation.ToFinalisation(customsDeclaration.ResourceId);
+
+        if (entityFinalisation.ShouldBeStored())
         {
-            logger.LogWarning(
-                "Finalisation for {Mrn} was ReleaseType of {ReleaseType}, ignoring",
-                finalisation.Mrn,
-                finalisation.ReleaseType
-            );
+            await dbContext.Finalisations.InsertOneAsync(entityFinalisation, cancellationToken: cancellationToken);
             return;
         }
 
-        await dbContext.Finalisations.InsertOneAsync(finalisation, cancellationToken: cancellationToken);
+        logger.LogInformation(
+            "Finalisation ignored {MessageSentAt} {FinalState} {IsManualRelease}",
+            incomingFinalisation.MessageSentAt,
+            incomingFinalisation.FinalState,
+            incomingFinalisation.IsManualRelease
+        );
     }
 }

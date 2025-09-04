@@ -26,4 +26,7 @@ public static class FinalisationExtensions
             },
         };
     }
+
+    public static bool ShouldBeStored(this Finalisation finalisation) =>
+        finalisation.ReleaseType is ReleaseType.Manual or ReleaseType.Automatic;
 }
