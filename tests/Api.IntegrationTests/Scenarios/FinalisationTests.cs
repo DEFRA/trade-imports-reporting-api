@@ -263,6 +263,74 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontIgnoreEmptyCollections();
     }
 
+    [Fact]
+    public async Task WhenMultipleFinalisationForDifferentMrn_ShouldBeTwoBuckets()
+    {
+        var mrn1 = Guid.NewGuid().ToString();
+        var mrn2 = Guid.NewGuid().ToString();
+        var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+        var resourceEvent1 = CreateResourceEvent(
+            mrn1,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclaration
+            {
+                Finalisation = new Finalisation
+                {
+                    ExternalVersion = 1,
+                    FinalState = "0",
+                    IsManualRelease = false,
+                    MessageSentAt = messageSentAt,
+                },
+            },
+            ResourceEventSubResourceTypes.Finalisation
+        );
+        var resourceEvent2 = CreateResourceEvent(
+            mrn2,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclaration
+            {
+                Finalisation = new Finalisation
+                {
+                    ExternalVersion = 1,
+                    FinalState = "0",
+                    IsManualRelease = false,
+                    MessageSentAt = messageSentAt.AddHours(2),
+                },
+            },
+            ResourceEventSubResourceTypes.Finalisation
+        );
+
+        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
+        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+
+        await WaitForMrn(mrn1);
+        await WaitForMrn(mrn2);
+
+        var client = CreateHttpClient();
+
+        var from = messageSentAt.AddHours(-1);
+        var to = messageSentAt.AddHours(3);
+        var response = await client.GetAsync(
+            Testing.Endpoints.ReleasesSummary.Get(
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetReleasesBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName($"{nameof(WhenMultipleFinalisationForDifferentMrn_ShouldBeTwoBuckets)}_buckets")
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+    }
+
     private async Task WaitForMrn(string mrn, int count = 1)
     {
         Assert.True(

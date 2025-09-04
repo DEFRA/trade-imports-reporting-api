@@ -312,4 +312,121 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         return results.FirstOrDefault() ?? new MatchesSummary(0, 0, 0);
     }
+
+    public async Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        const string unit = "hour";
+
+        var aggregatePipeline = new[]
+        {
+            new BsonDocument(
+                "$match",
+                new BsonDocument("mrnCreated", new BsonDocument { { "$gte", from }, { "$lt", to } })
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument
+                {
+                    {
+                        "bucket",
+                        new BsonDocument(
+                            "$dateTrunc",
+                            new BsonDocument
+                            {
+                                { "date", "$mrnCreated" },
+                                { "unit", unit },
+                                { "timezone", "UTC" },
+                            }
+                        )
+                    },
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    {
+                        "_id",
+                        new BsonDocument { { "bucket", "$bucket" }, { "mrn", "$mrn" } }
+                    },
+                    {
+                        "latest",
+                        new BsonDocument(
+                            "$top",
+                            new BsonDocument
+                            {
+                                { "sortBy", new BsonDocument("timestamp", -1) },
+                                { "output", new BsonDocument("match", "$match") },
+                            }
+                        )
+                    },
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    {
+                        "_id",
+                        new BsonDocument { { "bucket", "$_id.bucket" } }
+                    },
+                    {
+                        "match",
+                        new BsonDocument(
+                            "$sum",
+                            new BsonDocument(
+                                "$cond",
+                                new BsonArray { new BsonDocument("$eq", new BsonArray { "$latest.match", true }), 1, 0 }
+                            )
+                        )
+                    },
+                    {
+                        "noMatch",
+                        new BsonDocument(
+                            "$sum",
+                            new BsonDocument(
+                                "$cond",
+                                new BsonArray
+                                {
+                                    new BsonDocument("$eq", new BsonArray { "$latest.match", false }),
+                                    1,
+                                    0,
+                                }
+                            )
+                        )
+                    },
+                    { "total", new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "bucket", "$_id.bucket" },
+                    {
+                        "summary",
+                        new BsonDocument
+                        {
+                            { "match", "$match" },
+                            { "noMatch", "$noMatch" },
+                            { "total", "$total" },
+                        }
+                    },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument { { "bucket", 1 } }),
+        };
+
+        var aggregateTask = dbContext.Decisions.AggregateAsync<MatchesBucket>(
+            aggregatePipeline,
+            cancellationToken: cancellationToken
+        );
+
+        return await (await aggregateTask).ToListAsync(cancellationToken);
+    }
 }
