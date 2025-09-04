@@ -9,12 +9,15 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsyncLifetime
 {
     public required IMongoCollection<Data.Entities.Finalisation> Finalisations { get; set; }
+    public required IMongoCollection<Data.Entities.Decision> Decisions { get; set; }
 
     public async Task InitializeAsync()
     {
         Finalisations = GetMongoCollection<Data.Entities.Finalisation>();
+        Decisions = GetMongoCollection<Data.Entities.Decision>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Data.Entities.Finalisation>.Empty);
+        await Decisions.DeleteManyAsync(FilterDefinition<Data.Entities.Decision>.Empty);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

@@ -231,4 +231,85 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         return await (await aggregateTask).ToListAsync(cancellationToken);
     }
+
+    public async Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken)
+    {
+        var aggregatePipeline = new[]
+        {
+            new BsonDocument(
+                "$match",
+                new BsonDocument("mrnCreated", new BsonDocument { { "$gte", from }, { "$lt", to } })
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", "$mrn" },
+                    {
+                        "latest",
+                        new BsonDocument(
+                            "$top",
+                            new BsonDocument
+                            {
+                                { "sortBy", new BsonDocument("timestamp", -1) },
+                                { "output", new BsonDocument("match", "$match") },
+                            }
+                        )
+                    },
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", 1 },
+                    {
+                        "match",
+                        new BsonDocument(
+                            "$sum",
+                            new BsonDocument(
+                                "$cond",
+                                new BsonArray { new BsonDocument("$eq", new BsonArray { "$latest.match", true }), 1, 0 }
+                            )
+                        )
+                    },
+                    {
+                        "noMatch",
+                        new BsonDocument(
+                            "$sum",
+                            new BsonDocument(
+                                "$cond",
+                                new BsonArray
+                                {
+                                    new BsonDocument("$eq", new BsonArray { "$latest.match", false }),
+                                    1,
+                                    0,
+                                }
+                            )
+                        )
+                    },
+                    { "total", new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "match", 1 },
+                    { "noMatch", 1 },
+                    { "total", 1 },
+                }
+            ),
+        };
+
+        var aggregateTask = dbContext.Decisions.AggregateAsync<MatchesSummary>(
+            aggregatePipeline,
+            cancellationToken: cancellationToken
+        );
+
+        var results = await (await aggregateTask).ToListAsync(cancellationToken);
+
+        return results.FirstOrDefault() ?? new MatchesSummary(0, 0, 0);
+    }
 }

@@ -9,4 +9,6 @@ public interface IReportRepository
         DateTime to,
         CancellationToken cancellationToken
     );
+
+    Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 }

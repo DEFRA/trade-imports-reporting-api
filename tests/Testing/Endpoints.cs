@@ -8,4 +8,11 @@ public static class Endpoints
 
         public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
     }
+
+    public static class MatchesSummary
+    {
+        private const string Root = "/matches/summary";
+
+        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+    }
 }
