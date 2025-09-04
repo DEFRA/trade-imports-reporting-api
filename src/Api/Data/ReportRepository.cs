@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
+[ExcludeFromCodeCoverage]
 public class ReportRepository(IDbContext dbContext) : IReportRepository
 {
     public async Task<ReleasesSummary> GetReleasesSummary(
