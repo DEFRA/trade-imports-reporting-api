@@ -42,7 +42,7 @@ public class ResourceEventsConsumer(
             MessageDeserializer.Deserialize<ResourceEvent<CustomsDeclaration>>(
                 received,
                 context.Headers.GetContentEncoding()
-            ) ?? throw new InvalidOperationException("Failed to deserialize message");
+            ) ?? throw new InvalidOperationException("Failed to deserialize CustomsDeclaration ResourceEvent message");
 
         if (customsDeclaration.Resource?.Finalisation is null)
             throw new InvalidOperationException("Finalisation is null");

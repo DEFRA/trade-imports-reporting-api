@@ -5,6 +5,9 @@ namespace Defra.TradeImportsReportingApi.Api.Consumers;
 
 public static class FinalisationExtensions
 {
+    private const string CancelledAfterArrival = "1";
+    private const string CancelledWhilePreLodged = "2";
+
     public static Finalisation ToFinalisation(
         this TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation finalisation,
         string mrn
@@ -20,7 +23,8 @@ public static class FinalisationExtensions
             Mrn = mrn,
             ReleaseType = finalisation switch
             {
-                { IsManualRelease: false, FinalState: not "1" and not "2" } => ReleaseType.Automatic,
+                { IsManualRelease: false, FinalState: not CancelledAfterArrival and not CancelledWhilePreLodged } =>
+                    ReleaseType.Automatic,
                 { IsManualRelease: true } => ReleaseType.Manual,
                 _ => ReleaseType.Unknown,
             },
