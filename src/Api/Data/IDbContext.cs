@@ -6,4 +6,5 @@ namespace Defra.TradeImportsReportingApi.Api.Data;
 public interface IDbContext
 {
     IMongoCollection<Finalisation> Finalisations { get; }
+    IMongoCollection<Decision> Decisions { get; }
 }
