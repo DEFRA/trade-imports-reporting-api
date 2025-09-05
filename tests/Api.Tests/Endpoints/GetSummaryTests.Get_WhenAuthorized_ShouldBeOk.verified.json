@@ -1,0 +1,12 @@
+﻿{
+  "releases": {
+    "automatic": 1,
+    "manual": 3,
+    "total": 4
+  },
+  "matches": {
+    "match": 10,
+    "noMatch": 5,
+    "total": 15
+  }
+}

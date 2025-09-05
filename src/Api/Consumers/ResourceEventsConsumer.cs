@@ -1,9 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data;
-using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Extensions;
+using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Api.Utils;
 using SlimMessageBus;
 
@@ -34,16 +33,19 @@ public class ResourceEventsConsumer(
         {
             await HandleFinalisation(received, cancellationToken);
         }
+
+        if (
+            resourceType == ResourceEventResourceTypes.CustomsDeclaration
+            && subResourceType == ResourceEventSubResourceTypes.ClearanceDecision
+        )
+        {
+            await HandleDecision(received, cancellationToken);
+        }
     }
 
     private async Task HandleFinalisation(string received, CancellationToken cancellationToken)
     {
-        var customsDeclaration =
-            MessageDeserializer.Deserialize<ResourceEvent<CustomsDeclaration>>(
-                received,
-                context.Headers.GetContentEncoding()
-            ) ?? throw new InvalidOperationException("Failed to deserialize CustomsDeclaration ResourceEvent message");
-
+        var customsDeclaration = DeserializeReceived<CustomsDeclarationEntity>(received);
         if (customsDeclaration.Resource?.Finalisation is null)
             throw new InvalidOperationException("Finalisation is null");
 
@@ -63,4 +65,23 @@ public class ResourceEventsConsumer(
             incomingFinalisation.IsManualRelease
         );
     }
+
+    private async Task HandleDecision(string received, CancellationToken cancellationToken)
+    {
+        var customsDeclaration = DeserializeReceived<CustomsDeclarationEntity>(received);
+        if (customsDeclaration.Resource?.ClearanceDecision is null)
+            throw new InvalidOperationException("Decision is null");
+
+        var incomingDecision = customsDeclaration.Resource.ClearanceDecision;
+        var entityDecision = incomingDecision.ToDecision(
+            customsDeclaration.ResourceId,
+            customsDeclaration.Resource.Created
+        );
+
+        await dbContext.Decisions.InsertOneAsync(entityDecision, cancellationToken: cancellationToken);
+    }
+
+    private ResourceEvent<T> DeserializeReceived<T>(string received) =>
+        MessageDeserializer.Deserialize<ResourceEvent<T>>(received, context.Headers.GetContentEncoding())
+        ?? throw new InvalidOperationException("Failed to deserialize message");
 }

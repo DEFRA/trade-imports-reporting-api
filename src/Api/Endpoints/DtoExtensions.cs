@@ -1,0 +1,12 @@
+using Defra.TradeImportsReportingApi.Api.Data;
+
+namespace Defra.TradeImportsReportingApi.Api.Endpoints;
+
+public static class DtoExtensions
+{
+    public static ReleasesSummaryResponse ToResponse(this ReleasesSummary summary) =>
+        new(summary.Automatic, summary.Manual, summary.Total);
+
+    public static MatchesSummaryResponse ToResponse(this MatchesSummary summary) =>
+        new(summary.Match, summary.NoMatch, summary.Total);
+}

@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
