@@ -521,12 +521,21 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await (await aggregateTask).ToListAsync(cancellationToken);
     }
 
-    public Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
+    public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
         DateTime from,
         DateTime to,
         CancellationToken cancellationToken
     )
     {
-        return Task.FromResult(new ClearanceRequestsSummary(0, 0));
+        var totalTask = dbContext.Requests.CountDocumentsAsync(
+            Builders<Request>.Filter.Gte(x => x.Timestamp, from) & Builders<Request>.Filter.Lt(x => x.Timestamp, to),
+            cancellationToken: cancellationToken
+        );
+
+        await Task.WhenAll(totalTask);
+
+        var total = (int)await totalTask;
+
+        return new ClearanceRequestsSummary(0, total);
     }
 }

@@ -3,7 +3,6 @@ using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
-using MongoDB.Driver;
 using Finalisation = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
@@ -14,8 +13,19 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     public async Task WhenSingleOfEach_ShouldBeAsExpected()
     {
         var mrn = Guid.NewGuid().ToString();
-        var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+        var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
         var resourceEvent1 = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            ResourceEventSubResourceTypes.ClearanceRequest
+        );
+
+        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
+        await WaitForRequestMrn(mrn);
+
+        var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+        var resourceEvent2 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
             new CustomsDeclarationEntity
@@ -43,12 +53,10 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             ResourceEventSubResourceTypes.ClearanceDecision
         );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-
+        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
         await WaitForDecisionMrn(mrn);
 
-        var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent2 = CreateResourceEvent(
+        var resourceEvent3 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
             new CustomsDeclaration
@@ -64,8 +72,7 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             ResourceEventSubResourceTypes.Finalisation
         );
 
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-
+        await SendMessage(resourceEvent3, CreateMessageAttributes(resourceEvent3));
         await WaitForFinalisationMrn(mrn);
 
         var client = CreateHttpClient();
@@ -79,31 +86,5 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
-    }
-
-    private async Task WaitForDecisionMrn(string mrn, int count = 1)
-    {
-        Assert.True(
-            await AsyncWaiter.WaitForAsync(async () =>
-            {
-                var finalisation = await Decisions.FindAsync(Builders<Decision>.Filter.Eq(x => x.Mrn, mrn));
-
-                return (await finalisation.ToListAsync()).Count == count;
-            })
-        );
-    }
-
-    private async Task WaitForFinalisationMrn(string mrn, int count = 1)
-    {
-        Assert.True(
-            await AsyncWaiter.WaitForAsync(async () =>
-            {
-                var finalisation = await Finalisations.FindAsync(
-                    Builders<Data.Entities.Finalisation>.Filter.Eq(x => x.Mrn, mrn)
-                );
-
-                return (await finalisation.ToListAsync()).Count == count;
-            })
-        );
     }
 }
