@@ -6,6 +6,11 @@ using MongoDB.Driver;
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
 [ExcludeFromCodeCoverage]
+[SuppressMessage(
+    "SonarAnalyzer.CSharp",
+    "S1192",
+    Justification = "Strings are used to ensure the correct query plan is executed and having to replace to constants makes the code more difficult to maintain in this instance"
+)]
 public class ReportRepository(IDbContext dbContext) : IReportRepository
 {
     public async Task<ReleasesSummary> GetReleasesSummary(
