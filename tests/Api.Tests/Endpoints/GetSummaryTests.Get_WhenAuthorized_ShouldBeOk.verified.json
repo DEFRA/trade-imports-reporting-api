@@ -8,5 +8,9 @@
     "match": 10,
     "noMatch": 5,
     "total": 15
+  },
+  "clearanceRequests": {
+    "unique": 10,
+    "total": 20
   }
 }

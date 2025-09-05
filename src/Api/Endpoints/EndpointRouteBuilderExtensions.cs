@@ -9,6 +9,7 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("releases/summary", ReleasesSummary).RequireAuthorization();
         app.MapGet("matches/summary", MatchesSummary).RequireAuthorization();
+        app.MapGet("clearance-requests/summary", ClearanceRequestsSummary).RequireAuthorization();
 
         app.MapGet("summary", Summary).RequireAuthorization();
     }
@@ -52,6 +53,25 @@ public static class EndpointRouteBuilderExtensions
     }
 
     [HttpGet]
+    private static async Task<IResult> ClearanceRequestsSummary(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var clearanceRequestsSummary = await reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
+
+        return Results.Ok(clearanceRequestsSummary.ToResponse());
+    }
+
+    [HttpGet]
     private static async Task<IResult> Summary(
         [FromQuery] DateTime from,
         [FromQuery] DateTime to,
@@ -67,13 +87,21 @@ public static class EndpointRouteBuilderExtensions
 
         var releasesSummaryTask = reportRepository.GetReleasesSummary(from, to, cancellationToken);
         var matchesSummaryTask = reportRepository.GetMatchesSummary(from, to, cancellationToken);
+        var clearanceRequestsSummaryTask = reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
 
-        await Task.WhenAll(releasesSummaryTask, matchesSummaryTask);
+        await Task.WhenAll(releasesSummaryTask, matchesSummaryTask, clearanceRequestsSummaryTask);
 
         var releasesSummary = await releasesSummaryTask;
         var matchesSummary = await matchesSummaryTask;
+        var clearanceRequestsSummary = await clearanceRequestsSummaryTask;
 
-        return Results.Ok(new SummaryResponse(releasesSummary.ToResponse(), matchesSummary.ToResponse()));
+        return Results.Ok(
+            new SummaryResponse(
+                releasesSummary.ToResponse(),
+                matchesSummary.ToResponse(),
+                clearanceRequestsSummary.ToResponse()
+            )
+        );
     }
 
     private static Dictionary<string, string[]> ValidateRequest(DateTime from, DateTime to)

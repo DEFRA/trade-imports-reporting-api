@@ -11,4 +11,6 @@ public class MongoDbContext(IMongoDatabase database) : IDbContext
         database.GetCollection<Finalisation>(nameof(Finalisation));
 
     public IMongoCollection<Decision> Decisions { get; } = database.GetCollection<Decision>(nameof(Decision));
+
+    public IMongoCollection<Request> Requests { get; } = database.GetCollection<Request>(nameof(Request));
 }

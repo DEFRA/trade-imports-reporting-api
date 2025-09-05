@@ -41,6 +41,14 @@ public class ResourceEventsConsumer(
         {
             await HandleDecision(received, cancellationToken);
         }
+
+        if (
+            resourceType == ResourceEventResourceTypes.CustomsDeclaration
+            && subResourceType == ResourceEventSubResourceTypes.ClearanceRequest
+        )
+        {
+            await HandleRequest(received, cancellationToken);
+        }
     }
 
     private async Task HandleFinalisation(string received, CancellationToken cancellationToken)
@@ -79,6 +87,18 @@ public class ResourceEventsConsumer(
         );
 
         await dbContext.Decisions.InsertOneAsync(entityDecision, cancellationToken: cancellationToken);
+    }
+
+    private async Task HandleRequest(string received, CancellationToken cancellationToken)
+    {
+        var customsDeclaration = DeserializeReceived<CustomsDeclarationEntity>(received);
+        if (customsDeclaration.Resource?.ClearanceRequest is null)
+            throw new InvalidOperationException("Request is null");
+
+        var incomingRequest = customsDeclaration.Resource.ClearanceRequest;
+        var entityRequest = incomingRequest.ToRequest(customsDeclaration.ResourceId);
+
+        await dbContext.Requests.InsertOneAsync(entityRequest, cancellationToken: cancellationToken);
     }
 
     private ResourceEvent<T> DeserializeReceived<T>(string received) =>

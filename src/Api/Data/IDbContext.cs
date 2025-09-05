@@ -7,4 +7,5 @@ public interface IDbContext
 {
     IMongoCollection<Finalisation> Finalisations { get; }
     IMongoCollection<Decision> Decisions { get; }
+    IMongoCollection<Request> Requests { get; }
 }

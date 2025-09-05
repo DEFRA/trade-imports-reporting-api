@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Endpoints;
 
-public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
+public class GetClearanceRequestsSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
     : EndpointTestBase(factory, outputHelper)
 {
     private IReportRepository MockReportRepository { get; } = Substitute.For<IReportRepository>();
@@ -24,7 +24,7 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.Summary.Get());
+        var response = await client.GetAsync(Testing.Endpoints.ClearanceRequestsSummary.Get());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -36,17 +36,11 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleasesSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new ReleasesSummary(1, 3, 4));
-        MockReportRepository
-            .GetMatchesSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new MatchesSummary(10, 5, 15));
-        MockReportRepository
             .GetClearanceRequestsSummary(from, to, Arg.Any<CancellationToken>())
             .Returns(new ClearanceRequestsSummary(10, 20));
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
+            Testing.Endpoints.ClearanceRequestsSummary.Get(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
@@ -62,7 +56,7 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
+            Testing.Endpoints.ClearanceRequestsSummary.Get(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
@@ -80,7 +74,7 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
+            Testing.Endpoints.ClearanceRequestsSummary.Get(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
@@ -99,7 +93,7 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
+            Testing.Endpoints.ClearanceRequestsSummary.Get(
                 EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
             )
         );
