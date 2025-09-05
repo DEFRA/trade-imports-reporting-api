@@ -1,13 +1,56 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
 [ExcludeFromCodeCoverage]
+[SuppressMessage(
+    "SonarAnalyzer.CSharp",
+    "S1192",
+    Justification = "Specific BsonDocument format is used to ensure the correct query plan is executed as the "
+        + "linq equivalent produces a plan that is inefficient. Having to replace all strings with "
+        + "constants if they are repeated a certain number of times makes the code more difficult "
+        + "to maintain. However, the field names have been extracted from each query so these are "
+        + "free to change over time if needed."
+)]
 public class ReportRepository(IDbContext dbContext) : IReportRepository
 {
+    // The presence of the CamelCaseElementNameConvention denotes if we
+    // are using camel case or not
+    private static readonly bool s_camelCase = ConventionRegistry
+        .Lookup(typeof(Finalisation))
+        .Conventions.OfType<CamelCaseElementNameConvention>()
+        .Any();
+
+    private static class Fields
+    {
+        private static string Field(string name)
+        {
+            if (!s_camelCase || char.IsLower(name[0]))
+                return name;
+
+            return char.ToLowerInvariant(name[0]) + name[1..];
+        }
+
+        public static class Finalisation
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.Finalisation.Timestamp));
+            public static readonly string ReleaseType = Field(nameof(Entities.Finalisation.ReleaseType));
+            public static readonly string Mrn = Field(nameof(Entities.Finalisation.Mrn));
+        }
+
+        public static class Decision
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.Decision.Timestamp));
+            public static readonly string Mrn = Field(nameof(Entities.Decision.Mrn));
+            public static readonly string MrnCreated = Field(nameof(Entities.Decision.MrnCreated));
+            public static readonly string Match = Field(nameof(Entities.Decision.Match));
+        }
+    }
+
     public async Task<ReleasesSummary> GetReleasesSummary(
         DateTime from,
         DateTime to,
@@ -18,7 +61,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument("timestamp", new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument(Fields.Finalisation.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
             ),
             new BsonDocument(
                 "$group",
@@ -31,8 +74,14 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$top",
                             new BsonDocument
                             {
-                                { "sortBy", new BsonDocument("timestamp", -1) },
-                                { "output", new BsonDocument("releaseType", "$releaseType") },
+                                { "sortBy", new BsonDocument(Fields.Finalisation.Timestamp, -1) },
+                                {
+                                    "output",
+                                    new BsonDocument(
+                                        Fields.Finalisation.ReleaseType,
+                                        $"${Fields.Finalisation.ReleaseType}"
+                                    )
+                                },
                             }
                         )
                     },
@@ -53,7 +102,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                 {
                                     new BsonDocument(
                                         "$eq",
-                                        new BsonArray { "$latest.releaseType", ReleaseType.Automatic }
+                                        new BsonArray
+                                        {
+                                            $"$latest.{Fields.Finalisation.ReleaseType}",
+                                            ReleaseType.Automatic,
+                                        }
                                     ),
                                     1,
                                     0,
@@ -71,7 +124,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                 {
                                     new BsonDocument(
                                         "$eq",
-                                        new BsonArray { "$latest.releaseType", ReleaseType.Manual }
+                                        new BsonArray
+                                        {
+                                            $"$latest.{Fields.Finalisation.ReleaseType}",
+                                            ReleaseType.Manual,
+                                        }
                                     ),
                                     1,
                                     0,
@@ -116,7 +173,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument("timestamp", new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument(Fields.Finalisation.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
             ),
             new BsonDocument(
                 "$set",
@@ -128,7 +185,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$dateTrunc",
                             new BsonDocument
                             {
-                                { "date", "$timestamp" },
+                                { "date", $"${Fields.Finalisation.Timestamp}" },
                                 { "unit", unit },
                                 { "timezone", "UTC" },
                             }
@@ -142,7 +199,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 {
                     {
                         "_id",
-                        new BsonDocument { { "bucket", "$bucket" }, { "mrn", "$mrn" } }
+                        new BsonDocument
+                        {
+                            { "bucket", "$bucket" },
+                            { Fields.Finalisation.Mrn, $"${Fields.Finalisation.Mrn}" },
+                        }
                     },
                     {
                         "latest",
@@ -150,8 +211,14 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$top",
                             new BsonDocument
                             {
-                                { "sortBy", new BsonDocument("timestamp", -1) },
-                                { "output", new BsonDocument("releaseType", "$releaseType") },
+                                { "sortBy", new BsonDocument(Fields.Finalisation.Timestamp, -1) },
+                                {
+                                    "output",
+                                    new BsonDocument(
+                                        Fields.Finalisation.ReleaseType,
+                                        $"${Fields.Finalisation.ReleaseType}"
+                                    )
+                                },
                             }
                         )
                     },
@@ -175,7 +242,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                 {
                                     new BsonDocument(
                                         "$eq",
-                                        new BsonArray { "$latest.releaseType", ReleaseType.Automatic }
+                                        new BsonArray
+                                        {
+                                            $"$latest.{Fields.Finalisation.ReleaseType}",
+                                            ReleaseType.Automatic,
+                                        }
                                     ),
                                     1,
                                     0,
@@ -193,7 +264,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                 {
                                     new BsonDocument(
                                         "$eq",
-                                        new BsonArray { "$latest.releaseType", ReleaseType.Manual }
+                                        new BsonArray
+                                        {
+                                            $"$latest.{Fields.Finalisation.ReleaseType}",
+                                            ReleaseType.Manual,
+                                        }
                                     ),
                                     1,
                                     0,
@@ -238,21 +313,21 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument("mrnCreated", new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
             ),
             new BsonDocument(
                 "$group",
                 new BsonDocument
                 {
-                    { "_id", "$mrn" },
+                    { "_id", $"${Fields.Decision.Mrn}" },
                     {
                         "latest",
                         new BsonDocument(
                             "$top",
                             new BsonDocument
                             {
-                                { "sortBy", new BsonDocument("timestamp", -1) },
-                                { "output", new BsonDocument("match", "$match") },
+                                { "sortBy", new BsonDocument(Fields.Decision.Timestamp, -1) },
+                                { "output", new BsonDocument(Fields.Decision.Match, $"${Fields.Decision.Match}") },
                             }
                         )
                     },
@@ -269,7 +344,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$sum",
                             new BsonDocument(
                                 "$cond",
-                                new BsonArray { new BsonDocument("$eq", new BsonArray { "$latest.match", true }), 1, 0 }
+                                new BsonArray
+                                {
+                                    new BsonDocument("$eq", new BsonArray { $"$latest.{Fields.Decision.Match}", true }),
+                                    1,
+                                    0,
+                                }
                             )
                         )
                     },
@@ -281,7 +361,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                 "$cond",
                                 new BsonArray
                                 {
-                                    new BsonDocument("$eq", new BsonArray { "$latest.match", false }),
+                                    new BsonDocument(
+                                        "$eq",
+                                        new BsonArray { $"$latest.{Fields.Decision.Match}", false }
+                                    ),
                                     1,
                                     0,
                                 }
@@ -325,7 +408,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument("mrnCreated", new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
             ),
             new BsonDocument(
                 "$set",
@@ -337,7 +420,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$dateTrunc",
                             new BsonDocument
                             {
-                                { "date", "$mrnCreated" },
+                                { "date", $"${Fields.Decision.MrnCreated}" },
                                 { "unit", unit },
                                 { "timezone", "UTC" },
                             }
@@ -351,7 +434,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 {
                     {
                         "_id",
-                        new BsonDocument { { "bucket", "$bucket" }, { "mrn", "$mrn" } }
+                        new BsonDocument { { "bucket", "$bucket" }, { Fields.Decision.Mrn, $"${Fields.Decision.Mrn}" } }
                     },
                     {
                         "latest",
@@ -359,8 +442,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$top",
                             new BsonDocument
                             {
-                                { "sortBy", new BsonDocument("timestamp", -1) },
-                                { "output", new BsonDocument("match", "$match") },
+                                { "sortBy", new BsonDocument(Fields.Decision.Timestamp, -1) },
+                                { "output", new BsonDocument(Fields.Decision.Match, $"${Fields.Decision.Match}") },
                             }
                         )
                     },
@@ -380,7 +463,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$sum",
                             new BsonDocument(
                                 "$cond",
-                                new BsonArray { new BsonDocument("$eq", new BsonArray { "$latest.match", true }), 1, 0 }
+                                new BsonArray
+                                {
+                                    new BsonDocument("$eq", new BsonArray { $"$latest.{Fields.Decision.Match}", true }),
+                                    1,
+                                    0,
+                                }
                             )
                         )
                     },
@@ -392,7 +480,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                 "$cond",
                                 new BsonArray
                                 {
-                                    new BsonDocument("$eq", new BsonArray { "$latest.match", false }),
+                                    new BsonDocument(
+                                        "$eq",
+                                        new BsonArray { $"$latest.{Fields.Decision.Match}", false }
+                                    ),
                                     1,
                                     0,
                                 }
