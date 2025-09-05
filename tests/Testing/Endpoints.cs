@@ -2,12 +2,10 @@ namespace Defra.TradeImportsReportingApi.Testing;
 
 public static class Endpoints
 {
-    public static class RawMessages
+    public static class ReleasesSummary
     {
-        private const string Root = "/raw-messages";
+        private const string Root = "/releases/summary";
 
-        public static string Get(string messageId) => $"{Root}/{messageId}";
-
-        public static string GetJson(string messageId) => $"{Get(messageId)}/json";
+        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
     }
 }

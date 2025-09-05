@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Defra.TradeImportsReportingApi.Api.Data.Mongo;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;

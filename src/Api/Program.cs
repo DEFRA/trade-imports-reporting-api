@@ -1,5 +1,7 @@
 using Defra.TradeImportsReportingApi.Api.Authentication;
+using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Extensions;
+using Defra.TradeImportsReportingApi.Api.Endpoints;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Health;
 using Defra.TradeImportsReportingApi.Api.Metrics;
@@ -50,9 +52,14 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     // Load certificates into Trust Store - Note must happen before Mongo and Http client connections
     builder.Services.AddCustomTrustStore();
 
-    builder.ConfigureLoggingAndTracing();
+    builder.ConfigureLoggingAndTracing(integrationTest);
 
     builder.Services.AddAuthenticationAuthorization();
+    builder.Services.Configure<RouteHandlerOptions>(o =>
+    {
+        // Without this, bad request detail will only be thrown in DEVELOPMENT mode
+        o.ThrowOnBadRequest = true;
+    });
     builder.Services.AddProblemDetails();
     builder.Services.AddHealth(builder.Configuration);
     builder.Services.AddReportingApiConfiguration(builder.Configuration);
@@ -63,6 +70,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddCustomMetrics();
 
     builder.Services.AddDbContext(builder.Configuration, integrationTest);
+    builder.Services.AddTransient<IReportRepository, ReportRepository>();
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)
@@ -74,6 +82,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.UseStatusCodePages();
     app.UseHeaderPropagation();
     app.UseMiddleware<MetricsMiddleware>();
+    app.MapEndpoints();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
         {

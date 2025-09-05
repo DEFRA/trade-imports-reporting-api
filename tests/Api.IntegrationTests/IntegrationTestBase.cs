@@ -33,11 +33,10 @@ public abstract class IntegrationTestBase
     }
 
     protected static IMongoCollection<T> GetMongoCollection<T>()
-        where T : IDataEntity
     {
         var db = GetMongoDatabase();
 
-        return db.GetCollection<T>(typeof(T).DataEntityName());
+        return db.GetCollection<T>(typeof(T).Name);
     }
 
     protected IntegrationTestBase()

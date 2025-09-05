@@ -21,7 +21,11 @@ public class SqsQueueClient(string queueName) : IDisposable
         }
     );
 
-    public void Dispose() => _sqsClient.Dispose();
+    public void Dispose()
+    {
+        _sqsClient.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     public Task<ReceiveMessageResponse> ReceiveMessage() =>
         _sqsClient.ReceiveMessageAsync(
