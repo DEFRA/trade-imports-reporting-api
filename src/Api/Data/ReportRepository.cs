@@ -49,6 +49,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             public static readonly string MrnCreated = Field(nameof(Entities.Decision.MrnCreated));
             public static readonly string Match = Field(nameof(Entities.Decision.Match));
         }
+
+        public static class Request
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.Request.Timestamp));
+            public static readonly string Mrn = Field(nameof(Entities.Request.Mrn));
+        }
     }
 
     public async Task<ReleasesSummary> GetReleasesSummary(
@@ -532,10 +538,26 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             cancellationToken: cancellationToken
         );
 
-        await Task.WhenAll(totalTask);
+        var aggregatePipeline = new[]
+        {
+            new BsonDocument(
+                "$match",
+                new BsonDocument(Fields.Request.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+            ),
+            new BsonDocument("$group", new BsonDocument("_id", $"${Fields.Request.Mrn}")),
+            new BsonDocument("$count", "count"),
+        };
+
+        var uniqueTask = dbContext.Requests.AggregateAsync<BsonDocument>(
+            aggregatePipeline,
+            cancellationToken: cancellationToken
+        );
+
+        await Task.WhenAll(totalTask, uniqueTask);
 
         var total = (int)await totalTask;
+        var unique = await (await uniqueTask).FirstOrDefaultAsync(cancellationToken);
 
-        return new ClearanceRequestsSummary(0, total);
+        return new ClearanceRequestsSummary((int)(unique?["count"] ?? 0), total);
     }
 }
