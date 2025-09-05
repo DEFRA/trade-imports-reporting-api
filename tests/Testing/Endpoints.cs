@@ -16,6 +16,13 @@ public static class Endpoints
         public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
     }
 
+    public static class ClearanceRequestsSummary
+    {
+        private const string Root = "/clearance-requests/summary";
+
+        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+    }
+
     public static class Summary
     {
         private const string Root = "/summary";

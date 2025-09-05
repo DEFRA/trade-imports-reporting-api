@@ -67,7 +67,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 "$group",
                 new BsonDocument
                 {
-                    { "_id", "$mrn" },
+                    { "_id", $"${Fields.Finalisation.Mrn}" },
                     {
                         "latest",
                         new BsonDocument(
@@ -519,5 +519,14 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         );
 
         return await (await aggregateTask).ToListAsync(cancellationToken);
+    }
+
+    public Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.FromResult(new ClearanceRequestsSummary(0, 0));
     }
 }

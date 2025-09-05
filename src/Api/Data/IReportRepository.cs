@@ -17,4 +17,10 @@ public interface IReportRepository
         DateTime to,
         CancellationToken cancellationToken
     );
+
+    Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    );
 }
