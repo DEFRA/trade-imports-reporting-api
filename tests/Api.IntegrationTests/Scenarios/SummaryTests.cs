@@ -1,5 +1,6 @@
 using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsDataApi.Domain.Ipaffs;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
@@ -12,28 +13,28 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     [Fact]
     public async Task WhenSingleOfEach_ShouldBeAsExpected()
     {
+        var utcDate = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+
         var mrn = Guid.NewGuid().ToString();
-        var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
         var resourceEvent1 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = utcDate } },
             ResourceEventSubResourceTypes.ClearanceRequest
         );
 
         await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
         await WaitForRequestMrn(mrn);
 
-        var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
         var resourceEvent2 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
             new CustomsDeclarationEntity
             {
-                Created = mrnCreated,
+                Created = utcDate,
                 ClearanceDecision = new ClearanceDecision
                 {
-                    Created = mrnCreated.AddSeconds(20),
+                    Created = utcDate.AddSeconds(20),
                     Items =
                     [
                         new ClearanceDecisionItem
@@ -66,7 +67,7 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
                     ExternalVersion = 1,
                     FinalState = "0",
                     IsManualRelease = false,
-                    MessageSentAt = messageSentAt,
+                    MessageSentAt = utcDate,
                 },
             },
             ResourceEventSubResourceTypes.Finalisation
@@ -75,10 +76,28 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await SendMessage(resourceEvent3, CreateMessageAttributes(resourceEvent3));
         await WaitForFinalisationMrn(mrn);
 
+        var ched = Guid.NewGuid().ToString();
+        var resourceEvent4 = CreateResourceEvent(
+            ched,
+            ResourceEventResourceTypes.ImportPreNotification,
+            new ImportPreNotificationEntity
+            {
+                Created = utcDate,
+                Updated = utcDate.AddMinutes(1),
+                ImportPreNotification = new ImportPreNotification
+                {
+                    ImportNotificationType = ImportPreNotificationType.CVEDA,
+                },
+            }
+        );
+
+        await SendMessage(resourceEvent4, CreateMessageAttributes(resourceEvent4));
+        await WaitForNotificationChed(ched);
+
         var client = CreateHttpClient();
 
-        var from = mrnCreated.AddHours(-1);
-        var to = mrnCreated.AddHours(1);
+        var from = utcDate.AddHours(-1);
+        var to = utcDate.AddHours(1);
         var response = await client.GetAsync(
             Testing.Endpoints.Summary.Get(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))

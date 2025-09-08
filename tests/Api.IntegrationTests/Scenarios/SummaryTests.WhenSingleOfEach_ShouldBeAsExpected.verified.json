@@ -14,10 +14,10 @@
     "total": 1
   },
   "notifications": {
-    "chedA": 0,
+    "chedA": 1,
     "chedP": 0,
     "chedPp": 0,
     "chedD": 0,
-    "total": 0
+    "total": 1
   }
 }

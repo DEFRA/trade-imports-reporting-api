@@ -1,6 +1,7 @@
 using AutoFixture;
 using Defra.TradeImportsReportingApi.Api.Consumers;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.TestFixtures;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Consumers;
@@ -8,11 +9,11 @@ namespace Defra.TradeImportsReportingApi.Api.Tests.Consumers;
 public class NotificationExtensionsTests
 {
     [Theory]
-    [InlineData("CVEDA", NotificationType.ChedA)]
-    [InlineData("CVEDP", NotificationType.ChedP)]
-    [InlineData("CHEDPP", NotificationType.ChedPp)]
-    [InlineData("CED", NotificationType.ChedD)]
-    [InlineData("IMP", NotificationType.Unknown)]
+    [InlineData(ImportPreNotificationType.CVEDA, NotificationType.ChedA)]
+    [InlineData(ImportPreNotificationType.CVEDP, NotificationType.ChedP)]
+    [InlineData(ImportPreNotificationType.CHEDPP, NotificationType.ChedPp)]
+    [InlineData(ImportPreNotificationType.CED, NotificationType.ChedD)]
+    [InlineData(ImportPreNotificationType.IMP, NotificationType.Unknown)]
     public void ToNotification_NotificationType_ShouldBeAsExpected(string importNotificationType, string expected)
     {
         var importPreNotification = NotificationFixtures
@@ -31,7 +32,7 @@ public class NotificationExtensionsTests
     {
         var importPreNotification = NotificationFixtures
             .ImportPreNotificationFixture()
-            .With(x => x.ImportNotificationType, "CVEDA")
+            .With(x => x.ImportNotificationType, ImportPreNotificationType.CVEDA)
             .Create();
 
         var subject = importPreNotification.ToNotification(

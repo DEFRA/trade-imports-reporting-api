@@ -25,4 +25,10 @@ public interface IReportRepository
     );
 
     Task<NotificationsSummary> GetNotificationsSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    );
 }

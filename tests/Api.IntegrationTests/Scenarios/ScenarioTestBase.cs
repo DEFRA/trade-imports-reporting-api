@@ -9,19 +9,22 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
 public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsyncLifetime
 {
-    public required IMongoCollection<Data.Entities.Finalisation> Finalisations { get; set; }
-    public required IMongoCollection<Data.Entities.Decision> Decisions { get; set; }
-    public required IMongoCollection<Data.Entities.Request> Requests { get; set; }
+    public required IMongoCollection<Finalisation> Finalisations { get; set; }
+    public required IMongoCollection<Decision> Decisions { get; set; }
+    public required IMongoCollection<Request> Requests { get; set; }
+    public required IMongoCollection<Notification> Notifications { get; set; }
 
     public async Task InitializeAsync()
     {
-        Finalisations = GetMongoCollection<Data.Entities.Finalisation>();
-        Decisions = GetMongoCollection<Data.Entities.Decision>();
-        Requests = GetMongoCollection<Data.Entities.Request>();
+        Finalisations = GetMongoCollection<Finalisation>();
+        Decisions = GetMongoCollection<Decision>();
+        Requests = GetMongoCollection<Request>();
+        Notifications = GetMongoCollection<Notification>();
 
-        await Finalisations.DeleteManyAsync(FilterDefinition<Data.Entities.Finalisation>.Empty);
-        await Decisions.DeleteManyAsync(FilterDefinition<Data.Entities.Decision>.Empty);
-        await Requests.DeleteManyAsync(FilterDefinition<Data.Entities.Request>.Empty);
+        await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
+        await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
+        await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
+        await Notifications.DeleteManyAsync(FilterDefinition<Notification>.Empty);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -82,9 +85,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Assert.True(
             await AsyncWaiter.WaitForAsync(async () =>
             {
-                var request = await Requests.FindAsync(Builders<Request>.Filter.Eq(x => x.Mrn, mrn));
+                var requests = await Requests.FindAsync(Builders<Request>.Filter.Eq(x => x.Mrn, mrn));
 
-                return (await request.ToListAsync()).Count == count;
+                return (await requests.ToListAsync()).Count == count;
             })
         );
     }
@@ -94,9 +97,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Assert.True(
             await AsyncWaiter.WaitForAsync(async () =>
             {
-                var decision = await Decisions.FindAsync(Builders<Decision>.Filter.Eq(x => x.Mrn, mrn));
+                var decisions = await Decisions.FindAsync(Builders<Decision>.Filter.Eq(x => x.Mrn, mrn));
 
-                return (await decision.ToListAsync()).Count == count;
+                return (await decisions.ToListAsync()).Count == count;
             })
         );
     }
@@ -106,11 +109,23 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Assert.True(
             await AsyncWaiter.WaitForAsync(async () =>
             {
-                var finalisation = await Finalisations.FindAsync(
-                    Builders<Data.Entities.Finalisation>.Filter.Eq(x => x.Mrn, mrn)
+                var finalisations = await Finalisations.FindAsync(Builders<Finalisation>.Filter.Eq(x => x.Mrn, mrn));
+
+                return (await finalisations.ToListAsync()).Count == count;
+            })
+        );
+    }
+
+    protected async Task WaitForNotificationChed(string ched, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var notifications = await Notifications.FindAsync(
+                    Builders<Notification>.Filter.Eq(x => x.ReferenceNumber, ched)
                 );
 
-                return (await finalisation.ToListAsync()).Count == count;
+                return (await notifications.ToListAsync()).Count == count;
             })
         );
     }

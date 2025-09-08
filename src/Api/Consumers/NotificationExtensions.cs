@@ -1,15 +1,11 @@
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Bson;
 
 namespace Defra.TradeImportsReportingApi.Api.Consumers;
 
 public static class NotificationExtensions
 {
-    private const string ChedA = "CVEDA";
-    private const string ChedP = "CVEDP";
-    private const string ChedPp = "CHEDPP";
-    private const string ChedD = "CED";
-
     public static Notification ToNotification(
         this TradeImportsDataApi.Domain.Ipaffs.ImportPreNotification notification,
         string referenceNumber,
@@ -25,10 +21,10 @@ public static class NotificationExtensions
             NotificationCreated = notificationCreated,
             NotificationType = notification.ImportNotificationType switch
             {
-                ChedA => NotificationType.ChedA,
-                ChedP => NotificationType.ChedP,
-                ChedPp => NotificationType.ChedPp,
-                ChedD => NotificationType.ChedD,
+                ImportPreNotificationType.CVEDA => NotificationType.ChedA,
+                ImportPreNotificationType.CVEDP => NotificationType.ChedP,
+                ImportPreNotificationType.CHEDPP => NotificationType.ChedPp,
+                ImportPreNotificationType.CED => NotificationType.ChedD,
                 _ => NotificationType.Unknown,
             },
         };
