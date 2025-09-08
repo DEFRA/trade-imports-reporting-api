@@ -5,7 +5,6 @@ using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
-using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
@@ -45,8 +44,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         );
 
         await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
-
-        await WaitForMrn(mrn);
+        await WaitForDecisionMrn(mrn);
 
         var client = CreateHttpClient();
 
@@ -135,8 +133,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
         await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-
-        await WaitForMrn(mrn, count: 2);
+        await WaitForDecisionMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
 
@@ -225,8 +222,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
         await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-
-        await WaitForMrn(mrn, count: 2);
+        await WaitForDecisionMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
 
@@ -318,9 +314,8 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
         await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-
-        await WaitForMrn(mrn1);
-        await WaitForMrn(mrn2);
+        await WaitForDecisionMrn(mrn1);
+        await WaitForDecisionMrn(mrn2);
 
         var client = CreateHttpClient();
 
@@ -412,9 +407,8 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
         await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-
-        await WaitForMrn(mrn1);
-        await WaitForMrn(mrn2);
+        await WaitForDecisionMrn(mrn1);
+        await WaitForDecisionMrn(mrn2);
 
         var client = CreateHttpClient();
 
@@ -439,17 +433,5 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
-    }
-
-    private async Task WaitForMrn(string mrn, int count = 1)
-    {
-        Assert.True(
-            await AsyncWaiter.WaitForAsync(async () =>
-            {
-                var finalisation = await Decisions.FindAsync(Builders<Decision>.Filter.Eq(x => x.Mrn, mrn));
-
-                return (await finalisation.ToListAsync()).Count == count;
-            })
-        );
     }
 }
