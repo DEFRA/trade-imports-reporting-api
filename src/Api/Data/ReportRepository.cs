@@ -560,4 +560,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         return new ClearanceRequestsSummary((int)(unique?["count"] ?? 0), total);
     }
+
+    public Task<NotificationsSummary> GetNotificationsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.FromResult(new NotificationsSummary(0, 0, 0, 0, 0));
+    }
 }

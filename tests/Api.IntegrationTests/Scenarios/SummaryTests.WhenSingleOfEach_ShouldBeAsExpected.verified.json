@@ -12,5 +12,12 @@
   "clearanceRequests": {
     "unique": 1,
     "total": 1
+  },
+  "notifications": {
+    "chedA": 0,
+    "chedP": 0,
+    "chedPp": 0,
+    "chedD": 0,
+    "total": 0
   }
 }

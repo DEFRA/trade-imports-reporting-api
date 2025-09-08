@@ -23,4 +23,6 @@ public interface IReportRepository
         DateTime to,
         CancellationToken cancellationToken
     );
+
+    Task<NotificationsSummary> GetNotificationsSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 }

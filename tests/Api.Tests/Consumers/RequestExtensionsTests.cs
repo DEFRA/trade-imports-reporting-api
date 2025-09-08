@@ -10,7 +10,7 @@ public class RequestExtensionsTests
     [Fact]
     public void ToRequest_WhenMessageSentAtIsNotUtc_ShouldThrow()
     {
-        var request = RequestFixtures.RequestFixture(messageSentAt: DateTime.Now).Create();
+        var request = RequestFixtures.ClearanceRequestFixture(messageSentAt: DateTime.Now).Create();
 
         var act = () => request.ToRequest("mrn");
 
@@ -21,7 +21,7 @@ public class RequestExtensionsTests
     public async Task ToRequest_MapAsExpected()
     {
         var request = RequestFixtures
-            .RequestFixture(messageSentAt: new DateTime(2025, 7, 3, 13, 42, 0, DateTimeKind.Utc))
+            .ClearanceRequestFixture(messageSentAt: new DateTime(2025, 7, 3, 13, 42, 0, DateTimeKind.Utc))
             .Create();
 
         var subject = request.ToRequest("mrn");
