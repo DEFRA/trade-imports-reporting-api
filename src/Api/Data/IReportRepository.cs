@@ -37,4 +37,6 @@ public interface IReportRepository
         DateTime to,
         CancellationToken cancellationToken
     );
+
+    Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken);
 }

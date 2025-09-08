@@ -1015,4 +1015,21 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         return await (await aggregateTask).ToListAsync(cancellationToken);
     }
+
+    public async Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken)
+    {
+        var latestFinalisation = await dbContext
+            .Finalisations.Find(FilterDefinition<Finalisation>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var latestRequest = await dbContext
+            .Requests.Find(FilterDefinition<Request>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new LastReceivedSummary(latestFinalisation, latestRequest);
+    }
 }

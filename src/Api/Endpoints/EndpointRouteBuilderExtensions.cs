@@ -13,6 +13,8 @@ public static class EndpointRouteBuilderExtensions
         app.MapGet("notifications/summary", NotificationsSummary).RequireAuthorization();
 
         app.MapGet("summary", Summary).RequireAuthorization();
+
+        app.MapGet("last-received", LastReceived).RequireAuthorization();
     }
 
     [HttpGet]
@@ -123,6 +125,29 @@ public static class EndpointRouteBuilderExtensions
                 matchesSummary.ToResponse(),
                 clearanceRequestsSummary.ToResponse(),
                 notificationsSummary.ToResponse()
+            )
+        );
+    }
+
+    [HttpGet]
+    private static async Task<IResult> LastReceived(
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var lastReceived = await reportRepository.GetLastReceivedSummary(cancellationToken);
+
+        return Results.Ok(
+            new LastReceivedResponse(
+                lastReceived.Finalisation is not null
+                    ? new LastReceivedMessageResponse(
+                        lastReceived.Finalisation.Timestamp,
+                        lastReceived.Finalisation.Reference
+                    )
+                    : null,
+                lastReceived.Request is not null
+                    ? new LastReceivedMessageResponse(lastReceived.Request.Timestamp, lastReceived.Request.Reference)
+                    : null
             )
         );
     }
