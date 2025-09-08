@@ -11,7 +11,7 @@ public class NotificationExtensionsTests
     [Theory]
     [InlineData(ImportPreNotificationType.CVEDA, NotificationType.ChedA)]
     [InlineData(ImportPreNotificationType.CVEDP, NotificationType.ChedP)]
-    [InlineData(ImportPreNotificationType.CHEDPP, NotificationType.ChedPp)]
+    [InlineData(ImportPreNotificationType.CHEDPP, NotificationType.ChedPP)]
     [InlineData(ImportPreNotificationType.CED, NotificationType.ChedD)]
     [InlineData(ImportPreNotificationType.IMP, NotificationType.Unknown)]
     public void ToNotification_NotificationType_ShouldBeAsExpected(string importNotificationType, string expected)
@@ -50,7 +50,7 @@ public class NotificationExtensionsTests
     [InlineData(NotificationType.Unknown, false)]
     [InlineData(NotificationType.ChedA, true)]
     [InlineData(NotificationType.ChedP, true)]
-    [InlineData(NotificationType.ChedPp, true)]
+    [InlineData(NotificationType.ChedPP, true)]
     [InlineData(NotificationType.ChedD, true)]
     public void ShouldBeStored_AsExpected(string notificationType, bool shouldStore)
     {

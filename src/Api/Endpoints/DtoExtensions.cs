@@ -14,5 +14,5 @@ public static class DtoExtensions
         new(summary.Unique, summary.Total);
 
     public static NotificationsSummaryResponse ToResponse(this NotificationsSummary summary) =>
-        new(summary.ChedA, summary.ChedP, summary.ChedPp, summary.ChedD, summary.Total);
+        new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
 }

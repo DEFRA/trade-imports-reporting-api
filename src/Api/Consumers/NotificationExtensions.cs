@@ -23,7 +23,7 @@ public static class NotificationExtensions
             {
                 ImportPreNotificationType.CVEDA => NotificationType.ChedA,
                 ImportPreNotificationType.CVEDP => NotificationType.ChedP,
-                ImportPreNotificationType.CHEDPP => NotificationType.ChedPp,
+                ImportPreNotificationType.CHEDPP => NotificationType.ChedPP,
                 ImportPreNotificationType.CED => NotificationType.ChedD,
                 _ => NotificationType.Unknown,
             },

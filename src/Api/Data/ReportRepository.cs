@@ -751,7 +751,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         )
                     },
                     {
-                        "chedPp",
+                        "chedPP",
                         new BsonDocument(
                             "$sum",
                             new BsonDocument(
@@ -763,7 +763,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                         new BsonArray
                                         {
                                             $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedPp,
+                                            NotificationType.ChedPP,
                                         }
                                     ),
                                     1,
@@ -804,7 +804,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                     { "_id", 0 },
                     { "chedA", 1 },
                     { "chedP", 1 },
-                    { "chedPp", 1 },
+                    { "chedPP", 1 },
                     { "chedD", 1 },
                     { "total", 1 },
                 }
@@ -940,7 +940,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         )
                     },
                     {
-                        "chedPp",
+                        "chedPP",
                         new BsonDocument(
                             "$sum",
                             new BsonDocument(
@@ -952,7 +952,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                         new BsonArray
                                         {
                                             $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedPp,
+                                            NotificationType.ChedPP,
                                         }
                                     ),
                                     1,
@@ -998,7 +998,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         {
                             { "chedA", "$chedA" },
                             { "chedP", "$chedP" },
-                            { "chedPp", "$chedPp" },
+                            { "chedPP", "$chedPP" },
                             { "chedD", "$chedD" },
                             { "total", "$total" },
                         }
