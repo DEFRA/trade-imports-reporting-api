@@ -9,8 +9,10 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        const string timestampIdx = "TimestampIdx";
+
         await CreateIndex(
-            "TimestampIdx",
+            timestampIdx,
             Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
@@ -20,12 +22,12 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            "TimestampIdx",
+            timestampIdx,
             Builders<Decision>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            "TimestampIdx",
+            timestampIdx,
             Builders<Request>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
@@ -35,7 +37,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            "TimestampIdx",
+            timestampIdx,
             Builders<Notification>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
