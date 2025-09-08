@@ -20,12 +20,6 @@ public class ResourceEventsConsumer(
         var resourceType = context.GetResourceType();
         var subResourceType = context.GetSubResourceType();
 
-        logger.LogInformation(
-            "Resource events consumer: {ResourceType} {SubResourceType}",
-            resourceType,
-            subResourceType
-        );
-
         if (
             resourceType == ResourceEventResourceTypes.CustomsDeclaration
             && subResourceType == ResourceEventSubResourceTypes.Finalisation
