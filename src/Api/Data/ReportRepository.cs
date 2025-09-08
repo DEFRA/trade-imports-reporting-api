@@ -571,6 +571,97 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return new ClearanceRequestsSummary((int)(unique?["count"] ?? 0), total);
     }
 
+    public async Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        // Can only return buckets for unique MRNs across the time period.
+        // Cannot return total overall as MRN might appear in more than one timestamp.
+
+        const string unit = "hour";
+
+        var aggregatePipeline = new[]
+        {
+            new BsonDocument(
+                "$match",
+                new BsonDocument(Fields.Request.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", $"${Fields.Request.Mrn}" },
+                    {
+                        "latest",
+                        new BsonDocument(
+                            "$top",
+                            new BsonDocument
+                            {
+                                { "sortBy", new BsonDocument(Fields.Request.Timestamp, -1) },
+                                { "output", new BsonDocument("ts", $"${Fields.Request.Timestamp}") },
+                            }
+                        )
+                    },
+                }
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument
+                {
+                    {
+                        "bucket",
+                        new BsonDocument(
+                            "$dateTrunc",
+                            new BsonDocument
+                            {
+                                { "date", "$latest.ts" },
+                                { "unit", unit },
+                                { "timezone", "UTC" },
+                            }
+                        )
+                    },
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    {
+                        "_id",
+                        new BsonDocument { { "bucket", "$bucket" } }
+                    },
+                    { "unique", new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "bucket", "$_id.bucket" },
+                    {
+                        "summary",
+                        new BsonDocument
+                        {
+                            { "unique", "$unique" },
+                            { "total", new BsonDocument("$literal", -1) }, // Cannot return, see comment at start of method
+                        }
+                    },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument { { "bucket", 1 } }),
+        };
+
+        var aggregateTask = dbContext.Requests.AggregateAsync<ClearanceRequestsBucket>(
+            aggregatePipeline,
+            cancellationToken: cancellationToken
+        );
+
+        return await (await aggregateTask).ToListAsync(cancellationToken);
+    }
+
     public async Task<NotificationsSummary> GetNotificationsSummary(
         DateTime from,
         DateTime to,

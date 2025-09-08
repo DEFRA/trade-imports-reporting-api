@@ -8,8 +8,10 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
 public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTestFixture)
 {
-    [Fact]
-    public async Task WhenSingleFinalisation_ShouldBeSingleCount()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WhenSingleFinalisation_ShouldBeSingleCount(bool isManualRelease)
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
@@ -22,7 +24,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
                 {
                     ExternalVersion = 1,
                     FinalState = "0",
-                    IsManualRelease = false,
+                    IsManualRelease = isManualRelease,
                     MessageSentAt = messageSentAt,
                 },
             },
@@ -42,7 +44,10 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseParameters(isManualRelease)
+            .UseStrictJson()
+            .DontScrubDateTimes();
 
         // No endpoint yet for buckets, repository only, to assert expected time bucketing
 
@@ -52,6 +57,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await Verify(buckets)
             .UseMethodName($"{nameof(WhenSingleFinalisation_ShouldBeSingleCount)}_buckets")
+            .UseParameters(isManualRelease)
             .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
