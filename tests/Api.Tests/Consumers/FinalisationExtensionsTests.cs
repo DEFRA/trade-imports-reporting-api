@@ -19,11 +19,11 @@ public class FinalisationExtensionsTests
 
     [Theory]
     [InlineData(false, "0", ReleaseType.Automatic)]
-    [InlineData(false, "1", ReleaseType.Unknown)]
-    [InlineData(false, "2", ReleaseType.Unknown)]
+    [InlineData(false, "1", ReleaseType.Cancelled)]
+    [InlineData(false, "2", ReleaseType.Cancelled)]
     [InlineData(true, "0", ReleaseType.Manual)]
-    [InlineData(true, "1", ReleaseType.Manual)]
-    [InlineData(true, "2", ReleaseType.Manual)]
+    [InlineData(true, "1", ReleaseType.Cancelled)]
+    [InlineData(true, "2", ReleaseType.Cancelled)]
     public void ToFinalisation_ReleaseType_ShouldBeAsExpected(bool manualRelease, string finalState, string expected)
     {
         var finalisation = FinalisationFixtures
@@ -55,6 +55,7 @@ public class FinalisationExtensionsTests
     [InlineData(ReleaseType.Unknown, false)]
     [InlineData(ReleaseType.Automatic, true)]
     [InlineData(ReleaseType.Manual, true)]
+    [InlineData(ReleaseType.Cancelled, true)]
     public void ShouldBeStored_AsExpected(string releaseType, bool shouldStore)
     {
         var finalisation = FinalisationEntityFixtures

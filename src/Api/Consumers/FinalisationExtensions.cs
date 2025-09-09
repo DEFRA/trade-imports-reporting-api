@@ -23,6 +23,7 @@ public static class FinalisationExtensions
             Mrn = mrn,
             ReleaseType = finalisation switch
             {
+                { FinalState: CancelledAfterArrival or CancelledWhilePreLodged } => ReleaseType.Cancelled,
                 { IsManualRelease: false, FinalState: not CancelledAfterArrival and not CancelledWhilePreLodged } =>
                     ReleaseType.Automatic,
                 { IsManualRelease: true } => ReleaseType.Manual,
@@ -32,5 +33,5 @@ public static class FinalisationExtensions
     }
 
     public static bool ShouldBeStored(this Finalisation finalisation) =>
-        finalisation.ReleaseType is ReleaseType.Manual or ReleaseType.Automatic;
+        finalisation.ReleaseType is not ReleaseType.Unknown;
 }

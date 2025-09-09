@@ -77,7 +77,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument(Fields.Finalisation.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument
+                {
+                    {
+                        Fields.Finalisation.Timestamp,
+                        new BsonDocument { { "$gte", from }, { "$lt", to } }
+                    },
+                    {
+                        Fields.Finalisation.ReleaseType,
+                        new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
+                    },
+                }
             ),
             new BsonDocument(
                 "$group",
@@ -189,7 +199,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument(Fields.Finalisation.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument
+                {
+                    {
+                        Fields.Finalisation.Timestamp,
+                        new BsonDocument { { "$gte", from }, { "$lt", to } }
+                    },
+                    {
+                        Fields.Finalisation.ReleaseType,
+                        new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
+                    },
+                }
             ),
             new BsonDocument(
                 "$set",
@@ -1014,5 +1034,22 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         );
 
         return await (await aggregateTask).ToListAsync(cancellationToken);
+    }
+
+    public async Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken)
+    {
+        var latestFinalisation = await dbContext
+            .Finalisations.Find(FilterDefinition<Finalisation>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var latestRequest = await dbContext
+            .Requests.Find(FilterDefinition<Request>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new LastReceivedSummary(latestFinalisation, latestRequest);
     }
 }
