@@ -1,0 +1,7 @@
+﻿{
+  Id: {Scrubbed},
+  NotificationCreated: 2025-07-03 13:42 Utc,
+  Timestamp: 2025-07-03 14:42 Utc,
+  ReferenceNumber: ched,
+  NotificationType: ChedA
+}

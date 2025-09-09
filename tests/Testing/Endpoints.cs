@@ -23,6 +23,13 @@ public static class Endpoints
         public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
     }
 
+    public static class NotificationsSummary
+    {
+        private const string Root = "/notifications/summary";
+
+        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+    }
+
     public static class Summary
     {
         private const string Root = "/summary";

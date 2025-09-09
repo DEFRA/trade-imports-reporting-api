@@ -20,12 +20,6 @@ public class ResourceEventsConsumer(
         var resourceType = context.GetResourceType();
         var subResourceType = context.GetSubResourceType();
 
-        logger.LogInformation(
-            "Resource events consumer: {ResourceType} {SubResourceType}",
-            resourceType,
-            subResourceType
-        );
-
         if (
             resourceType == ResourceEventResourceTypes.CustomsDeclaration
             && subResourceType == ResourceEventSubResourceTypes.Finalisation
@@ -48,6 +42,11 @@ public class ResourceEventsConsumer(
         )
         {
             await HandleRequest(received, cancellationToken);
+        }
+
+        if (resourceType == ResourceEventResourceTypes.ImportPreNotification)
+        {
+            await HandleNotification(received, cancellationToken);
         }
     }
 
@@ -99,6 +98,31 @@ public class ResourceEventsConsumer(
         var entityRequest = incomingRequest.ToRequest(customsDeclaration.ResourceId);
 
         await dbContext.Requests.InsertOneAsync(entityRequest, cancellationToken: cancellationToken);
+    }
+
+    private async Task HandleNotification(string received, CancellationToken cancellationToken)
+    {
+        var importPreNotification = DeserializeReceived<ImportPreNotificationEntity>(received);
+        if (importPreNotification.Resource is null)
+            throw new InvalidOperationException("Resource is null");
+
+        var incomingNotification = importPreNotification.Resource.ImportPreNotification;
+        var entityNotification = incomingNotification.ToNotification(
+            importPreNotification.ResourceId,
+            importPreNotification.Resource.Created,
+            importPreNotification.Resource.Updated
+        );
+
+        if (entityNotification.ShouldBeStored())
+        {
+            await dbContext.Notifications.InsertOneAsync(entityNotification, cancellationToken: cancellationToken);
+            return;
+        }
+
+        logger.LogInformation(
+            "Notification ignored {ImportNotificationType}",
+            incomingNotification.ImportNotificationType
+        );
     }
 
     private ResourceEvent<T> DeserializeReceived<T>(string received) =>

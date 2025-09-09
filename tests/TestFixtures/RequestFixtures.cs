@@ -8,7 +8,7 @@ public static class RequestFixtures
 {
     private static Fixture GetFixture() => new();
 
-    public static IPostprocessComposer<ClearanceRequest> RequestFixture(DateTime? messageSentAt = null)
+    public static IPostprocessComposer<ClearanceRequest> ClearanceRequestFixture(DateTime? messageSentAt = null)
     {
         return GetFixture().Build<ClearanceRequest>().With(f => f.MessageSentAt, messageSentAt ?? DateTime.UtcNow);
     }

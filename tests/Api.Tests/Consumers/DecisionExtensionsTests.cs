@@ -10,7 +10,7 @@ public class DecisionExtensionsTests
     [Fact]
     public void ToDecision_WhenMatch_ShouldBeTrue()
     {
-        var decision = DecisionFixtures.DecisionFixture().Create();
+        var decision = DecisionFixtures.ClearanceDecisionFixture().Create();
 
         foreach (var item in decision.Items)
         {
@@ -26,7 +26,7 @@ public class DecisionExtensionsTests
     [Fact]
     public void ToDecision_WhenSingleNoMatch_ShouldBeFalse()
     {
-        var decision = DecisionFixtures.DecisionFixture().Create();
+        var decision = DecisionFixtures.ClearanceDecisionFixture().Create();
 
         decision.Items[0].Checks[0].DecisionCode = DecisionCode.NoMatch;
 
@@ -37,7 +37,7 @@ public class DecisionExtensionsTests
     public async Task ToDecision_MapAsExpected()
     {
         var decisionCreated = new DateTime(2025, 9, 4, 13, 56, 0, DateTimeKind.Utc);
-        var decision = DecisionFixtures.DecisionFixture().With(x => x.Created, decisionCreated).Create();
+        var decision = DecisionFixtures.ClearanceDecisionFixture().With(x => x.Created, decisionCreated).Create();
 
         decision.Items[0].Checks[0].DecisionCode = DecisionCode.NoMatch;
 

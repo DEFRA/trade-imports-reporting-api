@@ -4,7 +4,7 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 
 public static class AsyncWaiter
 {
-    private static readonly TimeSpan s_defaultDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan s_defaultDelay = TimeSpan.FromMilliseconds(250);
 
     public static async Task<bool> WaitForAsync(Func<Task<bool>> condition, double? timeout = null)
     {

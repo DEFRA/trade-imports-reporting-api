@@ -1,6 +1,6 @@
 using AutoFixture;
 using AutoFixture.Dsl;
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
+using Finalisation = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation;
 
 namespace Defra.TradeImportsReportingApi.TestFixtures;
 

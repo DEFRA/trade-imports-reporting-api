@@ -8,7 +8,7 @@ public static class DecisionFixtures
 {
     private static Fixture GetFixture() => new();
 
-    public static IPostprocessComposer<ClearanceDecision> DecisionFixture()
+    public static IPostprocessComposer<ClearanceDecision> ClearanceDecisionFixture()
     {
         return GetFixture().Build<ClearanceDecision>();
     }

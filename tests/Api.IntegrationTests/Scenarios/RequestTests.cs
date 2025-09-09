@@ -1,5 +1,7 @@
+using Argon;
 using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
 
@@ -33,6 +35,18 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetClearanceRequestsBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_buckets")
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -74,6 +88,18 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetClearanceRequestsBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_buckets")
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -115,5 +141,19 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+
+        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+
+        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
+
+        var buckets = await repository.GetClearanceRequestsBuckets(from, to, CancellationToken.None);
+
+        await Verify(buckets)
+            .UseMethodName(
+                $"{nameof(WhenMultipleRequestForSameMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
+            )
+            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 }

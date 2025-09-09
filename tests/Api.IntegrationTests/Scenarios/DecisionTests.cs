@@ -10,8 +10,10 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
 public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTestFixture)
 {
-    [Fact]
-    public async Task WhenSingleDecision_ShouldBeSingleCount()
+    [Theory]
+    [InlineData(DecisionCode.NoMatch)]
+    [InlineData(DecisionCode.Match)]
+    public async Task WhenSingleDecision_ShouldBeSingleCount(string decisionCode)
     {
         var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
@@ -28,14 +30,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
                     [
                         new ClearanceDecisionItem
                         {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
+                            Checks = [new ClearanceDecisionCheck { CheckCode = "IGNORE", DecisionCode = decisionCode }],
                         },
                     ],
                 },
@@ -56,7 +51,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseParameters(decisionCode)
+            .UseStrictJson()
+            .DontScrubDateTimes();
 
         // No endpoint yet for buckets, repository only, to assert expected time bucketing
 
@@ -66,6 +64,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await Verify(buckets)
             .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_buckets")
+            .UseParameters(decisionCode)
             .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();

@@ -12,4 +12,7 @@ public static class DtoExtensions
 
     public static ClearanceRequestsSummaryResponse ToResponse(this ClearanceRequestsSummary summary) =>
         new(summary.Unique, summary.Total);
+
+    public static NotificationsSummaryResponse ToResponse(this NotificationsSummary summary) =>
+        new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
 }
