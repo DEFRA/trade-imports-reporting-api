@@ -9,9 +9,10 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTestFixture)
 {
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task WhenSingleFinalisation_ShouldBeSingleCount(bool isManualRelease)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task WhenSingleFinalisation_ShouldBeSingleCount(bool isManualRelease, bool isCancelled)
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
@@ -23,7 +24,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
                 Finalisation = new Finalisation
                 {
                     ExternalVersion = 1,
-                    FinalState = "0",
+                    FinalState = isCancelled ? "1" : "0",
                     IsManualRelease = isManualRelease,
                     MessageSentAt = messageSentAt,
                 },
@@ -45,7 +46,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(isManualRelease)
+            .UseParameters(isManualRelease, isCancelled)
             .UseStrictJson()
             .DontScrubDateTimes();
 
@@ -57,7 +58,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await Verify(buckets)
             .UseMethodName($"{nameof(WhenSingleFinalisation_ShouldBeSingleCount)}_buckets")
-            .UseParameters(isManualRelease)
+            .UseParameters(isManualRelease, isCancelled)
             .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();

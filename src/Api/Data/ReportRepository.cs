@@ -77,7 +77,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument(Fields.Finalisation.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument
+                {
+                    {
+                        Fields.Finalisation.Timestamp,
+                        new BsonDocument { { "$gte", from }, { "$lt", to } }
+                    },
+                    {
+                        Fields.Finalisation.ReleaseType,
+                        new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
+                    },
+                }
             ),
             new BsonDocument(
                 "$group",
@@ -189,7 +199,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             new BsonDocument(
                 "$match",
-                new BsonDocument(Fields.Finalisation.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+                new BsonDocument
+                {
+                    {
+                        Fields.Finalisation.Timestamp,
+                        new BsonDocument { { "$gte", from }, { "$lt", to } }
+                    },
+                    {
+                        Fields.Finalisation.ReleaseType,
+                        new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
+                    },
+                }
             ),
             new BsonDocument(
                 "$set",

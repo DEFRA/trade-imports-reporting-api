@@ -7,38 +7,94 @@ namespace Defra.TradeImportsReportingApi.Api.Data;
 [ExcludeFromCodeCoverage]
 public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexService> logger) : IHostedService
 {
+    private const string TimestampIdx = "TimestampIdx";
+    private const string MatchIdx = "MatchIdx";
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        const string timestampIdx = "TimestampIdx";
+        await CreateFinalisationIndexes(cancellationToken);
+        await CreateDecisionIndexes(cancellationToken);
+        await CreateRequestIndexes(cancellationToken);
+        await CreateNotificationIndexes(cancellationToken);
+    }
 
+    private async Task CreateFinalisationIndexes(CancellationToken cancellationToken)
+    {
         await CreateIndex(
-            timestampIdx,
+            TimestampIdx,
             Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
+        await CreateIndex(
+            MatchIdx,
+            Builders<Finalisation>
+                // Order of fields important - don't change without reason
+                .IndexKeys.Ascending(x => x.Timestamp)
+                .Ascending(x => x.ReleaseType)
+                .Ascending(x => x.Mrn),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task CreateDecisionIndexes(CancellationToken cancellationToken)
+    {
         await CreateIndex(
             "MrnCreatedIdx",
             Builders<Decision>.IndexKeys.Ascending(x => x.MrnCreated),
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            timestampIdx,
+            TimestampIdx,
             Builders<Decision>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            timestampIdx,
+            MatchIdx,
+            Builders<Decision>
+                // Order of fields important - don't change without reason
+                .IndexKeys.Ascending(x => x.MrnCreated)
+                .Ascending(x => x.Mrn)
+                .Descending(x => x.Timestamp),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task CreateRequestIndexes(CancellationToken cancellationToken)
+    {
+        await CreateIndex(
+            TimestampIdx,
             Builders<Request>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
+        await CreateIndex(
+            MatchIdx,
+            Builders<Request>
+                // Order of fields important - don't change without reason
+                .IndexKeys.Ascending(x => x.Timestamp)
+                .Ascending(x => x.Mrn),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task CreateNotificationIndexes(CancellationToken cancellationToken)
+    {
         await CreateIndex(
             "NotificationCreatedIdx",
             Builders<Notification>.IndexKeys.Ascending(x => x.NotificationCreated),
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            timestampIdx,
+            TimestampIdx,
             Builders<Notification>.IndexKeys.Ascending(x => x.Timestamp),
+            cancellationToken: cancellationToken
+        );
+        await CreateIndex(
+            MatchIdx,
+            Builders<Notification>
+                // Order of fields important - don't change without reason
+                .IndexKeys.Ascending(x => x.NotificationCreated)
+                .Ascending(x => x.ReferenceNumber)
+                .Descending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
     }
