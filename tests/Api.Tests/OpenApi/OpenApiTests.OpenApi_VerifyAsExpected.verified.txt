@@ -1,0 +1,579 @@
+﻿{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Trade Imports Reporting API",
+    "description": "TBC",
+    "contact": {
+      "name": "DEFRA",
+      "url": "https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs",
+      "email": "tbc@defra.gov.uk"
+    },
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "https://localhost"
+    }
+  ],
+  "paths": {
+    "/releases/summary": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get releases summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "ReleasesSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasesSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/summary": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get matches summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "MatchesSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchesSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clearance-requests/summary": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get clearance requests summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "ClearanceRequestsSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/summary": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get notifications summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "NotificationsSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/summary": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "Summary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/last-received": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get last received",
+        "operationId": "LastReceived",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastReceivedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClearanceRequestsSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "unique": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastReceivedMessageResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastReceivedResponse": {
+        "type": "object",
+        "properties": {
+          "finalisation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastReceivedMessageResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "request": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastReceivedMessageResponse"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MatchesSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "match": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noMatch": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotificationsSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "chedA": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chedP": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chedPp": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chedD": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "ReleasesSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "automatic": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "manual": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SummaryResponse": {
+        "type": "object",
+        "properties": {
+          "releases": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReleasesSummaryResponse"
+              }
+            ]
+          },
+          "matches": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MatchesSummaryResponse"
+              }
+            ]
+          },
+          "clearanceRequests": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
+              }
+            ]
+          },
+          "notifications": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationsSummaryResponse"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Basic": {
+        "type": "http",
+        "description": "RFC8725 Compliant JWT",
+        "scheme": "Basic"
+      }
+    }
+  },
+  "security": [
+    {
+      "Basic": [ ]
+    }
+  ]
+}

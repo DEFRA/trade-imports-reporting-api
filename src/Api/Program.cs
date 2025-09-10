@@ -5,6 +5,7 @@ using Defra.TradeImportsReportingApi.Api.Endpoints;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Health;
 using Defra.TradeImportsReportingApi.Api.Metrics;
+using Defra.TradeImportsReportingApi.Api.OpenApi;
 using Defra.TradeImportsReportingApi.Api.Utils;
 using Defra.TradeImportsReportingApi.Api.Utils.Http;
 using Defra.TradeImportsReportingApi.Api.Utils.Logging;
@@ -62,6 +63,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     });
     builder.Services.AddProblemDetails();
     builder.Services.AddHealth(builder.Configuration);
+    builder.Services.AddOpenApi(builder.Configuration);
     builder.Services.AddReportingApiConfiguration(builder.Configuration);
 
     builder.Services.AddHttpProxyClient();
@@ -78,11 +80,14 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     var app = builder.Build();
 
     app.UseEmfExporter();
+    app.UseHeaderPropagation();
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.UseMiddleware<MetricsMiddleware>();
     app.MapHealth();
     app.UseStatusCodePages();
-    app.UseHeaderPropagation();
-    app.UseMiddleware<MetricsMiddleware>();
     app.MapEndpoints();
+    app.UseOpenApi();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
         {

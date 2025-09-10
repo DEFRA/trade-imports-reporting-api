@@ -7,16 +7,74 @@ public static class EndpointRouteBuilderExtensions
 {
     public static void MapEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("releases/summary", ReleasesSummary).RequireAuthorization();
-        app.MapGet("matches/summary", MatchesSummary).RequireAuthorization();
-        app.MapGet("clearance-requests/summary", ClearanceRequestsSummary).RequireAuthorization();
-        app.MapGet("notifications/summary", NotificationsSummary).RequireAuthorization();
+        const string groupName = "Reporting";
+        const string description = "Searchable period is the last 31 days";
 
-        app.MapGet("summary", Summary).RequireAuthorization();
+        app.MapGet("releases/summary", ReleasesSummary)
+            .WithName("ReleasesSummary")
+            .WithTags(groupName)
+            .WithSummary("Get releases summary")
+            .WithDescription(description)
+            .Produces<ReleasesSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
-        app.MapGet("last-received", LastReceived).RequireAuthorization();
+        app.MapGet("matches/summary", MatchesSummary)
+            .WithName("MatchesSummary")
+            .WithTags(groupName)
+            .WithSummary("Get matches summary")
+            .WithDescription(description)
+            .Produces<MatchesSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("clearance-requests/summary", ClearanceRequestsSummary)
+            .WithName("ClearanceRequestsSummary")
+            .WithTags(groupName)
+            .WithSummary("Get clearance requests summary")
+            .WithDescription(description)
+            .Produces<ClearanceRequestsSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("notifications/summary", NotificationsSummary)
+            .WithName("NotificationsSummary")
+            .WithTags(groupName)
+            .WithSummary("Get notifications summary")
+            .WithDescription(description)
+            .Produces<NotificationsSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("summary", Summary)
+            .WithName("Summary")
+            .WithTags(groupName)
+            .WithSummary("Get summary")
+            .WithDescription(description)
+            .Produces<SummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("last-received", LastReceived)
+            .WithName("LastReceived")
+            .WithTags(groupName)
+            .WithSummary("Get last received")
+            .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
     }
 
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> ReleasesSummary(
         [FromQuery] DateTime from,
@@ -36,6 +94,11 @@ public static class EndpointRouteBuilderExtensions
         return Results.Ok(releasesSummary.ToResponse());
     }
 
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> MatchesSummary(
         [FromQuery] DateTime from,
@@ -55,6 +118,11 @@ public static class EndpointRouteBuilderExtensions
         return Results.Ok(matchesSummary.ToResponse());
     }
 
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> ClearanceRequestsSummary(
         [FromQuery] DateTime from,
@@ -74,6 +142,11 @@ public static class EndpointRouteBuilderExtensions
         return Results.Ok(clearanceRequestsSummary.ToResponse());
     }
 
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> NotificationsSummary(
         [FromQuery] DateTime from,
@@ -93,6 +166,11 @@ public static class EndpointRouteBuilderExtensions
         return Results.Ok(notificationsSummary.ToResponse());
     }
 
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> Summary(
         [FromQuery] DateTime from,
