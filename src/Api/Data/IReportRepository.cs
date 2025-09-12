@@ -7,6 +7,7 @@ public interface IReportRepository
     Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 

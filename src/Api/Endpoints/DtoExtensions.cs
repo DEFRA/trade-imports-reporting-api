@@ -15,4 +15,7 @@ public static class DtoExtensions
 
     public static NotificationsSummaryResponse ToResponse(this NotificationsSummary summary) =>
         new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
+
+    public static ReleasesBucketsResponse ToResponse(this IReadOnlyList<ReleasesBucket> buckets) =>
+        new(buckets.Select(x => new ReleasesBucketResponse(x.Bucket, x.Summary.ToResponse())).ToList());
 }

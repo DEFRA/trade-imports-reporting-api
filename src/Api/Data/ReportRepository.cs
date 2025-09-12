@@ -190,11 +190,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     )
     {
-        const string unit = "hour";
-
         var aggregatePipeline = new[]
         {
             new BsonDocument(

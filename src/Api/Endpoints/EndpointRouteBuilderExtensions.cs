@@ -20,6 +20,16 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
+        app.MapGet("releases/buckets", ReleasesBuckets)
+            .WithName("ReleasesBuckets")
+            .WithTags(groupName)
+            .WithSummary("Get releases buckets by day or hour")
+            .WithDescription(description)
+            .Produces<ReleasesSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
         app.MapGet("matches/summary", MatchesSummary)
             .WithName("MatchesSummary")
             .WithTags(groupName)
@@ -92,6 +102,32 @@ public static class EndpointRouteBuilderExtensions
         var releasesSummary = await reportRepository.GetReleasesSummary(from, to, cancellationToken);
 
         return Results.Ok(releasesSummary.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="unit">"hour" or "day"</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> ReleasesBuckets(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] string unit,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, unit);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesBuckets = await reportRepository.GetReleasesBuckets(from, to, unit, cancellationToken);
+
+        return Results.Ok(releasesBuckets.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -230,7 +266,7 @@ public static class EndpointRouteBuilderExtensions
         );
     }
 
-    private static Dictionary<string, string[]> ValidateRequest(DateTime from, DateTime to)
+    private static Dictionary<string, string[]> ValidateRequest(DateTime from, DateTime to, string? unit = null)
     {
         var errors = new Dictionary<string, string[]>();
 
@@ -252,6 +288,11 @@ public static class EndpointRouteBuilderExtensions
         if (to.Kind != DateTimeKind.Utc)
         {
             errors.Add("to", ["date must be UTC"]);
+        }
+
+        if (unit is not null && unit != "hour" && unit != "day")
+        {
+            errors.Add("unit", ["unit must be 'hour' or 'day'"]);
         }
 
         return errors;

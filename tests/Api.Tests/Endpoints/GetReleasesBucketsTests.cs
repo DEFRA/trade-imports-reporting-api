@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Endpoints;
 
-public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
+public class GetReleasesBucketsTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
     : EndpointTestBase(factory, outputHelper)
 {
     private IReportRepository MockReportRepository { get; } = Substitute.For<IReportRepository>();
@@ -24,7 +24,7 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.Releases.Summary());
+        var response = await client.GetAsync(Testing.Endpoints.Releases.Buckets());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -36,12 +36,20 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleasesSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new ReleasesSummary(1, 3, 4));
+            .GetReleasesBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new ReleasesBucket(from, new ReleasesSummary(1, 3, 4)),
+                    new ReleasesBucket(to, new ReleasesSummary(2, 4, 5)),
+                ]
+            );
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Releases.Summary(
-                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            Testing.Endpoints.Releases.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -56,10 +64,11 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Releases.Summary(
+            Testing.Endpoints.Releases.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -74,10 +83,11 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Releases.Summary(
+            Testing.Endpoints.Releases.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -93,8 +103,31 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.Releases.Summary(
-                EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
+            Testing.Endpoints.Releases.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().ScrubMember("traceId");
+    }
+
+    [Fact]
+    public async Task Get_WhenAuthorized_AndUnitUnknown_ShouldBeBadRequest()
+    {
+        var client = CreateClient();
+
+        var now = DateTime.UtcNow;
+        var response = await client.GetAsync(
+            Testing.Endpoints.Releases.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit("unknown"))
             )
         );
 
