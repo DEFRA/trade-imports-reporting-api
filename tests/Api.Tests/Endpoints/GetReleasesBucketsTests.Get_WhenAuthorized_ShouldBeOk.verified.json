@@ -1,0 +1,20 @@
+﻿{
+  "buckets": [
+    {
+      "bucket": "2025-09-03T15:00:00Z",
+      "summary": {
+        "automatic": 1,
+        "manual": 3,
+        "total": 4
+      }
+    },
+    {
+      "bucket": "2025-09-03T16:00:00Z",
+      "summary": {
+        "automatic": 2,
+        "manual": 4,
+        "total": 5
+      }
+    }
+  ]
+}

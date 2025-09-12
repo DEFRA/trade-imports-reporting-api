@@ -24,7 +24,7 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.ReleasesSummary.Get());
+        var response = await client.GetAsync(Testing.Endpoints.Releases.Summary());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -40,7 +40,7 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
             .Returns(new ReleasesSummary(1, 3, 4));
 
         var response = await client.GetAsync(
-            Testing.Endpoints.ReleasesSummary.Get(
+            Testing.Endpoints.Releases.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
@@ -56,7 +56,7 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.ReleasesSummary.Get(
+            Testing.Endpoints.Releases.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
@@ -74,7 +74,7 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.ReleasesSummary.Get(
+            Testing.Endpoints.Releases.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
@@ -93,7 +93,7 @@ public class GetReleasesSummaryTests(ApiWebApplicationFactory factory, ITestOutp
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.ReleasesSummary.Get(
+            Testing.Endpoints.Releases.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
             )
         );

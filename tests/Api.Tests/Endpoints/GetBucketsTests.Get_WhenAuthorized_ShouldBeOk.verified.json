@@ -1,0 +1,82 @@
+﻿{
+  "releases": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T15:00:00Z",
+        "summary": {
+          "automatic": 1,
+          "manual": 3,
+          "total": 4
+        }
+      },
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "automatic": 2,
+          "manual": 4,
+          "total": 5
+        }
+      }
+    ]
+  },
+  "matches": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T15:00:00Z",
+        "summary": {
+          "match": 1,
+          "noMatch": 3,
+          "total": 4
+        }
+      },
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "match": 2,
+          "noMatch": 4,
+          "total": 5
+        }
+      }
+    ]
+  },
+  "clearanceRequests": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T15:00:00Z",
+        "summary": {
+          "unique": 1
+        }
+      },
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "unique": 2
+        }
+      }
+    ]
+  },
+  "notifications": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T15:00:00Z",
+        "summary": {
+          "chedA": 10,
+          "chedP": 20,
+          "chedPp": 30,
+          "chedD": 40,
+          "total": 100
+        }
+      },
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "chedA": 1,
+          "chedP": 2,
+          "chedPp": 3,
+          "chedD": 4,
+          "total": 10
+        }
+      }
+    ]
+  }
+}

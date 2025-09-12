@@ -1,7 +1,5 @@
-using Argon;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsDataApi.Domain.Ipaffs;
-using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
 
@@ -37,7 +35,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         var from = created.AddHours(-1);
         var to = created.AddHours(1);
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
@@ -45,18 +43,22 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseParameters(importNotificationType)
             .UseStrictJson()
-            .DontScrubDateTimes();
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetNotificationsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenSingleNotification_ShouldBeSingleCount)}_buckets")
             .UseParameters(importNotificationType)
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }
@@ -102,22 +104,28 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         var from = created.AddHours(-1);
         var to = created.AddHours(1);
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetNotificationsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_buckets")
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }
@@ -165,30 +173,38 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         var from = created.AddHours(-1);
         var to = created.AddHours(1);
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetNotificationsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName(
                 $"{nameof(WhenMultipleNotificationForDifferentChed_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
             )
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }
 
-    [Fact]
-    public async Task WhenMultipleNotificationForDifferentChed_ShouldBeTwoBuckets()
+    [Theory]
+    [InlineData(Units.Hour, 2)]
+    [InlineData(Units.Day, 1)]
+    public async Task WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets(string unit, int expectedBuckets)
     {
         var ched1 = Guid.NewGuid().ToString();
         var ched2 = Guid.NewGuid().ToString();
@@ -215,7 +231,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
                 Updated = created.AddHours(2).AddMinutes(1),
                 ImportPreNotification = new ImportPreNotification
                 {
-                    ImportNotificationType = ImportPreNotificationType.CVEDA,
+                    ImportNotificationType = ImportPreNotificationType.CVEDP,
                 },
             }
         );
@@ -230,22 +246,30 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         var from = created.AddHours(-1);
         var to = created.AddHours(3);
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseParameters(unit, expectedBuckets)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(unit))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetNotificationsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
-            .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeTwoBuckets)}_buckets")
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_buckets")
+            .UseParameters(unit, expectedBuckets)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }

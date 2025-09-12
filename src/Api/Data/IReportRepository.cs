@@ -7,6 +7,7 @@ public interface IReportRepository
     Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 
@@ -15,6 +16,7 @@ public interface IReportRepository
     Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 
@@ -27,6 +29,7 @@ public interface IReportRepository
     Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 
@@ -35,6 +38,7 @@ public interface IReportRepository
     Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 

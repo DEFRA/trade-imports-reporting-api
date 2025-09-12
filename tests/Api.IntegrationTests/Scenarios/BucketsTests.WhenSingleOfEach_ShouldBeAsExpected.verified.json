@@ -1,0 +1,50 @@
+﻿{
+  "releases": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "automatic": 1,
+          "manual": 0,
+          "total": 1
+        }
+      }
+    ]
+  },
+  "matches": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "match": 0,
+          "noMatch": 1,
+          "total": 1
+        }
+      }
+    ]
+  },
+  "clearanceRequests": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "unique": 1
+        }
+      }
+    ]
+  },
+  "notifications": {
+    "buckets": [
+      {
+        "bucket": "2025-09-03T16:00:00Z",
+        "summary": {
+          "chedA": 1,
+          "chedP": 0,
+          "chedPp": 0,
+          "chedD": 0,
+          "total": 1
+        }
+      }
+    ]
+  }
+}
