@@ -16,6 +16,7 @@ public interface IReportRepository
     Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 

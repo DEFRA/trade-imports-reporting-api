@@ -25,7 +25,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags(groupName)
             .WithSummary("Get releases buckets by day or hour")
             .WithDescription(description)
-            .Produces<ReleasesSummaryResponse>()
+            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -36,6 +36,16 @@ public static class EndpointRouteBuilderExtensions
             .WithSummary("Get matches summary")
             .WithDescription(description)
             .Produces<MatchesSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("matches/buckets", MatchesBuckets)
+            .WithName("MatchesBuckets")
+            .WithTags(groupName)
+            .WithSummary("Get matches buckets by day or hour")
+            .WithDescription(description)
+            .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -152,6 +162,32 @@ public static class EndpointRouteBuilderExtensions
         var matchesSummary = await reportRepository.GetMatchesSummary(from, to, cancellationToken);
 
         return Results.Ok(matchesSummary.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="unit">"hour" or "day"</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> MatchesBuckets(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] string unit,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, unit);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var matchesBuckets = await reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
+
+        return Results.Ok(matchesBuckets.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>

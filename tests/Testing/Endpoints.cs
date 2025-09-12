@@ -20,11 +20,13 @@ public static class Endpoints
         public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
     }
 
-    public static class MatchesSummary
+    public static class Matches
     {
-        private const string Root = "/matches/summary";
+        private const string Root = "/matches";
 
-        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+        public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
+
+        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
     }
 
     public static class ClearanceRequestsSummary

@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Endpoints;
 
-public class GetMatchesSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
+public class GetMatchesBucketsTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
     : EndpointTestBase(factory, outputHelper)
 {
     private IReportRepository MockReportRepository { get; } = Substitute.For<IReportRepository>();
@@ -36,12 +36,20 @@ public class GetMatchesSummaryTests(ApiWebApplicationFactory factory, ITestOutpu
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetMatchesSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new MatchesSummary(1, 3, 4));
+            .GetMatchesBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new MatchesBucket(from, new MatchesSummary(1, 3, 4)),
+                    new MatchesBucket(to, new MatchesSummary(2, 4, 5)),
+                ]
+            );
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Matches.Summary(
-                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            Testing.Endpoints.Matches.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -95,6 +103,26 @@ public class GetMatchesSummaryTests(ApiWebApplicationFactory factory, ITestOutpu
         var response = await client.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().ScrubMember("traceId");
+    }
+
+    [Fact]
+    public async Task Get_WhenAuthorized_AndUnitUnknown_ShouldBeBadRequest()
+    {
+        var client = CreateClient();
+
+        var now = DateTime.UtcNow;
+        var response = await client.GetAsync(
+            Testing.Endpoints.Matches.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit("unknown"))
             )
         );
 
