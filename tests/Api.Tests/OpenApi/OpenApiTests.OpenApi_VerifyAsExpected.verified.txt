@@ -16,292 +16,10 @@
     }
   ],
   "paths": {
-    "/releases/summary": {
-      "get": {
-        "tags": [
-          "Reporting"
-        ],
-        "summary": "Get releases summary",
-        "description": "Searchable period is the last 31 days",
-        "operationId": "ReleasesSummary",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReleasesSummaryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/releases/buckets": {
-      "get": {
-        "tags": [
-          "Reporting"
-        ],
-        "summary": "Get releases buckets by day or hour",
-        "description": "Searchable period is the last 31 days",
-        "operationId": "ReleasesBuckets",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          },
-          {
-            "name": "unit",
-            "in": "query",
-            "description": "\"hour\" or \"day\"",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/matches/summary": {
-      "get": {
-        "tags": [
-          "Reporting"
-        ],
-        "summary": "Get matches summary",
-        "description": "Searchable period is the last 31 days",
-        "operationId": "MatchesSummary",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/matches/buckets": {
-      "get": {
-        "tags": [
-          "Reporting"
-        ],
-        "summary": "Get matches buckets by day or hour",
-        "description": "Searchable period is the last 31 days",
-        "operationId": "MatchesBuckets",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          },
-          {
-            "name": "unit",
-            "in": "query",
-            "description": "\"hour\" or \"day\"",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/clearance-requests/summary": {
       "get": {
         "tags": [
-          "Reporting"
+          "Clearance Requests"
         ],
         "summary": "Get clearance requests summary",
         "description": "Searchable period is the last 31 days",
@@ -367,7 +85,7 @@
     "/clearance-requests/buckets": {
       "get": {
         "tags": [
-          "Reporting"
+          "Clearance Requests"
         ],
         "summary": "Get clearance requests buckets by day or hour",
         "description": "Searchable period is the last 31 days",
@@ -439,14 +157,14 @@
         }
       }
     },
-    "/notifications/summary": {
+    "/matches/summary": {
       "get": {
         "tags": [
-          "Reporting"
+          "Decisions"
         ],
-        "summary": "Get notifications summary",
+        "summary": "Get matches summary",
         "description": "Searchable period is the last 31 days",
-        "operationId": "NotificationsSummary",
+        "operationId": "MatchesSummary",
         "parameters": [
           {
             "name": "from",
@@ -477,7 +195,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationsSummaryResponse"
+                  "$ref": "#/components/schemas/MatchesSummaryResponse"
                 }
               }
             }
@@ -505,14 +223,14 @@
         }
       }
     },
-    "/notifications/buckets": {
+    "/matches/buckets": {
       "get": {
         "tags": [
-          "Reporting"
+          "Decisions"
         ],
-        "summary": "Get notifications buckets by day or hour",
+        "summary": "Get matches buckets by day or hour",
         "description": "Searchable period is the last 31 days",
-        "operationId": "NotificationsBuckets",
+        "operationId": "MatchesBuckets",
         "parameters": [
           {
             "name": "from",
@@ -552,7 +270,148 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/summary": {
+      "get": {
+        "tags": [
+          "Finalisations"
+        ],
+        "summary": "Get releases summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "ReleasesSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasesSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/buckets": {
+      "get": {
+        "tags": [
+          "Finalisations"
+        ],
+        "summary": "Get releases buckets by day or hour",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "ReleasesBuckets",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "description": "\"hour\" or \"day\"",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
                 }
               }
             }
@@ -583,7 +442,7 @@
     "/summary": {
       "get": {
         "tags": [
-          "Reporting"
+          "General"
         ],
         "summary": "Get summary",
         "description": "Searchable period is the last 31 days",
@@ -649,7 +508,7 @@
     "/buckets": {
       "get": {
         "tags": [
-          "Reporting"
+          "General"
         ],
         "summary": "Get buckets by day or hour",
         "description": "Searchable period is the last 31 days",
@@ -721,10 +580,151 @@
         }
       }
     },
+    "/notifications/summary": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Get notifications summary",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "NotificationsSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/buckets": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Get notifications buckets by day or hour",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "NotificationsBuckets",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "description": "\"hour\" or \"day\"",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/last-received": {
       "get": {
         "tags": [
-          "Reporting"
+          "Status Information"
         ],
         "summary": "Get last received",
         "operationId": "LastReceived",

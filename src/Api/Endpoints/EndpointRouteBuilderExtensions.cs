@@ -5,7 +5,6 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {
-    private const string GroupName = "Reporting";
     private const string Description = "Searchable period is the last 31 days";
 
     public static void MapEndpoints(this IEndpointRouteBuilder app)
@@ -18,7 +17,7 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("last-received", LastReceived)
             .WithName("LastReceived")
-            .WithTags(GroupName)
+            .WithTags("Status Information")
             .WithSummary("Get last received")
             .Produces<LastReceivedResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -30,7 +29,7 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("summary", Summary)
             .WithName("Summary")
-            .WithTags(GroupName)
+            .WithTags("General")
             .WithSummary("Get summary")
             .WithDescription(Description)
             .Produces<SummaryResponse>()
@@ -40,7 +39,7 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("buckets", Buckets)
             .WithName("Buckets")
-            .WithTags(GroupName)
+            .WithTags("General")
             .WithSummary("Get buckets by day or hour")
             .WithDescription(Description)
             .Produces<BucketsResponse>()
@@ -53,7 +52,7 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("notifications/summary", NotificationsSummary)
             .WithName("NotificationsSummary")
-            .WithTags(GroupName)
+            .WithTags("Notifications")
             .WithSummary("Get notifications summary")
             .WithDescription(Description)
             .Produces<NotificationsSummaryResponse>()
@@ -63,7 +62,7 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("notifications/buckets", NotificationsBuckets)
             .WithName("NotificationsBuckets")
-            .WithTags(GroupName)
+            .WithTags("Notifications")
             .WithSummary("Get notifications buckets by day or hour")
             .WithDescription(Description)
             .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
@@ -76,7 +75,7 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("clearance-requests/summary", ClearanceRequestsSummary)
             .WithName("ClearanceRequestsSummary")
-            .WithTags(GroupName)
+            .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests summary")
             .WithDescription(Description)
             .Produces<ClearanceRequestsSummaryResponse>()
@@ -86,7 +85,7 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("clearance-requests/buckets", ClearanceRequestsBuckets)
             .WithName("ClearanceRequestsBuckets")
-            .WithTags(GroupName)
+            .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests buckets by day or hour")
             .WithDescription(Description)
             .Produces<BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>>>()
@@ -99,7 +98,7 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("matches/summary", MatchesSummary)
             .WithName("MatchesSummary")
-            .WithTags(GroupName)
+            .WithTags("Decisions")
             .WithSummary("Get matches summary")
             .WithDescription(Description)
             .Produces<MatchesSummaryResponse>()
@@ -109,7 +108,7 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("matches/buckets", MatchesBuckets)
             .WithName("MatchesBuckets")
-            .WithTags(GroupName)
+            .WithTags("Decisions")
             .WithSummary("Get matches buckets by day or hour")
             .WithDescription(Description)
             .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
@@ -122,7 +121,7 @@ public static class EndpointRouteBuilderExtensions
     {
         app.MapGet("releases/summary", ReleasesSummary)
             .WithName("ReleasesSummary")
-            .WithTags(GroupName)
+            .WithTags("Finalisations")
             .WithSummary("Get releases summary")
             .WithDescription(Description)
             .Produces<ReleasesSummaryResponse>()
@@ -132,7 +131,7 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("releases/buckets", ReleasesBuckets)
             .WithName("ReleasesBuckets")
-            .WithTags(GroupName)
+            .WithTags("Finalisations")
             .WithSummary("Get releases buckets by day or hour")
             .WithDescription(Description)
             .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
