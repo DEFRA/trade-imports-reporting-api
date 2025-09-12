@@ -5,56 +5,19 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {
+    private const string GroupName = "Reporting";
+    private const string Description = "Searchable period is the last 31 days";
+
     public static void MapEndpoints(this IEndpointRouteBuilder app)
     {
-        const string groupName = "Reporting";
-        const string description = "Searchable period is the last 31 days";
-
-        app.MapGet("releases/summary", ReleasesSummary)
-            .WithName("ReleasesSummary")
-            .WithTags(groupName)
-            .WithSummary("Get releases summary")
-            .WithDescription(description)
-            .Produces<ReleasesSummaryResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
-
-        app.MapGet("releases/buckets", ReleasesBuckets)
-            .WithName("ReleasesBuckets")
-            .WithTags(groupName)
-            .WithSummary("Get releases buckets by day or hour")
-            .WithDescription(description)
-            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
-
-        app.MapGet("matches/summary", MatchesSummary)
-            .WithName("MatchesSummary")
-            .WithTags(groupName)
-            .WithSummary("Get matches summary")
-            .WithDescription(description)
-            .Produces<MatchesSummaryResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
-
-        app.MapGet("matches/buckets", MatchesBuckets)
-            .WithName("MatchesBuckets")
-            .WithTags(groupName)
-            .WithSummary("Get matches buckets by day or hour")
-            .WithDescription(description)
-            .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
+        MapReleasesEndpoints(app);
+        MapMatchesEndpoints(app);
 
         app.MapGet("clearance-requests/summary", ClearanceRequestsSummary)
             .WithName("ClearanceRequestsSummary")
-            .WithTags(groupName)
+            .WithTags(GroupName)
             .WithSummary("Get clearance requests summary")
-            .WithDescription(description)
+            .WithDescription(Description)
             .Produces<ClearanceRequestsSummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -62,9 +25,9 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("notifications/summary", NotificationsSummary)
             .WithName("NotificationsSummary")
-            .WithTags(groupName)
+            .WithTags(GroupName)
             .WithSummary("Get notifications summary")
-            .WithDescription(description)
+            .WithDescription(Description)
             .Produces<NotificationsSummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -72,9 +35,9 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("summary", Summary)
             .WithName("Summary")
-            .WithTags(groupName)
+            .WithTags(GroupName)
             .WithSummary("Get summary")
-            .WithDescription(description)
+            .WithDescription(Description)
             .Produces<SummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -82,9 +45,55 @@ public static class EndpointRouteBuilderExtensions
 
         app.MapGet("last-received", LastReceived)
             .WithName("LastReceived")
-            .WithTags(groupName)
+            .WithTags(GroupName)
             .WithSummary("Get last received")
             .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+    }
+
+    private static void MapMatchesEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapGet("matches/summary", MatchesSummary)
+            .WithName("MatchesSummary")
+            .WithTags(GroupName)
+            .WithSummary("Get matches summary")
+            .WithDescription(Description)
+            .Produces<MatchesSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("matches/buckets", MatchesBuckets)
+            .WithName("MatchesBuckets")
+            .WithTags(GroupName)
+            .WithSummary("Get matches buckets by day or hour")
+            .WithDescription(Description)
+            .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+    }
+
+    private static void MapReleasesEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapGet("releases/summary", ReleasesSummary)
+            .WithName("ReleasesSummary")
+            .WithTags(GroupName)
+            .WithSummary("Get releases summary")
+            .WithDescription(Description)
+            .Produces<ReleasesSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("releases/buckets", ReleasesBuckets)
+            .WithName("ReleasesBuckets")
+            .WithTags(GroupName)
+            .WithSummary("Get releases buckets by day or hour")
+            .WithDescription(Description)
+            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
