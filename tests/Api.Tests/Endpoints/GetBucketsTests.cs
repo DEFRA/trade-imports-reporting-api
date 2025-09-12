@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Endpoints;
 
-public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
+public class GetBucketsTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
     : EndpointTestBase(factory, outputHelper)
 {
     private IReportRepository MockReportRepository { get; } = Substitute.For<IReportRepository>();
@@ -24,7 +24,7 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.Summary.Get());
+        var response = await client.GetAsync(Testing.Endpoints.Buckets.Get());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -36,21 +36,44 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleasesSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new ReleasesSummary(1, 3, 4));
+            .GetReleasesBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new ReleasesBucket(from, new ReleasesSummary(1, 3, 4)),
+                    new ReleasesBucket(to, new ReleasesSummary(2, 4, 5)),
+                ]
+            );
         MockReportRepository
-            .GetMatchesSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new MatchesSummary(10, 5, 15));
+            .GetMatchesBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new MatchesBucket(from, new MatchesSummary(1, 3, 4)),
+                    new MatchesBucket(to, new MatchesSummary(2, 4, 5)),
+                ]
+            );
         MockReportRepository
-            .GetClearanceRequestsSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new ClearanceRequestsSummary(10, 20));
+            .GetClearanceRequestsBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new ClearanceRequestsBucket(from, new ClearanceRequestsSummary(1, -1)),
+                    new ClearanceRequestsBucket(to, new ClearanceRequestsSummary(2, -1)),
+                ]
+            );
         MockReportRepository
-            .GetNotificationsSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new NotificationsSummary(10, 20, 30, 40, 100));
+            .GetNotificationsBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new NotificationsBucket(from, new NotificationsSummary(10, 20, 30, 40, 100)),
+                    new NotificationsBucket(to, new NotificationsSummary(1, 2, 3, 4, 10)),
+                ]
+            );
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
-                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            Testing.Endpoints.Buckets.Get(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -65,10 +88,11 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
+            Testing.Endpoints.Buckets.Get(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -83,10 +107,11 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
+            Testing.Endpoints.Buckets.Get(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -102,8 +127,31 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.Summary.Get(
-                EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
+            Testing.Endpoints.Buckets.Get(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().ScrubMember("traceId");
+    }
+
+    [Fact]
+    public async Task Get_WhenAuthorized_AndUnitUnknown_ShouldBeBadRequest()
+    {
+        var client = CreateClient();
+
+        var now = DateTime.UtcNow;
+        var response = await client.GetAsync(
+            Testing.Endpoints.Buckets.Get(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit("unknown"))
             )
         );
 

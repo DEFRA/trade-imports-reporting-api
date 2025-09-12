@@ -14,7 +14,20 @@ public static class EndpointRouteBuilderExtensions
         MapMatchesEndpoints(app);
         MapClearanceRequestEndpoints(app);
         MapNotificationEndpoints(app);
+        MapGeneralEndpoints(app);
 
+        app.MapGet("last-received", LastReceived)
+            .WithName("LastReceived")
+            .WithTags(GroupName)
+            .WithSummary("Get last received")
+            .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+    }
+
+    private static void MapGeneralEndpoints(IEndpointRouteBuilder app)
+    {
         app.MapGet("summary", Summary)
             .WithName("Summary")
             .WithTags(GroupName)
@@ -25,11 +38,12 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
-        app.MapGet("last-received", LastReceived)
-            .WithName("LastReceived")
+        app.MapGet("buckets", Buckets)
+            .WithName("Buckets")
             .WithTags(GroupName)
-            .WithSummary("Get last received")
-            .Produces<LastReceivedResponse>()
+            .WithSummary("Get buckets by day or hour")
+            .WithDescription(Description)
+            .Produces<BucketsResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -351,24 +365,67 @@ public static class EndpointRouteBuilderExtensions
             return Results.ValidationProblem(errors);
         }
 
-        var releasesSummaryTask = reportRepository.GetReleasesSummary(from, to, cancellationToken);
-        var matchesSummaryTask = reportRepository.GetMatchesSummary(from, to, cancellationToken);
-        var clearanceRequestsSummaryTask = reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
+        var releasesTask = reportRepository.GetReleasesSummary(from, to, cancellationToken);
+        var matchesTask = reportRepository.GetMatchesSummary(from, to, cancellationToken);
+        var clearanceRequestsTask = reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
         var notificationsTask = reportRepository.GetNotificationsSummary(from, to, cancellationToken);
 
-        await Task.WhenAll(releasesSummaryTask, matchesSummaryTask, clearanceRequestsSummaryTask, notificationsTask);
+        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
 
-        var releasesSummary = await releasesSummaryTask;
-        var matchesSummary = await matchesSummaryTask;
-        var clearanceRequestsSummary = await clearanceRequestsSummaryTask;
-        var notificationsSummary = await notificationsTask;
+        var releases = await releasesTask;
+        var matches = await matchesTask;
+        var clearanceRequests = await clearanceRequestsTask;
+        var notifications = await notificationsTask;
 
         return Results.Ok(
             new SummaryResponse(
-                releasesSummary.ToResponse(),
-                matchesSummary.ToResponse(),
-                clearanceRequestsSummary.ToResponse(),
-                notificationsSummary.ToResponse()
+                releases.ToResponse(),
+                matches.ToResponse(),
+                clearanceRequests.ToResponse(),
+                notifications.ToResponse()
+            )
+        );
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="unit">"hour" or "day"</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> Buckets(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] string unit,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, unit);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesTask = reportRepository.GetReleasesBuckets(from, to, unit, cancellationToken);
+        var matchesTask = reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
+        var clearanceRequestsTask = reportRepository.GetClearanceRequestsBuckets(from, to, unit, cancellationToken);
+        var notificationsTask = reportRepository.GetNotificationsBuckets(from, to, unit, cancellationToken);
+
+        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
+
+        var releases = await releasesTask;
+        var matches = await matchesTask;
+        var clearanceRequests = await clearanceRequestsTask;
+        var notifications = await notificationsTask;
+
+        return Results.Ok(
+            new BucketsResponse(
+                releases.ToResponse(),
+                matches.ToResponse(),
+                clearanceRequests.ToResponse(),
+                notifications.ToResponse()
             )
         );
     }
