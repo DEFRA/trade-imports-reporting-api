@@ -1,8 +1,5 @@
-using Amazon.CloudWatch.EMF.Model;
-using Argon;
 using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
-using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Testing;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;

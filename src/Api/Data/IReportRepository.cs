@@ -38,6 +38,7 @@ public interface IReportRepository
     Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 

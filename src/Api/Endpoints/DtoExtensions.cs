@@ -42,4 +42,13 @@ public static class DtoExtensions
                 ))
                 .ToList()
         );
+
+    public static BucketsResponse<BucketResponse<NotificationsSummaryResponse>> ToResponse(
+        this IReadOnlyList<NotificationsBucket> buckets
+    ) =>
+        new(
+            buckets
+                .Select(x => new BucketResponse<NotificationsSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
+                .ToList()
+        );
 }

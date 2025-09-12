@@ -841,11 +841,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     )
     {
-        const string unit = "hour";
-
         var aggregatePipeline = new[]
         {
             new BsonDocument(

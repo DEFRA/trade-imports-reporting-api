@@ -38,11 +38,13 @@ public static class Endpoints
         public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
     }
 
-    public static class NotificationsSummary
+    public static class Notifications
     {
-        private const string Root = "/notifications/summary";
+        private const string Root = "/notifications";
 
-        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+        public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
+
+        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
     }
 
     public static class Summary

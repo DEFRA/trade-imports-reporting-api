@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Endpoints;
 
-public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
+public class GetNotificationsBucketsTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
     : EndpointTestBase(factory, outputHelper)
 {
     private IReportRepository MockReportRepository { get; } = Substitute.For<IReportRepository>();
@@ -24,7 +24,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.Notifications.Summary());
+        var response = await client.GetAsync(Testing.Endpoints.Notifications.Buckets());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -36,12 +36,20 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetNotificationsSummary(from, to, Arg.Any<CancellationToken>())
-            .Returns(new NotificationsSummary(10, 20, 30, 40, 100));
+            .GetNotificationsBuckets(from, to, Units.Hour, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new NotificationsBucket(from, new NotificationsSummary(10, 20, 30, 40, 100)),
+                    new NotificationsBucket(to, new NotificationsSummary(1, 2, 3, 4, 10)),
+                ]
+            );
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Notifications.Summary(
-                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -56,10 +64,11 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Notifications.Summary(
+            Testing.Endpoints.Notifications.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -74,10 +83,11 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Notifications.Summary(
+            Testing.Endpoints.Notifications.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -93,8 +103,31 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.Notifications.Summary(
-                EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().ScrubMember("traceId");
+    }
+
+    [Fact]
+    public async Task Get_WhenAuthorized_AndUnitUnknown_ShouldBeBadRequest()
+    {
+        var client = CreateClient();
+
+        var now = DateTime.UtcNow;
+        var response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit("unknown"))
             )
         );
 

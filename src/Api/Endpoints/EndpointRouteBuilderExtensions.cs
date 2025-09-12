@@ -13,16 +13,7 @@ public static class EndpointRouteBuilderExtensions
         MapReleasesEndpoints(app);
         MapMatchesEndpoints(app);
         MapClearanceRequestEndpoints(app);
-
-        app.MapGet("notifications/summary", NotificationsSummary)
-            .WithName("NotificationsSummary")
-            .WithTags(GroupName)
-            .WithSummary("Get notifications summary")
-            .WithDescription(Description)
-            .Produces<NotificationsSummaryResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
+        MapNotificationEndpoints(app);
 
         app.MapGet("summary", Summary)
             .WithName("Summary")
@@ -39,6 +30,29 @@ public static class EndpointRouteBuilderExtensions
             .WithTags(GroupName)
             .WithSummary("Get last received")
             .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+    }
+
+    private static void MapNotificationEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapGet("notifications/summary", NotificationsSummary)
+            .WithName("NotificationsSummary")
+            .WithTags(GroupName)
+            .WithSummary("Get notifications summary")
+            .WithDescription(Description)
+            .Produces<NotificationsSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("notifications/buckets", NotificationsBuckets)
+            .WithName("NotificationsBuckets")
+            .WithTags(GroupName)
+            .WithSummary("Get notifications buckets by day or hour")
+            .WithDescription(Description)
+            .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -290,6 +304,32 @@ public static class EndpointRouteBuilderExtensions
         var notificationsSummary = await reportRepository.GetNotificationsSummary(from, to, cancellationToken);
 
         return Results.Ok(notificationsSummary.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="unit">"hour" or "day"</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> NotificationsBuckets(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] string unit,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, unit);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var notificationsBuckets = await reportRepository.GetNotificationsBuckets(from, to, unit, cancellationToken);
+
+        return Results.Ok(notificationsBuckets.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
