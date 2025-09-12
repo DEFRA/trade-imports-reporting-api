@@ -4,6 +4,9 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class DtoExtensions
 {
+    public static ClearanceRequestsSummaryBucketResponse ToBucketResponse(this ClearanceRequestsSummary summary) =>
+        new(summary.Unique);
+
     public static ReleasesSummaryResponse ToResponse(this ReleasesSummary summary) =>
         new(summary.Automatic, summary.Manual, summary.Total);
 
@@ -27,4 +30,16 @@ public static class DtoExtensions
         this IReadOnlyList<MatchesBucket> buckets
     ) =>
         new(buckets.Select(x => new BucketResponse<MatchesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList());
+
+    public static BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>> ToResponse(
+        this IReadOnlyList<ClearanceRequestsBucket> buckets
+    ) =>
+        new(
+            buckets
+                .Select(x => new BucketResponse<ClearanceRequestsSummaryBucketResponse>(
+                    x.Bucket,
+                    x.Summary.ToBucketResponse()
+                ))
+                .ToList()
+        );
 }

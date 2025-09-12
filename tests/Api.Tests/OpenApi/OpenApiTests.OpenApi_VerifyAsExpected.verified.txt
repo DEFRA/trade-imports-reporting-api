@@ -364,6 +364,81 @@
         }
       }
     },
+    "/clearance-requests/buckets": {
+      "get": {
+        "tags": [
+          "Reporting"
+        ],
+        "summary": "Get clearance requests buckets by day or hour",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "ClearanceRequestsBuckets",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "description": "\"hour\" or \"day\"",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/notifications/summary": {
       "get": {
         "tags": [
@@ -540,6 +615,46 @@
   },
   "components": {
     "schemas": {
+      "ClearanceRequestsSummaryBucketResponse": {
+        "type": "object",
+        "properties": {
+          "unique": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClearanceRequestsSummaryBucketResponseBucketResponse": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "summary": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponse"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse": {
+        "type": "object",
+        "properties": {
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponse"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "ClearanceRequestsSummaryResponse": {
         "type": "object",
         "properties": {

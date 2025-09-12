@@ -29,11 +29,13 @@ public static class Endpoints
         public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
     }
 
-    public static class ClearanceRequestsSummary
+    public static class ClearanceRequests
     {
-        private const string Root = "/clearance-requests/summary";
+        private const string Root = "/clearance-requests";
 
-        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+        public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
+
+        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
     }
 
     public static class NotificationsSummary

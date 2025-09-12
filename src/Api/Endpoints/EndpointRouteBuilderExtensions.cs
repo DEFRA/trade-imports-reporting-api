@@ -12,16 +12,7 @@ public static class EndpointRouteBuilderExtensions
     {
         MapReleasesEndpoints(app);
         MapMatchesEndpoints(app);
-
-        app.MapGet("clearance-requests/summary", ClearanceRequestsSummary)
-            .WithName("ClearanceRequestsSummary")
-            .WithTags(GroupName)
-            .WithSummary("Get clearance requests summary")
-            .WithDescription(Description)
-            .Produces<ClearanceRequestsSummaryResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
+        MapClearanceRequestEndpoints(app);
 
         app.MapGet("notifications/summary", NotificationsSummary)
             .WithName("NotificationsSummary")
@@ -48,6 +39,29 @@ public static class EndpointRouteBuilderExtensions
             .WithTags(GroupName)
             .WithSummary("Get last received")
             .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+    }
+
+    private static void MapClearanceRequestEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapGet("clearance-requests/summary", ClearanceRequestsSummary)
+            .WithName("ClearanceRequestsSummary")
+            .WithTags(GroupName)
+            .WithSummary("Get clearance requests summary")
+            .WithDescription(Description)
+            .Produces<ClearanceRequestsSummaryResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("clearance-requests/buckets", ClearanceRequestsBuckets)
+            .WithName("ClearanceRequestsBuckets")
+            .WithTags(GroupName)
+            .WithSummary("Get clearance requests buckets by day or hour")
+            .WithDescription(Description)
+            .Produces<BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -221,6 +235,37 @@ public static class EndpointRouteBuilderExtensions
         var clearanceRequestsSummary = await reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
 
         return Results.Ok(clearanceRequestsSummary.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="unit">"hour" or "day"</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> ClearanceRequestsBuckets(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] string unit,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, unit);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var clearanceRequestsBuckets = await reportRepository.GetClearanceRequestsBuckets(
+            from,
+            to,
+            unit,
+            cancellationToken
+        );
+
+        return Results.Ok(clearanceRequestsBuckets.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>

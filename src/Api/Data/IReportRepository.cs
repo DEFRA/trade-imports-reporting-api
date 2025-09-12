@@ -29,6 +29,7 @@ public interface IReportRepository
     Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     );
 
