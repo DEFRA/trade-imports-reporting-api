@@ -13,4 +13,6 @@ public class EndpointFilter
     public static EndpointFilter Unit(string unit) => new($"unit={unit}");
 
     public static EndpointFilter Match(bool match) => new($"match={match.ToString().ToLower()}");
+
+    public static EndpointFilter ReleaseType(string releaseType) => new($"releaseType={releaseType}");
 }

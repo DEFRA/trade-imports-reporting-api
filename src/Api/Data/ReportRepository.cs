@@ -377,6 +377,48 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
+    public async Task<IReadOnlyList<Finalisation>> GetReleases(
+        DateTime from,
+        DateTime to,
+        string releaseType,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        var pipeline = new[]
+        {
+            new BsonDocument(
+                "$match",
+                new BsonDocument
+                {
+                    {
+                        Fields.Finalisation.Timestamp,
+                        new BsonDocument { { "$gte", from }, { "$lt", to } }
+                    },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", $"${Fields.Finalisation.Mrn}" },
+                    { "latest", new BsonDocument("$first", "$$ROOT") },
+                }
+            ),
+            new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
+            new BsonDocument("$match", new BsonDocument(Fields.Finalisation.ReleaseType, releaseType)),
+        };
+
+        var aggregateTask = dbContext.Finalisations.AggregateAsync<Finalisation>(
+            pipeline,
+            cancellationToken: cancellationToken
+        );
+
+        return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+    }
+
     public async Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken)
     {
         GuardUtc(from, to);

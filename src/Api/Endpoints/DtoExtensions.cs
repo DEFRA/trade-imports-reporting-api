@@ -55,4 +55,7 @@ public static class DtoExtensions
 
     public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<Decision> matches) =>
         new(matches.Select(x => new MatchResponse(x.Timestamp, x.Mrn)).ToList());
+
+    public static DatumResponse<ReleasesResponse> ToResponse(this IReadOnlyList<Finalisation> finalisations) =>
+        new(finalisations.Select(x => new ReleasesResponse(x.Timestamp, x.Mrn)).ToList());
 }

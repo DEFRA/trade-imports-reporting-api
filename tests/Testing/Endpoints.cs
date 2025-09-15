@@ -18,6 +18,8 @@ public static class Endpoints
         public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
 
         public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
+
+        public static string Data(EndpointQuery? query = null) => $"{Root}/data{query}";
     }
 
     public static class Matches
