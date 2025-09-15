@@ -1,4 +1,5 @@
 using Defra.TradeImportsReportingApi.Api.Data;
+using Defra.TradeImportsReportingApi.Api.Data.Entities;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
@@ -51,4 +52,7 @@ public static class DtoExtensions
                 .Select(x => new BucketResponse<NotificationsSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
                 .ToList()
         );
+
+    public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<Decision> matches) =>
+        new(matches.Select(x => new MatchResponse(x.Timestamp, x.Mrn)).ToList());
 }

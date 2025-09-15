@@ -115,6 +115,16 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
+
+        app.MapGet("matches/data", MatchesData)
+            .WithName("MatchesData")
+            .WithTags("Decisions")
+            .WithSummary("Get matches data")
+            .WithDescription(Description)
+            .Produces<DatumResponse<MatchResponse>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
     }
 
     private static void MapReleasesEndpoints(IEndpointRouteBuilder app)
@@ -238,6 +248,32 @@ public static class EndpointRouteBuilderExtensions
         var matchesBuckets = await reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
 
         return Results.Ok(matchesBuckets.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="match">true or false</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> MatchesData(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] bool match,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var matchesData = await reportRepository.GetMatches(from, to, match, cancellationToken);
+
+        return Results.Ok(matchesData.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>

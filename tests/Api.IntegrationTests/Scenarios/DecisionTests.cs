@@ -3,6 +3,7 @@ using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
+using FluentAssertions;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
@@ -70,6 +71,22 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(true)) // One test case will return data, the other will not
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_data")
+            .UseParameters(decisionCode)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -104,6 +121,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             },
             ResourceEventSubResourceTypes.ClearanceDecision
         );
+        var expectedTimestamp = mrnCreated.AddSeconds(40);
         var resourceEvent2 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
@@ -112,7 +130,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
                 Created = mrnCreated,
                 ClearanceDecision = new ClearanceDecision
                 {
-                    Created = mrnCreated.AddSeconds(40), // Different timestamp
+                    Created = expectedTimestamp, // Different timestamp
                     Items =
                     [
                         new ClearanceDecisionItem
@@ -165,6 +183,23 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(false))
+            )
+        );
+
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_data")
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
     }
 
     [Fact]
@@ -199,6 +234,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             },
             ResourceEventSubResourceTypes.ClearanceDecision
         );
+        var expectedTimestamp = mrnCreated.AddSeconds(40);
         var resourceEvent2 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
@@ -207,7 +243,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
                 Created = mrnCreated,
                 ClearanceDecision = new ClearanceDecision
                 {
-                    Created = mrnCreated.AddSeconds(40), // Different timestamp
+                    Created = expectedTimestamp, // Different timestamp
                     Items =
                     [
                         new ClearanceDecisionItem
@@ -262,6 +298,25 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(true))
+            )
+        );
+
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_data"
+            )
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
     }
 
     [Fact]
@@ -357,6 +412,23 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
+            )
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(false))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
             )
             .UseStrictJson()
             .DontScrubDateTimes()

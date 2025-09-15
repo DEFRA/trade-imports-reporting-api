@@ -597,6 +597,42 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
+    public async Task<IReadOnlyList<Decision>> GetMatches(
+        DateTime from,
+        DateTime to,
+        bool match,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        var pipeline = new[]
+        {
+            new BsonDocument(
+                "$match",
+                new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
+            ),
+            new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", $"${Fields.Decision.Mrn}" },
+                    { "latest", new BsonDocument("$first", "$$ROOT") },
+                }
+            ),
+            new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
+            new BsonDocument("$match", new BsonDocument(Fields.Decision.Match, match)),
+        };
+
+        var aggregateTask = dbContext.Decisions.AggregateAsync<Decision>(
+            pipeline,
+            cancellationToken: cancellationToken
+        );
+
+        return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+    }
+
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
         DateTime from,
         DateTime to,
@@ -610,7 +646,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             cancellationToken: cancellationToken
         );
 
-        var aggregatePipeline = new[]
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -621,7 +657,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var uniqueTask = dbContext.Requests.AggregateAsync<BsonDocument>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
