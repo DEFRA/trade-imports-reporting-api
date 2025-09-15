@@ -7,7 +7,7 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {
-    private const string Description = "Searchable period is the last 31 days";
+    private static readonly string s_description = $"Searchable period is the last {TimePeriod.MaxDays} days";
 
     public static void MapEndpoints(this IEndpointRouteBuilder app)
     {
@@ -33,7 +33,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("Summary")
             .WithTags("General")
             .WithSummary("Get summary")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<SummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -43,7 +43,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("Buckets")
             .WithTags("General")
             .WithSummary("Get buckets by day or hour")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<BucketsResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -56,7 +56,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("NotificationsSummary")
             .WithTags("Notifications")
             .WithSummary("Get notifications summary")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<NotificationsSummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -66,7 +66,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("NotificationsBuckets")
             .WithTags("Notifications")
             .WithSummary("Get notifications buckets by day or hour")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -79,7 +79,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("ClearanceRequestsSummary")
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests summary")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<ClearanceRequestsSummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -89,7 +89,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("ClearanceRequestsBuckets")
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests buckets by day or hour")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -102,7 +102,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("MatchesSummary")
             .WithTags("Decisions")
             .WithSummary("Get matches summary")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<MatchesSummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -112,7 +112,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("MatchesBuckets")
             .WithTags("Decisions")
             .WithSummary("Get matches buckets by day or hour")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -122,7 +122,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("MatchesData")
             .WithTags("Decisions")
             .WithSummary("Get matches data")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<DatumResponse<MatchResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -135,7 +135,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("ReleasesSummary")
             .WithTags("Finalisations")
             .WithSummary("Get releases summary")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<ReleasesSummaryResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -145,7 +145,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("ReleasesBuckets")
             .WithTags("Finalisations")
             .WithSummary("Get releases buckets by day or hour")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -155,7 +155,7 @@ public static class EndpointRouteBuilderExtensions
             .WithName("ReleasesData")
             .WithTags("Finalisations")
             .WithSummary("Get releases data")
-            .WithDescription(Description)
+            .WithDescription(s_description)
             .Produces<DatumResponse<ReleasesResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -546,9 +546,9 @@ public static class EndpointRouteBuilderExtensions
             errors.Add("from", ["from cannot be greater than to"]);
         }
 
-        if (to.Subtract(from).Days > 31)
+        if (to.Subtract(from).Days > TimePeriod.MaxDays)
         {
-            errors.Add("", ["date span cannot be greater than 31 days"]);
+            errors.Add("", [$"date span cannot be greater than {TimePeriod.MaxDays} days"]);
         }
 
         if (from.Kind != DateTimeKind.Utc)
@@ -582,6 +582,11 @@ public static class EndpointRouteBuilderExtensions
         }
 
         return errors;
+    }
+
+    public static class TimePeriod
+    {
+        public const int MaxDays = 122; // Roughly 4 months based on 365/12 x 4
     }
 
     private const string CsvContentType = "text/csv";

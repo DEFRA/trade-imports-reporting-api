@@ -1,5 +1,6 @@
 using System.Net;
 using Defra.TradeImportsReportingApi.Api.Data;
+using Defra.TradeImportsReportingApi.Api.Endpoints;
 using Defra.TradeImportsReportingApi.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -69,7 +70,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
     }
 
     [Fact]
-    public async Task Get_WhenAuthorized_AndDateSpanGreaterThan31Days_ShouldBeBadRequest()
+    public async Task Get_WhenAuthorized_AndDateSpanGreaterThanAllowedDays_ShouldBeBadRequest()
     {
         var client = CreateClient();
 
@@ -77,7 +78,11 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
             Testing.Endpoints.Notifications.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
-                    .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
+                    .Where(
+                        EndpointFilter.To(
+                            DateTime.UtcNow.AddDays(EndpointRouteBuilderExtensions.TimePeriod.MaxDays + 1)
+                        )
+                    )
             )
         );
 
