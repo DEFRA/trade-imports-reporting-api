@@ -174,9 +174,9 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     }
 
     [Theory]
-    [InlineData(Units.Hour, 2)]
-    [InlineData(Units.Day, 1)]
-    public async Task WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets(string unit, int expectedBuckets)
+    [InlineData(Units.Hour)]
+    [InlineData(Units.Day)]
+    public async Task WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets(string unit)
     {
         var mrn1 = Guid.NewGuid().ToString();
         var mrn2 = Guid.NewGuid().ToString();
@@ -213,7 +213,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(unit, expectedBuckets)
+            .UseParameters(unit)
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
@@ -229,7 +229,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
 
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit, expectedBuckets)
+            .UseParameters(unit)
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();

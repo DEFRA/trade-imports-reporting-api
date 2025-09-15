@@ -1,11 +1,27 @@
 ﻿{
   "buckets": [
     {
+      "bucket": "2025-09-03T15:00:00Z",
+      "summary": {
+        "automatic": 0,
+        "manual": 0,
+        "total": 0
+      }
+    },
+    {
       "bucket": "2025-09-03T16:00:00Z",
       "summary": {
         "automatic": 1,
         "manual": 0,
         "total": 1
+      }
+    },
+    {
+      "bucket": "2025-09-03T17:00:00Z",
+      "summary": {
+        "automatic": 0,
+        "manual": 0,
+        "total": 0
       }
     }
   ]

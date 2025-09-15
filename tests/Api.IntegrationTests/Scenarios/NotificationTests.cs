@@ -202,9 +202,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     }
 
     [Theory]
-    [InlineData(Units.Hour, 2)]
-    [InlineData(Units.Day, 1)]
-    public async Task WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets(string unit, int expectedBuckets)
+    [InlineData(Units.Hour)]
+    [InlineData(Units.Day)]
+    public async Task WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets(string unit)
     {
         var ched1 = Guid.NewGuid().ToString();
         var ched2 = Guid.NewGuid().ToString();
@@ -252,7 +252,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(unit, expectedBuckets)
+            .UseParameters(unit)
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
@@ -268,7 +268,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit, expectedBuckets)
+            .UseParameters(unit)
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();

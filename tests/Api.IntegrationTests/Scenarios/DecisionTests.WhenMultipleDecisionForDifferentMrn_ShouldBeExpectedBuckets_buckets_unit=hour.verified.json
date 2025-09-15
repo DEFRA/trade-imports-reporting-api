@@ -23,6 +23,22 @@
         "noMatch": 0,
         "total": 0
       }
+    },
+    {
+      "bucket": "2025-09-03T18:00:00Z",
+      "summary": {
+        "match": 0,
+        "noMatch": 1,
+        "total": 1
+      }
+    },
+    {
+      "bucket": "2025-09-03T19:00:00Z",
+      "summary": {
+        "match": 0,
+        "noMatch": 0,
+        "total": 0
+      }
     }
   ]
 }

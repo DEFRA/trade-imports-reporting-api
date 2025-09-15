@@ -25,6 +25,34 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         .Conventions.OfType<CamelCaseElementNameConvention>()
         .Any();
 
+    private static class Units
+    {
+        private const string Hour = "hour";
+        private const string Day = "day";
+
+        private static readonly IReadOnlyList<string> s_all = [Hour, Day];
+
+        public static bool IsSupported(string unit) => s_all.Contains(unit);
+
+        public static bool IsUtc(DateTime value) => value.Kind == DateTimeKind.Utc;
+
+        public static DateTime GetBucketStart(DateTime from, string unit) =>
+            unit switch
+            {
+                Hour => new DateTime(from.Year, from.Month, from.Day, from.Hour, 0, 0, from.Kind),
+                Day => new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, from.Kind),
+                _ => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit"),
+            };
+
+        public static DateTime GetNextBucket(DateTime bucket, string unit) =>
+            unit switch
+            {
+                Hour => bucket.AddHours(1),
+                Day => bucket.AddDays(1),
+                _ => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit"),
+            };
+    }
+
     private static class Fields
     {
         private static string Field(string name)
@@ -73,7 +101,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
-        var aggregatePipeline = new[]
+        GuardUtc(from, to);
+
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -178,13 +208,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Finalisations.AggregateAsync<ReleasesSummary>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
         var results = await (await aggregateTask).ToListAsync(cancellationToken);
 
-        return results.FirstOrDefault() ?? new ReleasesSummary(0, 0, 0);
+        return results.FirstOrDefault() ?? ReleasesSummary.Empty;
     }
 
     public async Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
@@ -194,7 +224,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
-        var aggregatePipeline = new[]
+        GuardUtc(from, to);
+        GuardUnit(unit);
+
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -335,16 +368,20 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Finalisations.AggregateAsync<ReleasesBucket>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
-        return await (await aggregateTask).ToListAsync(cancellationToken);
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyBuckets(from, to, unit, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
     public async Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken)
     {
-        var aggregatePipeline = new[]
+        GuardUtc(from, to);
+
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -422,13 +459,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Decisions.AggregateAsync<MatchesSummary>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
         var results = await (await aggregateTask).ToListAsync(cancellationToken);
 
-        return results.FirstOrDefault() ?? new MatchesSummary(0, 0, 0);
+        return results.FirstOrDefault() ?? MatchesSummary.Empty;
     }
 
     public async Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
@@ -438,7 +475,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
-        var aggregatePipeline = new[]
+        GuardUtc(from, to);
+        GuardUnit(unit);
+
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -548,11 +588,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Decisions.AggregateAsync<MatchesBucket>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
-        return await (await aggregateTask).ToListAsync(cancellationToken);
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyBuckets(from, to, unit, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
@@ -561,6 +603,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
+        GuardUtc(from, to);
+
         var totalTask = dbContext.Requests.CountDocumentsAsync(
             Builders<Request>.Filter.Gte(x => x.Timestamp, from) & Builders<Request>.Filter.Lt(x => x.Timestamp, to),
             cancellationToken: cancellationToken
@@ -596,10 +640,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
+        GuardUtc(from, to);
+        GuardUnit(unit);
+
         // Can only return buckets for unique MRNs across the time period.
         // Cannot return total overall as MRN might appear in more than one timestamp.
 
-        var aggregatePipeline = new[]
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -672,11 +719,19 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Requests.AggregateAsync<ClearanceRequestsBucket>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
-        return await (await aggregateTask).ToListAsync(cancellationToken);
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyBuckets(
+            from,
+            to,
+            unit,
+            results,
+            x => new ClearanceRequestsBucket(x, ClearanceRequestsSummary.Empty)
+        );
     }
 
     public async Task<NotificationsSummary> GetNotificationsSummary(
@@ -685,7 +740,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
-        var aggregatePipeline = new[]
+        GuardUtc(from, to);
+
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -829,13 +886,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Notifications.AggregateAsync<NotificationsSummary>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
         var results = await (await aggregateTask).ToListAsync(cancellationToken);
 
-        return results.FirstOrDefault() ?? new NotificationsSummary(0, 0, 0, 0, 0);
+        return results.FirstOrDefault() ?? NotificationsSummary.Empty;
     }
 
     public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
@@ -845,7 +902,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         CancellationToken cancellationToken
     )
     {
-        var aggregatePipeline = new[]
+        GuardUtc(from, to);
+        GuardUnit(unit);
+
+        var pipeline = new[]
         {
             new BsonDocument(
                 "$match",
@@ -1025,11 +1085,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var aggregateTask = dbContext.Notifications.AggregateAsync<NotificationsBucket>(
-            aggregatePipeline,
+            pipeline,
             cancellationToken: cancellationToken
         );
 
-        return await (await aggregateTask).ToListAsync(cancellationToken);
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyBuckets(from, to, unit, results, x => new NotificationsBucket(x, NotificationsSummary.Empty));
     }
 
     public async Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken)
@@ -1047,5 +1109,43 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .FirstOrDefaultAsync(cancellationToken);
 
         return new LastReceivedSummary(latestFinalisation, latestRequest);
+    }
+
+    private static List<T> AddEmptyBuckets<T>(
+        DateTime from,
+        DateTime to,
+        string unit,
+        List<T> results,
+        Func<DateTime, T> emptyBucketFunc
+    )
+        where T : IBucket
+    {
+        var bucketStart = Units.GetBucketStart(from, unit);
+        var resultsByBucket = results.ToDictionary(x => x.Bucket, x => x);
+
+        for (var bucket = bucketStart; bucket <= to; bucket = Units.GetNextBucket(bucket, unit))
+        {
+            if (!resultsByBucket.ContainsKey(bucket))
+            {
+                resultsByBucket.Add(bucket, emptyBucketFunc(bucket));
+            }
+        }
+
+        return resultsByBucket.Values.OrderBy(x => x.Bucket).ToList();
+    }
+
+    private static void GuardUtc(DateTime from, DateTime to)
+    {
+        if (!Units.IsUtc(from))
+            throw new ArgumentOutOfRangeException(nameof(from), from, "From must be UTC");
+
+        if (!Units.IsUtc(to))
+            throw new ArgumentOutOfRangeException(nameof(to), to, "To must be UTC");
+    }
+
+    private static void GuardUnit(string unit)
+    {
+        if (!Units.IsSupported(unit))
+            throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit");
     }
 }
