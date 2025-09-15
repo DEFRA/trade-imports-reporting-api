@@ -9,4 +9,6 @@ public class EndpointFilter
     public static EndpointFilter From(DateTime from) => new($"from={from:O}");
 
     public static EndpointFilter To(DateTime to) => new($"to={to:O}");
+
+    public static EndpointFilter Unit(string unit) => new($"unit={unit}");
 }

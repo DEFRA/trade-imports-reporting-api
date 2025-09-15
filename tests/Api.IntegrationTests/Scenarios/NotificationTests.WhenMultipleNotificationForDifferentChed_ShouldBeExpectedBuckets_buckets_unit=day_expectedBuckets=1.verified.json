@@ -1,0 +1,14 @@
+﻿{
+  "buckets": [
+    {
+      "bucket": "2025-09-03T00:00:00Z",
+      "summary": {
+        "chedA": 1,
+        "chedP": 1,
+        "chedPp": 0,
+        "chedD": 0,
+        "total": 2
+      }
+    }
+  ]
+}

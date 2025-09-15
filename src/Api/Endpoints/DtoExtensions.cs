@@ -4,6 +4,9 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class DtoExtensions
 {
+    public static ClearanceRequestsSummaryBucketResponse ToBucketResponse(this ClearanceRequestsSummary summary) =>
+        new(summary.Unique);
+
     public static ReleasesSummaryResponse ToResponse(this ReleasesSummary summary) =>
         new(summary.Automatic, summary.Manual, summary.Total);
 
@@ -15,4 +18,37 @@ public static class DtoExtensions
 
     public static NotificationsSummaryResponse ToResponse(this NotificationsSummary summary) =>
         new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
+
+    public static BucketsResponse<BucketResponse<ReleasesSummaryResponse>> ToResponse(
+        this IReadOnlyList<ReleasesBucket> buckets
+    ) =>
+        new(
+            buckets.Select(x => new BucketResponse<ReleasesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList()
+        );
+
+    public static BucketsResponse<BucketResponse<MatchesSummaryResponse>> ToResponse(
+        this IReadOnlyList<MatchesBucket> buckets
+    ) =>
+        new(buckets.Select(x => new BucketResponse<MatchesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList());
+
+    public static BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>> ToResponse(
+        this IReadOnlyList<ClearanceRequestsBucket> buckets
+    ) =>
+        new(
+            buckets
+                .Select(x => new BucketResponse<ClearanceRequestsSummaryBucketResponse>(
+                    x.Bucket,
+                    x.Summary.ToBucketResponse()
+                ))
+                .ToList()
+        );
+
+    public static BucketsResponse<BucketResponse<NotificationsSummaryResponse>> ToResponse(
+        this IReadOnlyList<NotificationsBucket> buckets
+    ) =>
+        new(
+            buckets
+                .Select(x => new BucketResponse<NotificationsSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
+                .ToList()
+        );
 }

@@ -24,7 +24,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.NotificationsSummary.Get());
+        var response = await client.GetAsync(Testing.Endpoints.Notifications.Summary());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -40,7 +40,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
             .Returns(new NotificationsSummary(10, 20, 30, 40, 100));
 
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
@@ -56,7 +56,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
@@ -74,7 +74,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
@@ -93,7 +93,7 @@ public class GetNotificationsSummaryTests(ApiWebApplicationFactory factory, ITes
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.NotificationsSummary.Get(
+            Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
             )
         );

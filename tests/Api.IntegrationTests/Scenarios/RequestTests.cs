@@ -1,7 +1,5 @@
-using Argon;
 using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
-using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
 
@@ -29,22 +27,28 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetClearanceRequestsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_buckets")
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }
@@ -82,22 +86,28 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetClearanceRequestsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_buckets")
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }
@@ -135,24 +145,92 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(1);
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
 
-        // No endpoint yet for buckets, repository only, to assert expected time bucketing
+        response = await client.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
 
-        var repository = new ReportRepository(new MongoDbContext(GetMongoDatabase()));
-
-        var buckets = await repository.GetClearanceRequestsBuckets(from, to, CancellationToken.None);
-
-        await Verify(buckets)
+        await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName(
                 $"{nameof(WhenMultipleRequestForSameMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
             )
-            .AddExtraSettings(x => x.DefaultValueHandling = DefaultValueHandling.Include)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+    }
+
+    [Theory]
+    [InlineData(Units.Hour, 2)]
+    [InlineData(Units.Day, 1)]
+    public async Task WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets(string unit, int expectedBuckets)
+    {
+        var mrn1 = Guid.NewGuid().ToString();
+        var mrn2 = Guid.NewGuid().ToString();
+        var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+        var resourceEvent1 = CreateResourceEvent(
+            mrn1,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            ResourceEventSubResourceTypes.ClearanceRequest
+        );
+        var resourceEvent2 = CreateResourceEvent(
+            mrn2,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity
+            {
+                ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt.AddHours(2) },
+            },
+            ResourceEventSubResourceTypes.ClearanceRequest
+        );
+
+        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
+        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await WaitForRequestMrn(mrn1);
+        await WaitForRequestMrn(mrn2);
+
+        var client = CreateHttpClient();
+
+        var from = messageSentAt.AddHours(-1);
+        var to = messageSentAt.AddHours(3);
+        var response = await client.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Summary(
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseParameters(unit, expectedBuckets)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(unit))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
+            .UseParameters(unit, expectedBuckets)
+            .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
     }

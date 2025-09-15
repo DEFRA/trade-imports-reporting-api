@@ -1,0 +1,12 @@
+﻿{
+  "buckets": [
+    {
+      "bucket": "2025-09-03T00:00:00Z",
+      "summary": {
+        "match": 0,
+        "noMatch": 2,
+        "total": 2
+      }
+    }
+  ]
+}

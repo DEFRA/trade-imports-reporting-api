@@ -190,11 +190,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     )
     {
-        const string unit = "hour";
-
         var aggregatePipeline = new[]
         {
             new BsonDocument(
@@ -435,11 +434,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     )
     {
-        const string unit = "hour";
-
         var aggregatePipeline = new[]
         {
             new BsonDocument(
@@ -594,13 +592,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     )
     {
         // Can only return buckets for unique MRNs across the time period.
         // Cannot return total overall as MRN might appear in more than one timestamp.
-
-        const string unit = "hour";
 
         var aggregatePipeline = new[]
         {
@@ -844,11 +841,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
         DateTime from,
         DateTime to,
+        string unit,
         CancellationToken cancellationToken
     )
     {
-        const string unit = "hour";
-
         var aggregatePipeline = new[]
         {
             new BsonDocument(

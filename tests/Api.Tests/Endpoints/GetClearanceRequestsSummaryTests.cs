@@ -24,7 +24,7 @@ public class GetClearanceRequestsSummaryTests(ApiWebApplicationFactory factory, 
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.ClearanceRequestsSummary.Get());
+        var response = await client.GetAsync(Testing.Endpoints.ClearanceRequests.Summary());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -40,7 +40,7 @@ public class GetClearanceRequestsSummaryTests(ApiWebApplicationFactory factory, 
             .Returns(new ClearanceRequestsSummary(10, 20));
 
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
@@ -56,7 +56,7 @@ public class GetClearanceRequestsSummaryTests(ApiWebApplicationFactory factory, 
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
@@ -74,7 +74,7 @@ public class GetClearanceRequestsSummaryTests(ApiWebApplicationFactory factory, 
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(32)))
@@ -93,7 +93,7 @@ public class GetClearanceRequestsSummaryTests(ApiWebApplicationFactory factory, 
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.ClearanceRequestsSummary.Get(
+            Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
             )
         );
