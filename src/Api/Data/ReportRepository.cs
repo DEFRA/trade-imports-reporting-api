@@ -105,20 +105,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument
-                {
-                    {
-                        Fields.Finalisation.Timestamp,
-                        new BsonDocument { { "$gte", from }, { "$lt", to } }
-                    },
-                    {
-                        Fields.Finalisation.ReleaseType,
-                        new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
-                    },
-                }
-            ),
+            ReleasesMatch(from, to),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -229,20 +216,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument
-                {
-                    {
-                        Fields.Finalisation.Timestamp,
-                        new BsonDocument { { "$gte", from }, { "$lt", to } }
-                    },
-                    {
-                        Fields.Finalisation.ReleaseType,
-                        new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
-                    },
-                }
-            ),
+            ReleasesMatch(from, to),
             new BsonDocument(
                 "$set",
                 new BsonDocument
@@ -388,16 +362,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument
-                {
-                    {
-                        Fields.Finalisation.Timestamp,
-                        new BsonDocument { { "$gte", from }, { "$lt", to } }
-                    },
-                }
-            ),
+            // Do not restrict release type as final match in pipeline will do this
+            ReleasesMatch(from, to, restrictReleaseType: false),
             new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
             new BsonDocument(
                 "$group",
@@ -425,10 +391,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
-            ),
+            MatchesMatch(from, to),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -522,10 +485,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
-            ),
+            MatchesMatch(from, to),
             new BsonDocument(
                 "$set",
                 new BsonDocument
@@ -650,10 +610,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
-            ),
+            MatchesMatch(from, to),
             new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
             new BsonDocument(
                 "$group",
@@ -690,10 +647,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(Fields.Request.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
-            ),
+            ClearanceRequestMatch(from, to),
             new BsonDocument("$group", new BsonDocument("_id", $"${Fields.Request.Mrn}")),
             new BsonDocument("$count", "count"),
         };
@@ -726,10 +680,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(Fields.Request.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
-            ),
+            ClearanceRequestMatch(from, to),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -822,13 +773,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(
-                    Fields.Notification.NotificationCreated,
-                    new BsonDocument { { "$gte", from }, { "$lt", to } }
-                )
-            ),
+            NotificationsMatch(from, to),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -985,13 +930,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            new BsonDocument(
-                "$match",
-                new BsonDocument(
-                    Fields.Notification.NotificationCreated,
-                    new BsonDocument { { "$gte", from }, { "$lt", to } }
-                )
-            ),
+            NotificationsMatch(from, to),
             new BsonDocument(
                 "$set",
                 new BsonDocument
@@ -1225,5 +1164,51 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         if (!Units.IsSupported(unit))
             throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit");
+    }
+
+    private static BsonDocument ReleasesMatch(DateTime from, DateTime to, bool restrictReleaseType = true)
+    {
+        var match = new BsonDocument
+        {
+            {
+                Fields.Finalisation.Timestamp,
+                new BsonDocument { { "$gte", from }, { "$lt", to } }
+            },
+        };
+
+        if (restrictReleaseType)
+            match.Add(
+                Fields.Finalisation.ReleaseType,
+                new BsonDocument("$in", new BsonArray { ReleaseType.Automatic, ReleaseType.Manual })
+            );
+
+        return new BsonDocument("$match", match);
+    }
+
+    private static BsonDocument MatchesMatch(DateTime from, DateTime to)
+    {
+        return new BsonDocument(
+            "$match",
+            new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
+        );
+    }
+
+    private static BsonDocument ClearanceRequestMatch(DateTime from, DateTime to)
+    {
+        return new BsonDocument(
+            "$match",
+            new BsonDocument(Fields.Request.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
+        );
+    }
+
+    private static BsonDocument NotificationsMatch(DateTime from, DateTime to)
+    {
+        return new BsonDocument(
+            "$match",
+            new BsonDocument(
+                Fields.Notification.NotificationCreated,
+                new BsonDocument { { "$gte", from }, { "$lt", to } }
+            )
+        );
     }
 }
