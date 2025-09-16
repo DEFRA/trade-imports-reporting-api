@@ -169,24 +169,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             ReleasesMatch(from, to),
-            new BsonDocument(
-                "$set",
-                new BsonDocument
-                {
-                    {
-                        "bucket",
-                        new BsonDocument(
-                            "$dateTrunc",
-                            new BsonDocument
-                            {
-                                { "date", $"${Fields.Finalisation.Timestamp}" },
-                                { "unit", unit },
-                                { "timezone", "UTC" },
-                            }
-                        )
-                    },
-                }
-            ),
+            new BsonDocument("$set", Bucket(Fields.Finalisation.Timestamp, unit)),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -347,24 +330,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
-            new BsonDocument(
-                "$set",
-                new BsonDocument
-                {
-                    {
-                        "bucket",
-                        new BsonDocument(
-                            "$dateTrunc",
-                            new BsonDocument
-                            {
-                                { "date", $"${Fields.Decision.MrnCreated}" },
-                                { "unit", unit },
-                                { "timezone", "UTC" },
-                            }
-                        )
-                    },
-                }
-            ),
+            new BsonDocument("$set", Bucket(Fields.Decision.MrnCreated, unit)),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -511,24 +477,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                     SortAndTakeLatest(Fields.Request.Timestamp, Fields.Request.Timestamp),
                 }
             ),
-            new BsonDocument(
-                "$set",
-                new BsonDocument
-                {
-                    {
-                        "bucket",
-                        new BsonDocument(
-                            "$dateTrunc",
-                            new BsonDocument
-                            {
-                                { "date", $"$latest.{Fields.Request.Timestamp}" },
-                                { "unit", unit },
-                                { "timezone", "UTC" },
-                            }
-                        )
-                    },
-                }
-            ),
+            new BsonDocument("$set", Bucket(Fields.Request.Timestamp, unit, fieldPrefix: "latest.")),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -655,24 +604,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             NotificationsMatch(from, to),
-            new BsonDocument(
-                "$set",
-                new BsonDocument
-                {
-                    {
-                        "bucket",
-                        new BsonDocument(
-                            "$dateTrunc",
-                            new BsonDocument
-                            {
-                                { "date", $"${Fields.Notification.NotificationCreated}" },
-                                { "unit", unit },
-                                { "timezone", "UTC" },
-                            }
-                        )
-                    },
-                }
-            ),
+            new BsonDocument("$set", Bucket(Fields.Notification.NotificationCreated, unit)),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -842,5 +774,24 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 }
             )
         );
+    }
+
+    private static BsonDocument Bucket(string field, string unit, string? fieldPrefix = null)
+    {
+        return new BsonDocument
+        {
+            {
+                "bucket",
+                new BsonDocument(
+                    "$dateTrunc",
+                    new BsonDocument
+                    {
+                        { "date", $"${fieldPrefix}{field}" },
+                        { "unit", unit },
+                        { "timezone", "UTC" },
+                    }
+                )
+            },
+        };
     }
 }
