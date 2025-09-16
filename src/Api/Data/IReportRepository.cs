@@ -1,3 +1,5 @@
+using Defra.TradeImportsReportingApi.Api.Data.Entities;
+
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
 public interface IReportRepository
@@ -11,12 +13,26 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
+    Task<IReadOnlyList<Finalisation>> GetReleases(
+        DateTime from,
+        DateTime to,
+        string releaseType,
+        CancellationToken cancellationToken
+    );
+
     Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
         DateTime from,
         DateTime to,
         string unit,
+        CancellationToken cancellationToken
+    );
+
+    Task<IReadOnlyList<Decision>> GetMatches(
+        DateTime from,
+        DateTime to,
+        bool match,
         CancellationToken cancellationToken
     );
 

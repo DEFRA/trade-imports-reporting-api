@@ -1,6 +1,9 @@
 using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Testing;
+using FluentAssertions;
+using Finalisation = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
@@ -64,6 +67,22 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Releases.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.ReleaseType(ReleaseType.Manual))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenSingleFinalisation_ShouldBeSingleCount)}_data")
+            .UseParameters(isManualRelease, isCancelled)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -86,6 +105,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             },
             ResourceEventSubResourceTypes.Finalisation
         );
+        var expectedTimestamp = messageSentAt.AddMinutes(5);
         var resourceEvent2 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
@@ -96,7 +116,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
                     ExternalVersion = 1,
                     FinalState = "0",
                     IsManualRelease = false,
-                    MessageSentAt = messageSentAt.AddMinutes(5), // Different message sent at
+                    MessageSentAt = expectedTimestamp, // Different message sent at
                 },
             },
             ResourceEventSubResourceTypes.Finalisation
@@ -135,6 +155,23 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Releases.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.ReleaseType(ReleaseType.Automatic))
+            )
+        );
+
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenMultipleFinalisationForSameMrn_ShouldBeSingleCount)}_data")
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
     }
 
     [Fact]
@@ -157,6 +194,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             },
             ResourceEventSubResourceTypes.Finalisation
         );
+        var expectedTimestamp = messageSentAt.AddMinutes(5);
         var resourceEvent2 = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
@@ -167,7 +205,7 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
                     ExternalVersion = 1,
                     FinalState = "0",
                     IsManualRelease = true, // Change from Automatic to Manual
-                    MessageSentAt = messageSentAt.AddMinutes(5), // Different message sent at
+                    MessageSentAt = expectedTimestamp, // Different message sent at
                 },
             },
             ResourceEventSubResourceTypes.Finalisation
@@ -208,6 +246,25 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Releases.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.ReleaseType(ReleaseType.Manual))
+            )
+        );
+
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName(
+                $"{nameof(WhenMultipleFinalisationForSameMrn_AndChangeFromAutomaticToManual_ShouldBeSingleCount)}_data"
+            )
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
     }
 
     [Fact]
@@ -279,6 +336,23 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName(
                 $"{nameof(WhenMultipleFinalisationForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
+            )
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Releases.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.ReleaseType(ReleaseType.Automatic))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName(
+                $"{nameof(WhenMultipleFinalisationForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
             )
             .UseStrictJson()
             .DontScrubDateTimes()

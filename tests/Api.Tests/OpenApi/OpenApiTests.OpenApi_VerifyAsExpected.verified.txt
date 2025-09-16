@@ -298,6 +298,81 @@
         }
       }
     },
+    "/matches/data": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches data",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "MatchesData",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "match",
+            "in": "query",
+            "description": "true or false",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponseDatumResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/releases/summary": {
       "get": {
         "tags": [
@@ -412,6 +487,81 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/data": {
+      "get": {
+        "tags": [
+          "Finalisations"
+        ],
+        "summary": "Get releases data",
+        "description": "Searchable period is the last 31 days",
+        "operationId": "ReleasesData",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "releaseType",
+            "in": "query",
+            "description": "\"Automatic\" or \"Manual\" or \"Cancelled\"",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasesResponseDatumResponse"
                 }
               }
             }
@@ -888,6 +1038,31 @@
         },
         "additionalProperties": false
       },
+      "MatchResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MatchResponseDatumResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchResponse"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "MatchesSummaryResponse": {
         "type": "object",
         "properties": {
@@ -1018,6 +1193,31 @@
           }
         },
         "additionalProperties": { }
+      },
+      "ReleasesResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReleasesResponseDatumResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReleasesResponse"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "ReleasesSummaryResponse": {
         "type": "object",

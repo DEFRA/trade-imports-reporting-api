@@ -1,4 +1,6 @@
+using System.Text;
 using Defra.TradeImportsReportingApi.Api.Data;
+using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;
@@ -115,6 +117,16 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
+
+        app.MapGet("matches/data", MatchesData)
+            .WithName("MatchesData")
+            .WithTags("Decisions")
+            .WithSummary("Get matches data")
+            .WithDescription(Description)
+            .Produces<DatumResponse<MatchResponse>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
     }
 
     private static void MapReleasesEndpoints(IEndpointRouteBuilder app)
@@ -135,6 +147,16 @@ public static class EndpointRouteBuilderExtensions
             .WithSummary("Get releases buckets by day or hour")
             .WithDescription(Description)
             .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("releases/data", ReleasesData)
+            .WithName("ReleasesData")
+            .WithTags("Finalisations")
+            .WithSummary("Get releases data")
+            .WithDescription(Description)
+            .Produces<DatumResponse<ReleasesResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -192,6 +214,36 @@ public static class EndpointRouteBuilderExtensions
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="releaseType">"Automatic" or "Manual" or "Cancelled"</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="httpContext"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> ReleasesData(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] string releaseType,
+        [FromServices] IReportRepository reportRepository,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, releaseType: releaseType);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesData = await reportRepository.GetReleases(from, to, releaseType, cancellationToken);
+
+        return RequireCsv(httpContext)
+            ? CsvResult(releasesData.ToCsvResponse())
+            : Results.Ok(releasesData.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="reportRepository"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -238,6 +290,34 @@ public static class EndpointRouteBuilderExtensions
         var matchesBuckets = await reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
 
         return Results.Ok(matchesBuckets.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="match">true or false</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="httpContext"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> MatchesData(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] bool match,
+        [FromServices] IReportRepository reportRepository,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var matchesData = await reportRepository.GetMatches(from, to, match, cancellationToken);
+
+        return RequireCsv(httpContext) ? CsvResult(matchesData.ToCsvResponse()) : Results.Ok(matchesData.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -452,7 +532,12 @@ public static class EndpointRouteBuilderExtensions
         );
     }
 
-    private static Dictionary<string, string[]> ValidateRequest(DateTime from, DateTime to, string? unit = null)
+    private static Dictionary<string, string[]> ValidateRequest(
+        DateTime from,
+        DateTime to,
+        string? unit = null,
+        string? releaseType = null
+    )
     {
         var errors = new Dictionary<string, string[]>();
 
@@ -481,6 +566,28 @@ public static class EndpointRouteBuilderExtensions
             errors.Add("unit", ["unit must be 'hour' or 'day'"]);
         }
 
+        if (
+            releaseType is not null
+            && releaseType != ReleaseType.Automatic
+            && releaseType != ReleaseType.Manual
+            && releaseType != ReleaseType.Cancelled
+        )
+        {
+            errors.Add(
+                "releaseType",
+                [
+                    $"release type must be '{ReleaseType.Automatic}' or '{ReleaseType.Manual}' or '{ReleaseType.Cancelled}'",
+                ]
+            );
+        }
+
         return errors;
     }
+
+    private const string CsvContentType = "text/csv";
+
+    private static IResult CsvResult(string content) => Results.Text(content, CsvContentType, Encoding.UTF8);
+
+    private static bool RequireCsv(HttpContext httpContext) =>
+        httpContext.Request.Headers.Accept.ToString().Contains(CsvContentType, StringComparison.OrdinalIgnoreCase);
 }
