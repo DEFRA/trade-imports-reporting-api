@@ -4,7 +4,7 @@
   "status": 400,
   "errors": {
     "": [
-      "date span cannot be greater than 31 days"
+      "date span cannot be greater than 122 days"
     ]
   },
   "traceId": "{Scrubbed}"
