@@ -4,6 +4,8 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 
+// ReSharper disable InconsistentNaming
+
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
 [ExcludeFromCodeCoverage]
@@ -103,6 +105,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
+        const string automatic = nameof(automatic);
+        const string manual = nameof(manual);
+        const string total = nameof(total);
+
         var pipeline = new[]
         {
             ReleasesMatch(from, to),
@@ -135,51 +141,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 1 },
-                    {
-                        "automatic",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Finalisation.ReleaseType}",
-                                            ReleaseType.Automatic,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "manual",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Finalisation.ReleaseType}",
-                                            ReleaseType.Manual,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    { "total", new BsonDocument("$sum", 1) },
+                    FieldSum(automatic, Fields.Finalisation.ReleaseType, ReleaseType.Automatic),
+                    FieldSum(manual, Fields.Finalisation.ReleaseType, ReleaseType.Manual),
+                    { total, new BsonDocument("$sum", 1) },
                 }
             ),
             new BsonDocument(
@@ -187,9 +151,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 0 },
-                    { "automatic", 1 },
-                    { "manual", 1 },
-                    { "total", 1 },
+                    { automatic, 1 },
+                    { manual, 1 },
+                    { total, 1 },
                 }
             ),
         };
@@ -213,6 +177,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
         GuardUnit(unit);
+
+        const string automatic = nameof(automatic);
+        const string manual = nameof(manual);
+        const string total = nameof(total);
 
         var pipeline = new[]
         {
@@ -274,51 +242,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "_id",
                         new BsonDocument { { "bucket", "$_id.bucket" } }
                     },
-                    {
-                        "automatic",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Finalisation.ReleaseType}",
-                                            ReleaseType.Automatic,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "manual",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Finalisation.ReleaseType}",
-                                            ReleaseType.Manual,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    { "total", new BsonDocument("$sum", 1) },
+                    FieldSum(automatic, Fields.Finalisation.ReleaseType, ReleaseType.Automatic),
+                    FieldSum(manual, Fields.Finalisation.ReleaseType, ReleaseType.Manual),
+                    { total, new BsonDocument("$sum", 1) },
                 }
             ),
             new BsonDocument(
@@ -331,9 +257,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "summary",
                         new BsonDocument
                         {
-                            { "automatic", "$automatic" },
-                            { "manual", "$manual" },
-                            { "total", "$total" },
+                            { automatic, $"${automatic}" },
+                            { manual, $"${manual}" },
+                            { total, $"${total}" },
                         }
                     },
                 }
@@ -389,6 +315,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
+        const string match = nameof(match);
+        const string noMatch = nameof(noMatch);
+        const string total = nameof(total);
+
         var pipeline = new[]
         {
             MatchesMatch(from, to),
@@ -415,40 +345,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 1 },
-                    {
-                        "match",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument("$eq", new BsonArray { $"$latest.{Fields.Decision.Match}", true }),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "noMatch",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray { $"$latest.{Fields.Decision.Match}", false }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    { "total", new BsonDocument("$sum", 1) },
+                    FieldSum(match, Fields.Decision.Match, true),
+                    FieldSum(noMatch, Fields.Decision.Match, false),
+                    { total, new BsonDocument("$sum", 1) },
                 }
             ),
             new BsonDocument(
@@ -456,9 +355,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 0 },
-                    { "match", 1 },
-                    { "noMatch", 1 },
-                    { "total", 1 },
+                    { match, 1 },
+                    { noMatch, 1 },
+                    { total, 1 },
                 }
             ),
         };
@@ -482,6 +381,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
         GuardUnit(unit);
+
+        const string match = nameof(match);
+        const string noMatch = nameof(noMatch);
+        const string total = nameof(total);
 
         var pipeline = new[]
         {
@@ -533,40 +436,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "_id",
                         new BsonDocument { { "bucket", "$_id.bucket" } }
                     },
-                    {
-                        "match",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument("$eq", new BsonArray { $"$latest.{Fields.Decision.Match}", true }),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "noMatch",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray { $"$latest.{Fields.Decision.Match}", false }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    { "total", new BsonDocument("$sum", 1) },
+                    FieldSum(match, Fields.Decision.Match, true),
+                    FieldSum(noMatch, Fields.Decision.Match, false),
+                    { total, new BsonDocument("$sum", 1) },
                 }
             ),
             new BsonDocument(
@@ -579,9 +451,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "summary",
                         new BsonDocument
                         {
-                            { "match", "$match" },
-                            { "noMatch", "$noMatch" },
-                            { "total", "$total" },
+                            { match, $"${match}" },
+                            { noMatch, $"${noMatch}" },
+                            { total, $"${total}" },
                         }
                     },
                 }
@@ -773,6 +645,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
+        const string chedA = nameof(chedA);
+        const string chedP = nameof(chedP);
+        const string chedPP = nameof(chedPP);
+        const string chedD = nameof(chedD);
+        const string total = nameof(total);
+
         var pipeline = new[]
         {
             NotificationsMatch(from, to),
@@ -805,95 +683,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 1 },
-                    {
-                        "chedA",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedA,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "chedP",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedP,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "chedPP",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedPP,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "chedD",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedD,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    { "total", new BsonDocument("$sum", 1) },
+                    FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
+                    FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
+                    FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
+                    FieldSum(chedD, Fields.Notification.NotificationType, NotificationType.ChedD),
+                    { total, new BsonDocument("$sum", 1) },
                 }
             ),
             new BsonDocument(
@@ -901,11 +695,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 0 },
-                    { "chedA", 1 },
-                    { "chedP", 1 },
-                    { "chedPP", 1 },
-                    { "chedD", 1 },
-                    { "total", 1 },
+                    { chedA, 1 },
+                    { chedP, 1 },
+                    { chedPP, 1 },
+                    { chedD, 1 },
+                    { total, 1 },
                 }
             ),
         };
@@ -929,6 +723,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
         GuardUnit(unit);
+
+        const string chedA = nameof(chedA);
+        const string chedP = nameof(chedP);
+        const string chedPP = nameof(chedPP);
+        const string chedD = nameof(chedD);
+        const string total = nameof(total);
 
         var pipeline = new[]
         {
@@ -990,95 +790,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "_id",
                         new BsonDocument { { "bucket", "$_id.bucket" } }
                     },
-                    {
-                        "chedA",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedA,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "chedP",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedP,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "chedPP",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedPP,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    {
-                        "chedD",
-                        new BsonDocument(
-                            "$sum",
-                            new BsonDocument(
-                                "$cond",
-                                new BsonArray
-                                {
-                                    new BsonDocument(
-                                        "$eq",
-                                        new BsonArray
-                                        {
-                                            $"$latest.{Fields.Notification.NotificationType}",
-                                            NotificationType.ChedD,
-                                        }
-                                    ),
-                                    1,
-                                    0,
-                                }
-                            )
-                        )
-                    },
-                    { "total", new BsonDocument("$sum", 1) },
+                    FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
+                    FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
+                    FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
+                    FieldSum(chedD, Fields.Notification.NotificationType, NotificationType.ChedD),
+                    { total, new BsonDocument("$sum", 1) },
                 }
             ),
             new BsonDocument(
@@ -1091,11 +807,11 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "summary",
                         new BsonDocument
                         {
-                            { "chedA", "$chedA" },
-                            { "chedP", "$chedP" },
-                            { "chedPP", "$chedPP" },
-                            { "chedD", "$chedD" },
-                            { "total", "$total" },
+                            { chedA, $"${chedA}" },
+                            { chedP, $"${chedP}" },
+                            { chedPP, $"${chedPP}" },
+                            { chedD, $"${chedD}" },
+                            { total, $"${total}" },
                         }
                     },
                 }
@@ -1192,4 +908,18 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static BsonDocument FromAndToMatch(string field, DateTime from, DateTime to) =>
         new(field, new BsonDocument { { "$gte", from }, { "$lt", to } });
+
+    private static BsonElement FieldSum(string name, string field, BsonValue value)
+    {
+        return new BsonElement(
+            name,
+            new BsonDocument(
+                "$sum",
+                new BsonDocument(
+                    "$cond",
+                    new BsonArray { new BsonDocument("$eq", new BsonArray { $"$latest.{field}", value }), 1, 0 }
+                )
+            )
+        );
+    }
 }
