@@ -1170,13 +1170,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static BsonDocument ReleasesMatch(DateTime from, DateTime to, bool restrictReleaseType = true)
     {
-        var match = new BsonDocument
-        {
-            {
-                Fields.Finalisation.Timestamp,
-                new BsonDocument { { "$gte", from }, { "$lt", to } }
-            },
-        };
+        var match = FromAndToMatch(Fields.Finalisation.Timestamp, from, to);
 
         if (restrictReleaseType)
             match.Add(
@@ -1187,30 +1181,15 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return new BsonDocument("$match", match);
     }
 
-    private static BsonDocument MatchesMatch(DateTime from, DateTime to)
-    {
-        return new BsonDocument(
-            "$match",
-            new BsonDocument(Fields.Decision.MrnCreated, new BsonDocument { { "$gte", from }, { "$lt", to } })
-        );
-    }
+    private static BsonDocument MatchesMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.Decision.MrnCreated, from, to));
 
-    private static BsonDocument ClearanceRequestMatch(DateTime from, DateTime to)
-    {
-        return new BsonDocument(
-            "$match",
-            new BsonDocument(Fields.Request.Timestamp, new BsonDocument { { "$gte", from }, { "$lt", to } })
-        );
-    }
+    private static BsonDocument ClearanceRequestMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.Request.Timestamp, from, to));
 
-    private static BsonDocument NotificationsMatch(DateTime from, DateTime to)
-    {
-        return new BsonDocument(
-            "$match",
-            new BsonDocument(
-                Fields.Notification.NotificationCreated,
-                new BsonDocument { { "$gte", from }, { "$lt", to } }
-            )
-        );
-    }
+    private static BsonDocument NotificationsMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.Notification.NotificationCreated, from, to));
+
+    private static BsonDocument FromAndToMatch(string field, DateTime from, DateTime to) =>
+        new(field, new BsonDocument { { "$gte", from }, { "$lt", to } });
 }
