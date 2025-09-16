@@ -117,23 +117,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", $"${Fields.Finalisation.Mrn}" },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Finalisation.Timestamp, -1) },
-                                {
-                                    "output",
-                                    new BsonDocument(
-                                        Fields.Finalisation.ReleaseType,
-                                        $"${Fields.Finalisation.ReleaseType}"
-                                    )
-                                },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Finalisation.Timestamp, Fields.Finalisation.ReleaseType),
                 }
             ),
             new BsonDocument(
@@ -215,23 +199,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             { Fields.Finalisation.Mrn, $"${Fields.Finalisation.Mrn}" },
                         }
                     },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Finalisation.Timestamp, -1) },
-                                {
-                                    "output",
-                                    new BsonDocument(
-                                        Fields.Finalisation.ReleaseType,
-                                        $"${Fields.Finalisation.ReleaseType}"
-                                    )
-                                },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Finalisation.Timestamp, Fields.Finalisation.ReleaseType),
                 }
             ),
             new BsonDocument(
@@ -327,17 +295,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", $"${Fields.Decision.Mrn}" },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Decision.Timestamp, -1) },
-                                { "output", new BsonDocument(Fields.Decision.Match, $"${Fields.Decision.Match}") },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Decision.Timestamp, Fields.Decision.Match),
                 }
             ),
             new BsonDocument(
@@ -415,17 +373,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         "_id",
                         new BsonDocument { { "bucket", "$bucket" }, { Fields.Decision.Mrn, $"${Fields.Decision.Mrn}" } }
                     },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Decision.Timestamp, -1) },
-                                { "output", new BsonDocument(Fields.Decision.Match, $"${Fields.Decision.Match}") },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Decision.Timestamp, Fields.Decision.Match),
                 }
             ),
             new BsonDocument(
@@ -560,17 +508,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", $"${Fields.Request.Mrn}" },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Request.Timestamp, -1) },
-                                { "output", new BsonDocument("ts", $"${Fields.Request.Timestamp}") },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Request.Timestamp, Fields.Request.Timestamp),
                 }
             ),
             new BsonDocument(
@@ -583,7 +521,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             "$dateTrunc",
                             new BsonDocument
                             {
-                                { "date", "$latest.ts" },
+                                { "date", $"$latest.{Fields.Request.Timestamp}" },
                                 { "unit", unit },
                                 { "timezone", "UTC" },
                             }
@@ -659,23 +597,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", $"${Fields.Notification.ReferenceNumber}" },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Notification.Timestamp, -1) },
-                                {
-                                    "output",
-                                    new BsonDocument(
-                                        Fields.Notification.NotificationType,
-                                        $"${Fields.Notification.NotificationType}"
-                                    )
-                                },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
                 }
             ),
             new BsonDocument(
@@ -763,23 +685,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                             { Fields.Notification.ReferenceNumber, $"${Fields.Notification.ReferenceNumber}" },
                         }
                     },
-                    {
-                        "latest",
-                        new BsonDocument(
-                            "$top",
-                            new BsonDocument
-                            {
-                                { "sortBy", new BsonDocument(Fields.Notification.Timestamp, -1) },
-                                {
-                                    "output",
-                                    new BsonDocument(
-                                        Fields.Notification.NotificationType,
-                                        $"${Fields.Notification.NotificationType}"
-                                    )
-                                },
-                            }
-                        )
-                    },
+                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
                 }
             ),
             new BsonDocument(
@@ -919,6 +825,21 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                     "$cond",
                     new BsonArray { new BsonDocument("$eq", new BsonArray { $"$latest.{field}", value }), 1, 0 }
                 )
+            )
+        );
+    }
+
+    private static BsonElement SortAndTakeLatest(string sortByField, string returnField)
+    {
+        return new BsonElement(
+            "latest",
+            new BsonDocument(
+                "$top",
+                new BsonDocument
+                {
+                    { "sortBy", new BsonDocument(sortByField, -1) },
+                    { "output", new BsonDocument(returnField, $"${returnField}") },
+                }
             )
         );
     }
