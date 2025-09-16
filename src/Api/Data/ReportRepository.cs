@@ -640,12 +640,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        var totalTask = dbContext.Requests.CountDocumentsAsync(
-            Builders<Request>.Filter.Gte(x => x.Timestamp, from) & Builders<Request>.Filter.Lt(x => x.Timestamp, to),
-            cancellationToken: cancellationToken
-        );
-
-        var pipeline = new[]
+        var uniquePipeline = new[]
         {
             ClearanceRequestMatch(from, to),
             new BsonDocument("$group", new BsonDocument("_id", $"${Fields.Request.Mrn}")),
@@ -653,16 +648,23 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         };
 
         var uniqueTask = dbContext.Requests.AggregateAsync<BsonDocument>(
-            pipeline,
+            uniquePipeline,
             cancellationToken: cancellationToken
         );
 
-        await Task.WhenAll(totalTask, uniqueTask);
+        var totalPipeline = new[] { ClearanceRequestMatch(from, to), new BsonDocument("$count", "count") };
 
-        var total = (int)await totalTask;
+        var totalTask = dbContext.Requests.AggregateAsync<BsonDocument>(
+            totalPipeline,
+            cancellationToken: cancellationToken
+        );
+
+        await Task.WhenAll(uniqueTask, totalTask);
+
         var unique = await (await uniqueTask).FirstOrDefaultAsync(cancellationToken);
+        var total = await (await totalTask).FirstOrDefaultAsync(cancellationToken);
 
-        return new ClearanceRequestsSummary((int)(unique?["count"] ?? 0), total);
+        return new ClearanceRequestsSummary((int)(unique?["count"] ?? 0), (int)(total?["count"] ?? 0));
     }
 
     public async Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
