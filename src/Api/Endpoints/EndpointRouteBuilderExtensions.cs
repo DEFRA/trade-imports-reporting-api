@@ -1,3 +1,4 @@
+using System.Text;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -215,6 +216,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="releaseType">"Automatic" or "Manual" or "Cancelled"</param>
     /// <param name="reportRepository"></param>
+    /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
@@ -223,6 +225,7 @@ public static class EndpointRouteBuilderExtensions
         [FromQuery] DateTime to,
         [FromQuery] string releaseType,
         [FromServices] IReportRepository reportRepository,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -234,7 +237,9 @@ public static class EndpointRouteBuilderExtensions
 
         var releasesData = await reportRepository.GetReleases(from, to, releaseType, cancellationToken);
 
-        return Results.Ok(releasesData.ToResponse());
+        return RequireCsv(httpContext)
+            ? CsvResult(releasesData.ToCsvResponse())
+            : Results.Ok(releasesData.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -291,6 +296,7 @@ public static class EndpointRouteBuilderExtensions
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="match">true or false</param>
     /// <param name="reportRepository"></param>
+    /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
@@ -299,6 +305,7 @@ public static class EndpointRouteBuilderExtensions
         [FromQuery] DateTime to,
         [FromQuery] bool match,
         [FromServices] IReportRepository reportRepository,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -310,7 +317,7 @@ public static class EndpointRouteBuilderExtensions
 
         var matchesData = await reportRepository.GetMatches(from, to, match, cancellationToken);
 
-        return Results.Ok(matchesData.ToResponse());
+        return RequireCsv(httpContext) ? CsvResult(matchesData.ToCsvResponse()) : Results.Ok(matchesData.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -576,4 +583,11 @@ public static class EndpointRouteBuilderExtensions
 
         return errors;
     }
+
+    private const string CsvContentType = "text/csv";
+
+    private static IResult CsvResult(string content) => Results.Text(content, CsvContentType, Encoding.UTF8);
+
+    private static bool RequireCsv(HttpContext httpContext) =>
+        httpContext.Request.Headers.Accept.ToString().Contains(CsvContentType, StringComparison.OrdinalIgnoreCase);
 }
