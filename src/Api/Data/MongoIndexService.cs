@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.Data;
@@ -54,7 +55,8 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 // Order of fields important - don't change without reason
                 .IndexKeys.Ascending(x => x.MrnCreated)
                 .Ascending(x => x.Mrn)
-                .Descending(x => x.Timestamp),
+                .Descending(x => x.Timestamp)
+                .Ascending(x => x.Match),
             cancellationToken: cancellationToken
         );
     }
@@ -94,7 +96,8 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 // Order of fields important - don't change without reason
                 .IndexKeys.Ascending(x => x.NotificationCreated)
                 .Ascending(x => x.ReferenceNumber)
-                .Descending(x => x.Timestamp),
+                .Descending(x => x.Timestamp)
+                .Ascending(x => x.NotificationType),
             cancellationToken: cancellationToken
         );
     }
@@ -111,8 +114,43 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
         CancellationToken cancellationToken = default
     )
     {
+        var collectionName = typeof(T).Name;
+
         try
         {
+            var collection = database.GetCollection<T>(collectionName);
+            var requestedKeys = keys.Render(
+                new RenderArgs<T>(collection.DocumentSerializer, collection.Settings.SerializerRegistry)
+            );
+
+            using (var cursor = await collection.Indexes.ListAsync(cancellationToken))
+            {
+                var existingIndexes = await cursor.ToListAsync(cancellationToken);
+                var existingByName = existingIndexes.FirstOrDefault(i => i.TryGetValue("name", out var n) && n == name);
+
+                if (existingByName is not null)
+                {
+                    var existingKeys = existingByName.GetValue("key", new BsonDocument()).AsBsonDocument;
+                    var existingUnique = existingByName.TryGetValue("unique", out var u) && u.IsBoolean && u.AsBoolean;
+
+                    if (!existingKeys.Equals(requestedKeys) || existingUnique != unique)
+                    {
+                        logger.LogInformation(
+                            "Updating index {Name} on {Collection}: keys/options differ. Dropping and recreating.",
+                            name,
+                            collectionName
+                        );
+
+                        await DropIndex(name, collection, cancellationToken);
+                    }
+                    else
+                    {
+                        // Index already exists and is correct
+                        return;
+                    }
+                }
+            }
+
             var indexModel = new CreateIndexModel<T>(
                 keys,
                 new CreateIndexOptions
@@ -122,13 +160,38 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                     Unique = unique,
                 }
             );
-            await database
-                .GetCollection<T>(typeof(T).Name)
-                .Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken);
+
+            await collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            logger.LogError(e, "Failed to Create index {Name} on {Collection}", name, typeof(T).Name);
+            logger.LogError(exception, "Failed to Create index {Name} on {Collection}", name, collectionName);
+        }
+    }
+
+    private async Task DropIndex<T>(string name, IMongoCollection<T> collection, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await collection.Indexes.DropOneAsync(name, cancellationToken);
+        }
+        catch (MongoCommandException mongoCommandException)
+        {
+            logger.LogWarning(
+                mongoCommandException,
+                "Index {Name} was not dropped on {Collection}. It may not exist.",
+                name,
+                collection.CollectionNamespace.CollectionName
+            );
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Failed to drop index {Name} on {Collection}",
+                name,
+                collection.CollectionNamespace.CollectionName
+            );
         }
     }
 }
