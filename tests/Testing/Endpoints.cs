@@ -73,6 +73,13 @@ public static class Endpoints
         public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
     }
 
+    public static class Intervals
+    {
+        private const string Root = "/intervals";
+
+        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
+    }
+
     public static class LastReceived
     {
         private const string Root = "/last-received";

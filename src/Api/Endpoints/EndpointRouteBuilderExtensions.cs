@@ -48,6 +48,16 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
+
+        app.MapGet("intervals", Intervals)
+            .WithName("Intervals")
+            .WithTags("General")
+            .WithSummary("Get by interval")
+            .WithDescription(s_description)
+            .Produces<BucketsResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
     }
 
     private static void MapNotificationEndpoints(IEndpointRouteBuilder app)
@@ -645,6 +655,54 @@ public static class EndpointRouteBuilderExtensions
         var matchesTask = reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
         var clearanceRequestsTask = reportRepository.GetClearanceRequestsBuckets(from, to, unit, cancellationToken);
         var notificationsTask = reportRepository.GetNotificationsBuckets(from, to, unit, cancellationToken);
+
+        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
+
+        var releases = await releasesTask;
+        var matches = await matchesTask;
+        var clearanceRequests = await clearanceRequestsTask;
+        var notifications = await notificationsTask;
+
+        return Results.Ok(
+            new BucketsResponse(
+                releases.ToResponse(),
+                matches.ToResponse(),
+                clearanceRequests.ToResponse(),
+                notifications.ToResponse()
+            )
+        );
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> Intervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesTask = reportRepository.GetReleasesIntervals(from, to, intervals, cancellationToken);
+        var matchesTask = reportRepository.GetMatchesIntervals(from, to, intervals, cancellationToken);
+        var clearanceRequestsTask = reportRepository.GetClearanceRequestsIntervals(
+            from,
+            to,
+            intervals,
+            cancellationToken
+        );
+        var notificationsTask = reportRepository.GetNotificationsIntervals(from, to, intervals, cancellationToken);
 
         await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
 
