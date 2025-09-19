@@ -157,6 +157,85 @@
         }
       }
     },
+    "/clearance-requests/intervals": {
+      "get": {
+        "tags": [
+          "Clearance Requests"
+        ],
+        "summary": "Get clearance requests by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "ClearanceRequestsIntervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/matches/summary": {
       "get": {
         "tags": [

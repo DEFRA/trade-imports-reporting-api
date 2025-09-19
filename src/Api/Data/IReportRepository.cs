@@ -49,6 +49,13 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
+    Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    );
+
     Task<NotificationsSummary> GetNotificationsSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(

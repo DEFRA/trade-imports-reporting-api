@@ -524,6 +524,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         );
     }
 
+    public Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<NotificationsSummary> GetNotificationsSummary(
         DateTime from,
         DateTime to,
