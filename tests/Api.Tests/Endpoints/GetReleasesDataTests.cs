@@ -145,11 +145,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
             Testing.Endpoints.Releases.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
-                    .Where(
-                        EndpointFilter.To(
-                            DateTime.UtcNow.AddDays(EndpointRouteBuilderExtensions.TimePeriod.MaxDays + 1)
-                        )
-                    )
+                    .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(TimePeriod.MaxDays + 1)))
                     .Where(EndpointFilter.ReleaseType(ReleaseType.Automatic))
             )
         );

@@ -149,11 +149,7 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
-                    .Where(
-                        EndpointFilter.To(
-                            DateTime.UtcNow.AddDays(EndpointRouteBuilderExtensions.TimePeriod.MaxDays + 1)
-                        )
-                    )
+                    .Where(EndpointFilter.To(DateTime.UtcNow.AddDays(TimePeriod.MaxDays + 1)))
                     .Where(EndpointFilter.Match(true))
             )
         );
