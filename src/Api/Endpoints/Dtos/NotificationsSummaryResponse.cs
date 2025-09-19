@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 // ReSharper disable InconsistentNaming
 
-namespace Defra.TradeImportsReportingApi.Api.Endpoints;
+namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
 public record NotificationsSummaryResponse(
     [property: JsonPropertyName("chedA")] int ChedA,

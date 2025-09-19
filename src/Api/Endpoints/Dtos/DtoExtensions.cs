@@ -2,7 +2,7 @@ using System.Text;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 
-namespace Defra.TradeImportsReportingApi.Api.Endpoints;
+namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
 public static class DtoExtensions
 {

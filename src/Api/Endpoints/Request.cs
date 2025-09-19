@@ -1,3 +1,4 @@
+using System.Text;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;
@@ -61,4 +62,11 @@ public static class Request
 
         return errors;
     }
+
+    private const string CsvContentType = "text/csv";
+
+    public static IResult CsvResult(string content) => Results.Text(content, CsvContentType, Encoding.UTF8);
+
+    public static bool IsCsvRequired(HttpContext httpContext) =>
+        httpContext.Request.Headers.Accept.ToString().Contains(CsvContentType, StringComparison.OrdinalIgnoreCase);
 }

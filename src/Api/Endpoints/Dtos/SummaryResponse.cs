@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Defra.TradeImportsReportingApi.Api.Endpoints;
+namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
 public record SummaryResponse(
     [property: JsonPropertyName("releases")] ReleasesSummaryResponse Releases,

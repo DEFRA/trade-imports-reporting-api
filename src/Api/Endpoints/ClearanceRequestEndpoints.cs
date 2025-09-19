@@ -1,4 +1,5 @@
 using Defra.TradeImportsReportingApi.Api.Data;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;

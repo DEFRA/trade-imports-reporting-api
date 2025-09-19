@@ -1,4 +1,5 @@
 using Defra.TradeImportsReportingApi.Api.Data;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;
@@ -149,8 +150,8 @@ public static class MatchesEndpoints
 
         var matchesData = await reportRepository.GetMatches(from, to, match, cancellationToken);
 
-        return CsvRequest.IsCsvRequired(httpContext)
-            ? CsvRequest.Result(matchesData.ToCsvResponse())
+        return Request.IsCsvRequired(httpContext)
+            ? Request.CsvResult(matchesData.ToCsvResponse())
             : Results.Ok(matchesData.ToResponse());
     }
 }
