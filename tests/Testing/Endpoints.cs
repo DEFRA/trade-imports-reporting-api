@@ -19,6 +19,8 @@ public static class Endpoints
 
         public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
 
+        public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
+
         public static string Data(EndpointQuery? query = null) => $"{Root}/data{query}";
     }
 

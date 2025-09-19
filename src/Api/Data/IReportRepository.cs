@@ -13,6 +13,13 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
+    Task<IReadOnlyList<ReleasesBucket>> GetReleasesIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    );
+
     Task<IReadOnlyList<Finalisation>> GetReleases(
         DateTime from,
         DateTime to,

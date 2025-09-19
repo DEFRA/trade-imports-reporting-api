@@ -171,6 +171,16 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
+        app.MapGet("releases/intervals", ReleasesIntervals)
+            .WithName("ReleasesIntervals")
+            .WithTags("Finalisations")
+            .WithSummary("Get releases by interval")
+            .WithDescription(s_description)
+            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
         app.MapGet("releases/data", ReleasesData)
             .WithName("ReleasesData")
             .WithTags("Finalisations")
@@ -230,6 +240,32 @@ public static class EndpointRouteBuilderExtensions
         var releasesBuckets = await reportRepository.GetReleasesBuckets(from, to, unit, cancellationToken);
 
         return Results.Ok(releasesBuckets.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> ReleasesIntervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesIntervals = await reportRepository.GetReleasesIntervals(from, to, intervals, cancellationToken);
+
+        return Results.Ok(releasesIntervals.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
