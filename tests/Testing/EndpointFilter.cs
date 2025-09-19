@@ -15,4 +15,8 @@ public class EndpointFilter
     public static EndpointFilter Match(bool match) => new($"match={match.ToString().ToLower()}");
 
     public static EndpointFilter ReleaseType(string releaseType) => new($"releaseType={releaseType}");
+
+    private static EndpointFilter Intervals(DateTime interval) => new($"intervals={interval:O}");
+
+    public static EndpointFilter[] Intervals(DateTime[] intervals) => intervals.Select(Intervals).ToArray();
 }

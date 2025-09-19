@@ -667,6 +667,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new NotificationsBucket(x, NotificationsSummary.Empty));
     }
 
+    public Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken)
     {
         var latestFinalisation = await dbContext

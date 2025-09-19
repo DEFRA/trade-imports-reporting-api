@@ -71,6 +71,16 @@ public static class EndpointRouteBuilderExtensions
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
+
+        app.MapGet("notifications/intervals", NotificationsIntervals)
+            .WithName("NotificationsIntervals")
+            .WithTags("Notifications")
+            .WithSummary("Get notifications by interval")
+            .WithDescription(s_description)
+            .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
     }
 
     private static void MapClearanceRequestEndpoints(IEndpointRouteBuilder app)
@@ -427,6 +437,37 @@ public static class EndpointRouteBuilderExtensions
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> NotificationsIntervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var notificationsIntervals = await reportRepository.GetNotificationsIntervals(
+            from,
+            to,
+            intervals,
+            cancellationToken
+        );
+
+        return Results.Ok(notificationsIntervals.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="reportRepository"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -536,7 +577,8 @@ public static class EndpointRouteBuilderExtensions
         DateTime from,
         DateTime to,
         string? unit = null,
-        string? releaseType = null
+        string? releaseType = null,
+        DateTime[]? intervals = null
     )
     {
         var errors = new Dictionary<string, string[]>();
@@ -579,6 +621,11 @@ public static class EndpointRouteBuilderExtensions
                     $"release type must be '{ReleaseType.Automatic}' or '{ReleaseType.Manual}' or '{ReleaseType.Cancelled}'",
                 ]
             );
+        }
+
+        if (intervals is not null && intervals.Any(interval => interval.Kind != DateTimeKind.Utc))
+        {
+            errors.Add("intervals", ["date(s) must be UTC"]);
         }
 
         return errors;
