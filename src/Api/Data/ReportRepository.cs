@@ -395,6 +395,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
+    public Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IReadOnlyList<Decision>> GetMatches(
         DateTime from,
         DateTime to,

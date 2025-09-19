@@ -36,6 +36,13 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
+    Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    );
+
     Task<IReadOnlyList<Decision>> GetMatches(
         DateTime from,
         DateTime to,
