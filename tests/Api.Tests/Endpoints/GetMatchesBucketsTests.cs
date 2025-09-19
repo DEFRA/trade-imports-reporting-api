@@ -25,7 +25,7 @@ public class GetMatchesBucketsTests(ApiWebApplicationFactory factory, ITestOutpu
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.Matches.Summary());
+        var response = await client.GetAsync(Testing.Endpoints.Matches.Buckets());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -65,10 +65,11 @@ public class GetMatchesBucketsTests(ApiWebApplicationFactory factory, ITestOutpu
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Matches.Summary(
+            Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow.AddDays(1)))
                     .Where(EndpointFilter.To(DateTime.UtcNow))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -83,7 +84,7 @@ public class GetMatchesBucketsTests(ApiWebApplicationFactory factory, ITestOutpu
         var client = CreateClient();
 
         var response = await client.GetAsync(
-            Testing.Endpoints.Matches.Summary(
+            Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(DateTime.UtcNow))
                     .Where(
@@ -91,6 +92,7 @@ public class GetMatchesBucketsTests(ApiWebApplicationFactory factory, ITestOutpu
                             DateTime.UtcNow.AddDays(EndpointRouteBuilderExtensions.TimePeriod.MaxDays + 1)
                         )
                     )
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
@@ -106,8 +108,11 @@ public class GetMatchesBucketsTests(ApiWebApplicationFactory factory, ITestOutpu
 
         var now = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified);
         var response = await client.GetAsync(
-            Testing.Endpoints.Matches.Summary(
-                EndpointQuery.New.Where(EndpointFilter.From(now)).Where(EndpointFilter.To(now.AddDays(1)))
+            Testing.Endpoints.Matches.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Unit(Units.Hour))
             )
         );
 
