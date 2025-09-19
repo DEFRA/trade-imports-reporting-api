@@ -86,7 +86,11 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.UseMiddleware<MetricsMiddleware>();
     app.MapHealth();
     app.UseStatusCodePages();
-    app.MapEndpoints();
+    app.MapReleasesEndpoints();
+    app.MapMatchesEndpoints();
+    app.MapClearanceRequestEndpoints();
+    app.MapNotificationEndpoints();
+    app.MapGeneralEndpoints();
     app.UseOpenApi();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
