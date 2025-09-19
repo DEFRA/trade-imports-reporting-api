@@ -6,7 +6,7 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class DtoExtensions
 {
-    public static ClearanceRequestsSummaryBucketResponse ToBucketResponse(this ClearanceRequestsSummary summary) =>
+    public static ClearanceRequestsSummaryIntervalResponse ToBucketResponse(this ClearanceRequestsSummary summary) =>
         new(summary.Unique);
 
     public static ReleasesSummaryResponse ToResponse(this ReleasesSummary summary) =>
@@ -21,36 +21,40 @@ public static class DtoExtensions
     public static NotificationsSummaryResponse ToResponse(this NotificationsSummary summary) =>
         new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
 
-    public static BucketsResponse<BucketResponse<ReleasesSummaryResponse>> ToResponse(
+    public static IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>> ToResponse(
         this IReadOnlyList<ReleasesBucket> buckets
     ) =>
         new(
-            buckets.Select(x => new BucketResponse<ReleasesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList()
+            buckets
+                .Select(x => new IntervalResponse<ReleasesSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
+                .ToList()
         );
 
-    public static BucketsResponse<BucketResponse<MatchesSummaryResponse>> ToResponse(
+    public static IntervalsResponse<IntervalResponse<MatchesSummaryResponse>> ToResponse(
         this IReadOnlyList<MatchesBucket> buckets
     ) =>
-        new(buckets.Select(x => new BucketResponse<MatchesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList());
+        new(
+            buckets.Select(x => new IntervalResponse<MatchesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList()
+        );
 
-    public static BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>> ToResponse(
+    public static IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>> ToResponse(
         this IReadOnlyList<ClearanceRequestsBucket> buckets
     ) =>
         new(
             buckets
-                .Select(x => new BucketResponse<ClearanceRequestsSummaryBucketResponse>(
+                .Select(x => new IntervalResponse<ClearanceRequestsSummaryIntervalResponse>(
                     x.Bucket,
                     x.Summary.ToBucketResponse()
                 ))
                 .ToList()
         );
 
-    public static BucketsResponse<BucketResponse<NotificationsSummaryResponse>> ToResponse(
+    public static IntervalsResponse<IntervalResponse<NotificationsSummaryResponse>> ToResponse(
         this IReadOnlyList<NotificationsBucket> buckets
     ) =>
         new(
             buckets
-                .Select(x => new BucketResponse<NotificationsSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
+                .Select(x => new IntervalResponse<NotificationsSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
                 .ToList()
         );
 

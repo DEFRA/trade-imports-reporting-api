@@ -1,31 +1,31 @@
 ﻿{
-  "buckets": [
+  "intervals": [
     {
-      "bucket": "2025-09-03T15:00:00Z",
+      "interval": "2025-09-03T15:00:00Z",
       "summary": {
         "unique": 0
       }
     },
     {
-      "bucket": "2025-09-03T16:00:00Z",
+      "interval": "2025-09-03T16:00:00Z",
       "summary": {
         "unique": 1
       }
     },
     {
-      "bucket": "2025-09-03T17:00:00Z",
+      "interval": "2025-09-03T17:00:00Z",
       "summary": {
         "unique": 0
       }
     },
     {
-      "bucket": "2025-09-03T18:00:00Z",
+      "interval": "2025-09-03T18:00:00Z",
       "summary": {
         "unique": 1
       }
     },
     {
-      "bucket": "2025-09-03T19:00:00Z",
+      "interval": "2025-09-03T19:00:00Z",
       "summary": {
         "unique": 0
       }

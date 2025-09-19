@@ -129,7 +129,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clearance-requests/intervals": {
+      "get": {
+        "tags": [
+          "Clearance Requests"
+        ],
+        "summary": "Get clearance requests by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "ClearanceRequestsIntervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -270,7 +349,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/intervals": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "MatchesIntervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -486,7 +644,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/intervals": {
+      "get": {
+        "tags": [
+          "Finalisations"
+        ],
+        "summary": "Get releases by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "ReleasesIntervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -702,7 +939,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BucketsResponse"
+                  "$ref": "#/components/schemas/IntervalsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intervals": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "Get by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "Intervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntervalsResponse"
                 }
               }
             }
@@ -843,7 +1159,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/intervals": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Get notifications by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "NotificationsIntervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -915,41 +1310,7 @@
   },
   "components": {
     "schemas": {
-      "BucketsResponse": {
-        "type": "object",
-        "properties": {
-          "releases": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
-              }
-            ]
-          },
-          "matches": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
-              }
-            ]
-          },
-          "clearanceRequests": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
-              }
-            ]
-          },
-          "notifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClearanceRequestsSummaryBucketResponse": {
+      "ClearanceRequestsSummaryIntervalResponse": {
         "type": "object",
         "properties": {
           "unique": {
@@ -959,17 +1320,17 @@
         },
         "additionalProperties": false
       },
-      "ClearanceRequestsSummaryBucketResponseBucketResponse": {
+      "ClearanceRequestsSummaryIntervalResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
           "summary": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponse"
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponse"
               }
             ],
             "nullable": true
@@ -977,13 +1338,13 @@
         },
         "additionalProperties": false
       },
-      "ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse": {
+      "ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponse"
+              "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponse"
             }
           }
         },
@@ -999,6 +1360,40 @@
           "total": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IntervalsResponse": {
+        "type": "object",
+        "properties": {
+          "releases": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
+              }
+            ]
+          },
+          "matches": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
+              }
+            ]
+          },
+          "clearanceRequests": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
+              }
+            ]
+          },
+          "notifications": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -1081,10 +1476,10 @@
         },
         "additionalProperties": false
       },
-      "MatchesSummaryResponseBucketResponse": {
+      "MatchesSummaryResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
@@ -1099,13 +1494,13 @@
         },
         "additionalProperties": false
       },
-      "MatchesSummaryResponseBucketResponseBucketsResponse": {
+      "MatchesSummaryResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponse"
+              "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponse"
             }
           }
         },
@@ -1137,10 +1532,10 @@
         },
         "additionalProperties": false
       },
-      "NotificationsSummaryResponseBucketResponse": {
+      "NotificationsSummaryResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
@@ -1155,13 +1550,13 @@
         },
         "additionalProperties": false
       },
-      "NotificationsSummaryResponseBucketResponseBucketsResponse": {
+      "NotificationsSummaryResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponse"
+              "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponse"
             }
           }
         },
@@ -1237,10 +1632,10 @@
         },
         "additionalProperties": false
       },
-      "ReleasesSummaryResponseBucketResponse": {
+      "ReleasesSummaryResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
@@ -1255,13 +1650,13 @@
         },
         "additionalProperties": false
       },
-      "ReleasesSummaryResponseBucketResponseBucketsResponse": {
+      "ReleasesSummaryResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponse"
+              "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponse"
             }
           }
         },

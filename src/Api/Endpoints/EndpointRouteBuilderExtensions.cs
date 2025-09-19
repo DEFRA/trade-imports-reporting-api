@@ -44,7 +44,17 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("General")
             .WithSummary("Get buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse>()
+            .Produces<IntervalsResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("intervals", Intervals)
+            .WithName("Intervals")
+            .WithTags("General")
+            .WithSummary("Get by interval")
+            .WithDescription(s_description)
+            .Produces<IntervalsResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -67,7 +77,17 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Notifications")
             .WithSummary("Get notifications buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<NotificationsSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("notifications/intervals", NotificationsIntervals)
+            .WithName("NotificationsIntervals")
+            .WithTags("Notifications")
+            .WithSummary("Get notifications by interval")
+            .WithDescription(s_description)
+            .Produces<IntervalsResponse<IntervalResponse<NotificationsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -90,7 +110,17 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("clearance-requests/intervals", ClearanceRequestsIntervals)
+            .WithName("ClearanceRequestsIntervals")
+            .WithTags("Clearance Requests")
+            .WithSummary("Get clearance requests by interval")
+            .WithDescription(s_description)
+            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -113,7 +143,17 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Decisions")
             .WithSummary("Get matches buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<MatchesSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("matches/intervals", MatchesIntervals)
+            .WithName("MatchesIntervals")
+            .WithTags("Decisions")
+            .WithSummary("Get matches by interval")
+            .WithDescription(s_description)
+            .Produces<IntervalsResponse<IntervalResponse<MatchesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -146,7 +186,17 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Finalisations")
             .WithSummary("Get releases buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("releases/intervals", ReleasesIntervals)
+            .WithName("ReleasesIntervals")
+            .WithTags("Finalisations")
+            .WithSummary("Get releases by interval")
+            .WithDescription(s_description)
+            .Produces<IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -210,6 +260,32 @@ public static class EndpointRouteBuilderExtensions
         var releasesBuckets = await reportRepository.GetReleasesBuckets(from, to, unit, cancellationToken);
 
         return Results.Ok(releasesBuckets.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> ReleasesIntervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesIntervals = await reportRepository.GetReleasesIntervals(from, to, intervals, cancellationToken);
+
+        return Results.Ok(releasesIntervals.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -290,6 +366,32 @@ public static class EndpointRouteBuilderExtensions
         var matchesBuckets = await reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
 
         return Results.Ok(matchesBuckets.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> MatchesIntervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var matchesIntervals = await reportRepository.GetMatchesIntervals(from, to, intervals, cancellationToken);
+
+        return Results.Ok(matchesIntervals.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -377,6 +479,37 @@ public static class EndpointRouteBuilderExtensions
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> ClearanceRequestsIntervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var clearanceRequestsIntervals = await reportRepository.GetClearanceRequestsIntervals(
+            from,
+            to,
+            intervals,
+            cancellationToken
+        );
+
+        return Results.Ok(clearanceRequestsIntervals.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="reportRepository"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -423,6 +556,37 @@ public static class EndpointRouteBuilderExtensions
         var notificationsBuckets = await reportRepository.GetNotificationsBuckets(from, to, unit, cancellationToken);
 
         return Results.Ok(notificationsBuckets.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> NotificationsIntervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var notificationsIntervals = await reportRepository.GetNotificationsIntervals(
+            from,
+            to,
+            intervals,
+            cancellationToken
+        );
+
+        return Results.Ok(notificationsIntervals.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -500,7 +664,55 @@ public static class EndpointRouteBuilderExtensions
         var notifications = await notificationsTask;
 
         return Results.Ok(
-            new BucketsResponse(
+            new IntervalsResponse(
+                releases.ToResponse(),
+                matches.ToResponse(),
+                clearanceRequests.ToResponse(),
+                notifications.ToResponse()
+            )
+        );
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> Intervals(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromQuery] DateTime[] intervals,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = ValidateRequest(from, to, intervals: intervals);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var releasesTask = reportRepository.GetReleasesIntervals(from, to, intervals, cancellationToken);
+        var matchesTask = reportRepository.GetMatchesIntervals(from, to, intervals, cancellationToken);
+        var clearanceRequestsTask = reportRepository.GetClearanceRequestsIntervals(
+            from,
+            to,
+            intervals,
+            cancellationToken
+        );
+        var notificationsTask = reportRepository.GetNotificationsIntervals(from, to, intervals, cancellationToken);
+
+        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
+
+        var releases = await releasesTask;
+        var matches = await matchesTask;
+        var clearanceRequests = await clearanceRequestsTask;
+        var notifications = await notificationsTask;
+
+        return Results.Ok(
+            new IntervalsResponse(
                 releases.ToResponse(),
                 matches.ToResponse(),
                 clearanceRequests.ToResponse(),
@@ -536,7 +748,8 @@ public static class EndpointRouteBuilderExtensions
         DateTime from,
         DateTime to,
         string? unit = null,
-        string? releaseType = null
+        string? releaseType = null,
+        DateTime[]? intervals = null
     )
     {
         var errors = new Dictionary<string, string[]>();
@@ -579,6 +792,11 @@ public static class EndpointRouteBuilderExtensions
                     $"release type must be '{ReleaseType.Automatic}' or '{ReleaseType.Manual}' or '{ReleaseType.Cancelled}'",
                 ]
             );
+        }
+
+        if (intervals is not null && intervals.Any(interval => interval.Kind != DateTimeKind.Utc))
+        {
+            errors.Add("intervals", ["date(s) must be UTC"]);
         }
 
         return errors;
