@@ -1,13 +1,13 @@
 ﻿{
-  "buckets": [
+  "intervals": [
     {
-      "bucket": "2025-09-03T15:00:00Z",
+      "interval": "2025-09-03T15:00:00Z",
       "summary": {
         "unique": 1
       }
     },
     {
-      "bucket": "2025-09-03T16:00:00Z",
+      "interval": "2025-09-03T16:00:00Z",
       "summary": {
         "unique": 2
       }

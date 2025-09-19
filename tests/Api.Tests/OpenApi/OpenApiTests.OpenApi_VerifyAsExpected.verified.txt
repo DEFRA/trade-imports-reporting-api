@@ -129,7 +129,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -208,7 +208,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -349,7 +349,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -428,7 +428,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -644,7 +644,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -723,7 +723,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -939,7 +939,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BucketsResponse"
+                  "$ref": "#/components/schemas/IntervalsResponse"
                 }
               }
             }
@@ -1018,7 +1018,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BucketsResponse"
+                  "$ref": "#/components/schemas/IntervalsResponse"
                 }
               }
             }
@@ -1159,7 +1159,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -1238,7 +1238,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
+                  "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -1310,41 +1310,7 @@
   },
   "components": {
     "schemas": {
-      "BucketsResponse": {
-        "type": "object",
-        "properties": {
-          "releases": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponseBucketsResponse"
-              }
-            ]
-          },
-          "matches": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponseBucketsResponse"
-              }
-            ]
-          },
-          "clearanceRequests": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse"
-              }
-            ]
-          },
-          "notifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponseBucketsResponse"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClearanceRequestsSummaryBucketResponse": {
+      "ClearanceRequestsSummaryIntervalResponse": {
         "type": "object",
         "properties": {
           "unique": {
@@ -1354,17 +1320,17 @@
         },
         "additionalProperties": false
       },
-      "ClearanceRequestsSummaryBucketResponseBucketResponse": {
+      "ClearanceRequestsSummaryIntervalResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
           "summary": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponse"
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponse"
               }
             ],
             "nullable": true
@@ -1372,13 +1338,13 @@
         },
         "additionalProperties": false
       },
-      "ClearanceRequestsSummaryBucketResponseBucketResponseBucketsResponse": {
+      "ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ClearanceRequestsSummaryBucketResponseBucketResponse"
+              "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponse"
             }
           }
         },
@@ -1394,6 +1360,40 @@
           "total": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IntervalsResponse": {
+        "type": "object",
+        "properties": {
+          "releases": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
+              }
+            ]
+          },
+          "matches": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
+              }
+            ]
+          },
+          "clearanceRequests": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
+              }
+            ]
+          },
+          "notifications": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
+              }
+            ]
           }
         },
         "additionalProperties": false
@@ -1476,10 +1476,10 @@
         },
         "additionalProperties": false
       },
-      "MatchesSummaryResponseBucketResponse": {
+      "MatchesSummaryResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
@@ -1494,13 +1494,13 @@
         },
         "additionalProperties": false
       },
-      "MatchesSummaryResponseBucketResponseBucketsResponse": {
+      "MatchesSummaryResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MatchesSummaryResponseBucketResponse"
+              "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponse"
             }
           }
         },
@@ -1532,10 +1532,10 @@
         },
         "additionalProperties": false
       },
-      "NotificationsSummaryResponseBucketResponse": {
+      "NotificationsSummaryResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
@@ -1550,13 +1550,13 @@
         },
         "additionalProperties": false
       },
-      "NotificationsSummaryResponseBucketResponseBucketsResponse": {
+      "NotificationsSummaryResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/NotificationsSummaryResponseBucketResponse"
+              "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponse"
             }
           }
         },
@@ -1632,10 +1632,10 @@
         },
         "additionalProperties": false
       },
-      "ReleasesSummaryResponseBucketResponse": {
+      "ReleasesSummaryResponseIntervalResponse": {
         "type": "object",
         "properties": {
-          "bucket": {
+          "interval": {
             "type": "string",
             "format": "date-time"
           },
@@ -1650,13 +1650,13 @@
         },
         "additionalProperties": false
       },
-      "ReleasesSummaryResponseBucketResponseBucketsResponse": {
+      "ReleasesSummaryResponseIntervalResponseIntervalsResponse": {
         "type": "object",
         "properties": {
-          "buckets": {
+          "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ReleasesSummaryResponseBucketResponse"
+              "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponse"
             }
           }
         },

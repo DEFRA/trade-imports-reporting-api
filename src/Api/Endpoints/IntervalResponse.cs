@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
-public record BucketResponse<T>(
-    [property: JsonPropertyName("bucket")] DateTime Bucket,
+public record IntervalResponse<T>(
+    [property: JsonPropertyName("interval")] DateTime Interval,
     [property: JsonPropertyName("summary")] T Summary
 );

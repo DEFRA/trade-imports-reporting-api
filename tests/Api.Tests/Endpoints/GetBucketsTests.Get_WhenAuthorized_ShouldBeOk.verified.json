@@ -1,8 +1,8 @@
 ﻿{
   "releases": {
-    "buckets": [
+    "intervals": [
       {
-        "bucket": "2025-09-03T15:00:00Z",
+        "interval": "2025-09-03T15:00:00Z",
         "summary": {
           "automatic": 1,
           "manual": 3,
@@ -10,7 +10,7 @@
         }
       },
       {
-        "bucket": "2025-09-03T16:00:00Z",
+        "interval": "2025-09-03T16:00:00Z",
         "summary": {
           "automatic": 2,
           "manual": 4,
@@ -20,9 +20,9 @@
     ]
   },
   "matches": {
-    "buckets": [
+    "intervals": [
       {
-        "bucket": "2025-09-03T15:00:00Z",
+        "interval": "2025-09-03T15:00:00Z",
         "summary": {
           "match": 1,
           "noMatch": 3,
@@ -30,7 +30,7 @@
         }
       },
       {
-        "bucket": "2025-09-03T16:00:00Z",
+        "interval": "2025-09-03T16:00:00Z",
         "summary": {
           "match": 2,
           "noMatch": 4,
@@ -40,15 +40,15 @@
     ]
   },
   "clearanceRequests": {
-    "buckets": [
+    "intervals": [
       {
-        "bucket": "2025-09-03T15:00:00Z",
+        "interval": "2025-09-03T15:00:00Z",
         "summary": {
           "unique": 1
         }
       },
       {
-        "bucket": "2025-09-03T16:00:00Z",
+        "interval": "2025-09-03T16:00:00Z",
         "summary": {
           "unique": 2
         }
@@ -56,9 +56,9 @@
     ]
   },
   "notifications": {
-    "buckets": [
+    "intervals": [
       {
-        "bucket": "2025-09-03T15:00:00Z",
+        "interval": "2025-09-03T15:00:00Z",
         "summary": {
           "chedA": 10,
           "chedP": 20,
@@ -68,7 +68,7 @@
         }
       },
       {
-        "bucket": "2025-09-03T16:00:00Z",
+        "interval": "2025-09-03T16:00:00Z",
         "summary": {
           "chedA": 1,
           "chedP": 2,

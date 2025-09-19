@@ -44,7 +44,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("General")
             .WithSummary("Get buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse>()
+            .Produces<IntervalsResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -54,7 +54,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("General")
             .WithSummary("Get by interval")
             .WithDescription(s_description)
-            .Produces<BucketsResponse>()
+            .Produces<IntervalsResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -77,7 +77,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Notifications")
             .WithSummary("Get notifications buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<NotificationsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -87,7 +87,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Notifications")
             .WithSummary("Get notifications by interval")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<NotificationsSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<NotificationsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -110,7 +110,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -120,7 +120,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests by interval")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<ClearanceRequestsSummaryBucketResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -143,7 +143,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Decisions")
             .WithSummary("Get matches buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<MatchesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -153,7 +153,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Decisions")
             .WithSummary("Get matches by interval")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<MatchesSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<MatchesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -186,7 +186,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Finalisations")
             .WithSummary("Get releases buckets by day or hour")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -196,7 +196,7 @@ public static class EndpointRouteBuilderExtensions
             .WithTags("Finalisations")
             .WithSummary("Get releases by interval")
             .WithDescription(s_description)
-            .Produces<BucketsResponse<BucketResponse<ReleasesSummaryResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -664,7 +664,7 @@ public static class EndpointRouteBuilderExtensions
         var notifications = await notificationsTask;
 
         return Results.Ok(
-            new BucketsResponse(
+            new IntervalsResponse(
                 releases.ToResponse(),
                 matches.ToResponse(),
                 clearanceRequests.ToResponse(),
@@ -712,7 +712,7 @@ public static class EndpointRouteBuilderExtensions
         var notifications = await notificationsTask;
 
         return Results.Ok(
-            new BucketsResponse(
+            new IntervalsResponse(
                 releases.ToResponse(),
                 matches.ToResponse(),
                 clearanceRequests.ToResponse(),

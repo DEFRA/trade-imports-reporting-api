@@ -1,7 +1,7 @@
 ﻿{
-  "buckets": [
+  "intervals": [
     {
-      "bucket": "2025-09-03T00:00:00Z",
+      "interval": "2025-09-03T00:00:00Z",
       "summary": {
         "automatic": 2,
         "manual": 0,
