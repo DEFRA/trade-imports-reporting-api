@@ -228,6 +228,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
+    public Task<IReadOnlyList<ReleasesBucket>> GetReleasesIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IReadOnlyList<Finalisation>> GetReleases(
         DateTime from,
         DateTime to,
@@ -385,6 +395,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
+    public Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IReadOnlyList<Decision>> GetMatches(
         DateTime from,
         DateTime to,
@@ -522,6 +542,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             results,
             x => new ClearanceRequestsBucket(x, ClearanceRequestsSummary.Empty)
         );
+    }
+
+    public Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<NotificationsSummary> GetNotificationsSummary(
@@ -665,6 +695,16 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
 
         return AddEmptyBuckets(from, to, unit, results, x => new NotificationsBucket(x, NotificationsSummary.Empty));
+    }
+
+    public Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
+        DateTime from,
+        DateTime to,
+        DateTime[] intervals,
+        CancellationToken cancellationToken
+    )
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken)
