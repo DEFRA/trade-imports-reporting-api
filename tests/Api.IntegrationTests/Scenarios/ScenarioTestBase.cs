@@ -1,9 +1,12 @@
 using System.Text.Json;
 using Amazon.SQS.Model;
 using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsDataApi.Domain.Ipaffs;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Extensions;
+using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
+using Decision = Defra.TradeImportsReportingApi.Api.Data.Entities.Decision;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
@@ -129,4 +132,46 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             })
         );
     }
+
+    protected static DateTime[] CreateIntervals(DateTime from, DateTime to, int numberRequired = 1)
+    {
+        var totalTicks = to.Ticks - from.Ticks;
+        var denominator = numberRequired + 1;
+        var result = new DateTime[numberRequired];
+
+        for (var i = 1; i <= numberRequired; i++)
+        {
+            var ticks = from.Ticks + totalTicks * i / denominator;
+
+            result[i - 1] = new DateTime(ticks, from.Kind);
+        }
+
+        return result;
+    }
+
+    protected async Task SendNotification(
+        DateTime created,
+        string? ched = null,
+        DateTime? updated = null,
+        string type = ImportPreNotificationType.CVEDA
+    )
+    {
+        ched ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            ched,
+            ResourceEventResourceTypes.ImportPreNotification,
+            new ImportPreNotificationEntity
+            {
+                Created = created,
+                Updated = updated ?? created,
+                ImportPreNotification = new ImportPreNotification { ImportNotificationType = type },
+            }
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+        await WaitForNotificationChed(ched);
+    }
+
+    // Add methods for other types of notification
 }

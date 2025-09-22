@@ -61,6 +61,22 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenSingleNotification_ShouldBeSingleCount)}_intervals")
+            .UseParameters(importNotificationType)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Fact]
@@ -125,6 +141,21 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_buckets")
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_intervals")
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
@@ -199,6 +230,23 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName(
+                $"{nameof(WhenMultipleNotificationForDifferentChed_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
+            )
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 
     [Theory]
@@ -269,6 +317,74 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync())
             .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_buckets")
             .UseParameters(unit)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_intervals")
+            .UseParameters(unit)
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+    }
+
+    [Fact]
+    public async Task WhenCallingFor24Hours_ShouldBeExpectedBuckets()
+    {
+        var start = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        // First bucket
+        await SendNotification(start);
+        await SendNotification(start.AddMinutes(1), type: ImportPreNotificationType.CVEDP);
+        // Second bucket
+        await SendNotification(start.AddHours(13));
+        await SendNotification(start.AddHours(15), type: ImportPreNotificationType.CVEDP);
+        await SendNotification(start.AddHours(17), type: ImportPreNotificationType.CHEDPP);
+        await SendNotification(start.AddHours(19), type: ImportPreNotificationType.CED);
+        // Returned in second call as would be the next day based on 2025-09-03 00:00:00 to 2025-09-04 00:00:00
+        await SendNotification(start.AddHours(24));
+
+        var client = CreateHttpClient();
+
+        var from = start;
+        var to = start.AddDays(1);
+        var response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        from = from.AddDays(1);
+        to = to.AddDays(1);
+        response = await client.GetAsync(
+            Testing.Endpoints.Notifications.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second")
             .UseStrictJson()
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
