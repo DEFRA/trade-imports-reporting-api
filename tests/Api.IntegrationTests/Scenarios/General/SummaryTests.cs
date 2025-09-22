@@ -17,11 +17,9 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         var ched = Guid.NewGuid().ToString();
         await SendNotification(utcDate, ched, utcDate.AddMinutes(1));
 
-        var client = CreateHttpClient();
-
         var from = utcDate.AddHours(-1);
         var to = utcDate.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Summary.Get(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )

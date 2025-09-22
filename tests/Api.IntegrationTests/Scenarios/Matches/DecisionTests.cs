@@ -15,11 +15,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), decisionCode: decisionCode);
 
-        var client = CreateHttpClient();
-
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -31,7 +29,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -47,7 +45,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -76,11 +74,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await SendDecision(mrnCreated, expectedTimestamp, mrn, wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
 
-        var client = CreateHttpClient();
-
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -91,7 +87,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -106,7 +102,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -136,11 +132,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await SendDecision(mrnCreated, expectedTimestamp, mrn, decisionCode: DecisionCode.Match, wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
 
-        var client = CreateHttpClient();
-
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -151,7 +145,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -168,7 +162,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -197,11 +191,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         // Outside From and To
         await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
 
-        var client = CreateHttpClient();
-
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -212,7 +204,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -229,7 +221,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -257,11 +249,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
         await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
 
-        var client = CreateHttpClient();
-
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(3);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -273,7 +263,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))

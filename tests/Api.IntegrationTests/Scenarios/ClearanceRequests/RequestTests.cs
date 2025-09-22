@@ -11,11 +11,9 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
 
         await SendClearanceRequest(messageSentAt);
 
-        var client = CreateHttpClient();
-
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -26,7 +24,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -53,11 +51,9 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await SendClearanceRequest(messageSentAt.AddMinutes(10), mrn, wait: false);
         await WaitForRequestMrn(mrn, count: 2);
 
-        var client = CreateHttpClient();
-
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -68,7 +64,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -95,11 +91,9 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await SendClearanceRequest(messageSentAt.AddHours(2), mrn, wait: false);
         await WaitForRequestMrn(mrn, count: 2);
 
-        var client = CreateHttpClient();
-
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -110,7 +104,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -138,11 +132,9 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await SendClearanceRequest(messageSentAt);
         await SendClearanceRequest(messageSentAt.AddHours(2));
 
-        var client = CreateHttpClient();
-
         var from = messageSentAt.AddHours(-1);
         var to = messageSentAt.AddHours(3);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -154,7 +146,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))

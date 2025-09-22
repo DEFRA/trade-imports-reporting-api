@@ -16,11 +16,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await SendNotification(created, type: importNotificationType);
 
-        var client = CreateHttpClient();
-
         var from = created.AddHours(-1);
         var to = created.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -32,7 +30,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -48,7 +46,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -76,11 +74,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await SendNotification(created, ched, updated: created.AddMinutes(1), wait: false);
         await WaitForNotificationChed(ched, count: 2);
 
-        var client = CreateHttpClient();
-
         var from = created.AddHours(-1);
         var to = created.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -91,7 +87,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -106,7 +102,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -131,11 +127,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         // Outside From and To
         await SendNotification(created.AddHours(2), updated: created.AddHours(2).AddMinutes(1));
 
-        var client = CreateHttpClient();
-
         var from = created.AddHours(-1);
         var to = created.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -146,7 +140,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -163,7 +157,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -196,11 +190,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             type: ImportPreNotificationType.CVEDP
         );
 
-        var client = CreateHttpClient();
-
         var from = created.AddHours(-1);
         var to = created.AddHours(3);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
@@ -212,7 +204,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -228,7 +220,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .DontScrubDateTimes()
             .DontIgnoreEmptyCollections();
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -262,13 +254,11 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         // 2025-09-03 00:00:00 to 2025-09-04 00:00:00
         await SendNotification(start.AddHours(24));
 
-        var client = CreateHttpClient();
-
         var from = start;
         var to = start.AddDays(1);
 
         // First request
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -286,7 +276,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         to = to.AddDays(1);
 
         // Second request
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))

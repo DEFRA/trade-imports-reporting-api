@@ -12,9 +12,7 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await SendFinalisation(messageSentAt.AddSeconds(10), mrn, wait: false);
         await WaitForFinalisationMrn(mrn, count: 2);
 
-        var client = CreateHttpClient();
-
-        var response = await client.GetAsync(Testing.Endpoints.LastReceived.Get());
+        var response = await DefaultClient.GetAsync(Testing.Endpoints.LastReceived.Get());
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
     }
@@ -29,9 +27,7 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await SendClearanceRequest(messageSentAt.AddSeconds(10), mrn, wait: false);
         await WaitForRequestMrn(mrn, count: 2);
 
-        var client = CreateHttpClient();
-
-        var response = await client.GetAsync(Testing.Endpoints.LastReceived.Get());
+        var response = await DefaultClient.GetAsync(Testing.Endpoints.LastReceived.Get());
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
     }
