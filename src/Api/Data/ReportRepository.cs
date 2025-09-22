@@ -395,14 +395,136 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
-    public Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
+    public async Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
         DateTime from,
         DateTime to,
         DateTime[] intervals,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        GuardUtc(from, to, intervals);
+        GuardIntervals(from, to, intervals);
+
+        const string match = nameof(match);
+        const string noMatch = nameof(noMatch);
+        const string total = nameof(total);
+
+        var boundaries = new[] { from }.Concat(intervals).Concat([to]).OrderBy(x => x).ToHashSet();
+        var pipeline = new[]
+        {
+            MatchesMatch(from, to),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { Fields.Decision.Mrn, 1 },
+                    { Fields.Decision.Timestamp, 1 },
+                    { Fields.Decision.Match, 1 },
+                    { Fields.Decision.MrnCreated, 1 },
+                }
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument("boundaries", new BsonArray(boundaries.Select(x => (BsonValue)x)))
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument(
+                    "bucket",
+                    new BsonDocument(
+                        "$let",
+                        new BsonDocument
+                        {
+                            {
+                                "vars",
+                                new BsonDocument(
+                                    "le",
+                                    new BsonDocument(
+                                        "$filter",
+                                        new BsonDocument
+                                        {
+                                            { "input", "$boundaries" },
+                                            { "as", "b" },
+                                            {
+                                                "cond",
+                                                new BsonDocument(
+                                                    "$lte",
+                                                    new BsonArray { "$$b", $"${Fields.Decision.MrnCreated}" }
+                                                )
+                                            },
+                                        }
+                                    )
+                                )
+                            },
+                            {
+                                "in",
+                                new BsonDocument(
+                                    "$arrayElemAt",
+                                    new BsonArray
+                                    {
+                                        "$$le",
+                                        new BsonDocument(
+                                            "$subtract",
+                                            new BsonArray { new BsonDocument("$size", "$$le"), 1 }
+                                        ),
+                                    }
+                                )
+                            },
+                        }
+                    )
+                )
+            ),
+            new BsonDocument("$unset", "boundaries"),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    {
+                        "_id",
+                        new BsonDocument { { "bucket", "$bucket" }, { Fields.Decision.Mrn, $"${Fields.Decision.Mrn}" } }
+                    },
+                    SortAndTakeLatest(Fields.Decision.Timestamp, Fields.Decision.Match),
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", new BsonDocument("bucket", "$_id.bucket") },
+                    FieldSum(match, Fields.Decision.Match, true),
+                    FieldSum(noMatch, Fields.Decision.Match, false),
+                    { total, new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "bucket", "$_id.bucket" },
+                    {
+                        "summary",
+                        new BsonDocument
+                        {
+                            { match, $"${match}" },
+                            { noMatch, $"${noMatch}" },
+                            { total, $"${total}" },
+                        }
+                    },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument("bucket", 1)),
+        };
+
+        var aggregateTask = dbContext.Decisions.AggregateAsync<MatchesBucket>(
+            pipeline,
+            cancellationToken: cancellationToken
+        );
+
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyIntervals(intervals, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
     public async Task<IReadOnlyList<Decision>> GetMatches(

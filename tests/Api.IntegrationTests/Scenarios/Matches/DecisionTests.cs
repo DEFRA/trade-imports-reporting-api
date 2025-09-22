@@ -50,6 +50,19 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_data")
             .UseParameters(decisionCode);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_intervals")
+            .UseParameters(decisionCode);
     }
 
     [Fact]
@@ -99,6 +112,18 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_data");
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_intervals");
     }
 
     [Fact]
@@ -152,6 +177,20 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             );
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Fact]
@@ -200,6 +239,20 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
             );
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Theory]
@@ -234,5 +287,73 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
             .UseParameters(unit);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets)}_intervals")
+            .UseParameters(unit);
+    }
+
+    [Fact]
+    public async Task WhenCallingFor24Hours_ShouldBeExpectedBuckets()
+    {
+        var mrnCreated = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        // First bucket
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        await SendDecision(mrnCreated.AddMinutes(1), mrnCreated.AddMinutes(1).AddSeconds(20));
+        // Second bucket
+        await SendDecision(mrnCreated.AddHours(13), mrnCreated.AddHours(13).AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(15), mrnCreated.AddHours(15).AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(17), mrnCreated.AddHours(17).AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(19), mrnCreated.AddHours(19).AddSeconds(20));
+        // Returned in the second request (see below) as would be the next day based on
+        // 2025-09-03 00:00:00 to 2025-09-04 00:00:00
+        await SendDecision(mrnCreated.AddHours(24), mrnCreated.AddHours(24).AddSeconds(20));
+
+        var from = mrnCreated;
+        var to = mrnCreated.AddDays(1);
+
+        // First request
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        from = from.AddDays(1);
+        to = to.AddDays(1);
+
+        // Second request
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second")
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 }
