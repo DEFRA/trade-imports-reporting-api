@@ -544,14 +544,126 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         );
     }
 
-    public Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
+    public async Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
         DateTime from,
         DateTime to,
         DateTime[] intervals,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        GuardUtc(from, to, intervals);
+        GuardIntervals(from, to, intervals);
+
+        // Can only return buckets for unique MRNs across the time period.
+        // Cannot return total overall as MRN might appear in more than one timestamp.
+
+        var boundaries = new[] { from }.Concat(intervals).Concat([to]).OrderBy(x => x).ToHashSet();
+        var pipeline = new[]
+        {
+            ClearanceRequestMatch(from, to),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { Fields.Request.Mrn, 1 },
+                    { Fields.Request.Timestamp, 1 },
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", $"${Fields.Request.Mrn}" },
+                    { "latestTs", new BsonDocument("$max", $"${Fields.Request.Timestamp}") },
+                }
+            ),
+            new BsonDocument("$project", new BsonDocument { { "_id", 0 }, { Fields.Request.Timestamp, "$latestTs" } }),
+            new BsonDocument(
+                "$set",
+                new BsonDocument("boundaries", new BsonArray(boundaries.Select(x => (BsonValue)x)))
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument(
+                    "bucket",
+                    new BsonDocument(
+                        "$let",
+                        new BsonDocument
+                        {
+                            {
+                                "vars",
+                                new BsonDocument(
+                                    "le",
+                                    new BsonDocument(
+                                        "$filter",
+                                        new BsonDocument
+                                        {
+                                            { "input", "$boundaries" },
+                                            { "as", "b" },
+                                            { "cond", new BsonDocument("$lte", new BsonArray { "$$b", "$timestamp" }) },
+                                        }
+                                    )
+                                )
+                            },
+                            {
+                                "in",
+                                new BsonDocument(
+                                    "$arrayElemAt",
+                                    new BsonArray
+                                    {
+                                        "$$le",
+                                        new BsonDocument(
+                                            "$subtract",
+                                            new BsonArray { new BsonDocument("$size", "$$le"), 1 }
+                                        ),
+                                    }
+                                )
+                            },
+                        }
+                    )
+                )
+            ),
+            new BsonDocument("$unset", "boundaries"),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", new BsonDocument("bucket", "$bucket") },
+                    { "unique", new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "bucket", "$_id.bucket" },
+                    {
+                        "summary",
+                        new BsonDocument
+                        {
+                            { "unique", "$unique" },
+                            { "total", new BsonDocument("$literal", -1) }, // total not applicable for intervals (deduped by MRN)
+                        }
+                    },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument("bucket", 1)),
+        };
+
+        var aggregateTask = dbContext.Requests.AggregateAsync<ClearanceRequestsBucket>(
+            pipeline,
+            cancellationToken: cancellationToken
+        );
+
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyIntervals(
+            intervals,
+            results,
+            x => new ClearanceRequestsBucket(x, ClearanceRequestsSummary.Empty)
+        );
     }
 
     public async Task<NotificationsSummary> GetNotificationsSummary(

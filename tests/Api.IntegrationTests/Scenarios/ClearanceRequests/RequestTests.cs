@@ -32,6 +32,18 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_buckets");
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_intervals");
     }
 
     [Fact]
@@ -66,6 +78,18 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_buckets");
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_intervals");
     }
 
     [Fact]
@@ -102,6 +126,20 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             .UseMethodName(
                 $"{nameof(WhenMultipleRequestForSameMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
             );
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleRequestForSameMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Theory]
@@ -136,5 +174,73 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
             .UseParameters(unit);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets)}_intervals")
+            .UseParameters(unit);
+    }
+
+    [Fact]
+    public async Task WhenCallingFor24Hours_ShouldBeExpectedBuckets()
+    {
+        var messageSentAt = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        // First bucket
+        await SendClearanceRequest(messageSentAt);
+        await SendClearanceRequest(messageSentAt.AddMinutes(1));
+        // Second bucket
+        await SendClearanceRequest(messageSentAt.AddHours(13));
+        await SendClearanceRequest(messageSentAt.AddHours(15));
+        await SendClearanceRequest(messageSentAt.AddHours(17));
+        await SendClearanceRequest(messageSentAt.AddHours(19));
+        // Returned in the second request (see below) as would be the next day based on
+        // 2025-09-03 00:00:00 to 2025-09-04 00:00:00
+        await SendClearanceRequest(messageSentAt.AddHours(24));
+
+        var from = messageSentAt;
+        var to = messageSentAt.AddDays(1);
+
+        // First request
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
+
+        from = from.AddDays(1);
+        to = to.AddDays(1);
+
+        // Second request
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second")
+            .UseStrictJson()
+            .DontScrubDateTimes()
+            .DontIgnoreEmptyCollections();
     }
 }
