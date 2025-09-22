@@ -228,14 +228,139 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyBuckets(from, to, unit, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
-    public Task<IReadOnlyList<ReleasesBucket>> GetReleasesIntervals(
+    public async Task<IReadOnlyList<ReleasesBucket>> GetReleasesIntervals(
         DateTime from,
         DateTime to,
         DateTime[] intervals,
         CancellationToken cancellationToken
     )
     {
-        throw new NotImplementedException();
+        GuardUtc(from, to, intervals);
+        GuardIntervals(from, to, intervals);
+
+        const string automatic = nameof(automatic);
+        const string manual = nameof(manual);
+        const string total = nameof(total);
+
+        var boundaries = new[] { from }.Concat(intervals).Concat([to]).OrderBy(x => x).ToHashSet();
+        var pipeline = new[]
+        {
+            ReleasesMatch(from, to),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { Fields.Finalisation.Mrn, 1 },
+                    { Fields.Finalisation.Timestamp, 1 },
+                    { Fields.Finalisation.ReleaseType, 1 },
+                }
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument("boundaries", new BsonArray(boundaries.Select(x => (BsonValue)x)))
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument(
+                    "bucket",
+                    new BsonDocument(
+                        "$let",
+                        new BsonDocument
+                        {
+                            {
+                                "vars",
+                                new BsonDocument(
+                                    "le",
+                                    new BsonDocument(
+                                        "$filter",
+                                        new BsonDocument
+                                        {
+                                            { "input", "$boundaries" },
+                                            { "as", "b" },
+                                            {
+                                                "cond",
+                                                new BsonDocument(
+                                                    "$lte",
+                                                    new BsonArray { "$$b", $"${Fields.Finalisation.Timestamp}" }
+                                                )
+                                            },
+                                        }
+                                    )
+                                )
+                            },
+                            {
+                                "in",
+                                new BsonDocument(
+                                    "$arrayElemAt",
+                                    new BsonArray
+                                    {
+                                        "$$le",
+                                        new BsonDocument(
+                                            "$subtract",
+                                            new BsonArray { new BsonDocument("$size", "$$le"), 1 }
+                                        ),
+                                    }
+                                )
+                            },
+                        }
+                    )
+                )
+            ),
+            new BsonDocument("$unset", "boundaries"),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    {
+                        "_id",
+                        new BsonDocument
+                        {
+                            { "bucket", "$bucket" },
+                            { Fields.Finalisation.Mrn, $"${Fields.Finalisation.Mrn}" },
+                        }
+                    },
+                    SortAndTakeLatest(Fields.Finalisation.Timestamp, Fields.Finalisation.ReleaseType),
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", new BsonDocument("bucket", "$_id.bucket") },
+                    FieldSum(automatic, Fields.Finalisation.ReleaseType, ReleaseType.Automatic),
+                    FieldSum(manual, Fields.Finalisation.ReleaseType, ReleaseType.Manual),
+                    { total, new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "bucket", "$_id.bucket" },
+                    {
+                        "summary",
+                        new BsonDocument
+                        {
+                            { automatic, $"${automatic}" },
+                            { manual, $"${manual}" },
+                            { total, $"${total}" },
+                        }
+                    },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument("bucket", 1)),
+        };
+
+        var aggregateTask = dbContext.Finalisations.AggregateAsync<ReleasesBucket>(
+            pipeline,
+            cancellationToken: cancellationToken
+        );
+
+        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+
+        return AddEmptyIntervals(intervals, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
     public async Task<IReadOnlyList<Finalisation>> GetReleases(

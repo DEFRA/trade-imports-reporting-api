@@ -52,6 +52,19 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleFinalisation_ShouldBeSingleCount)}_data")
             .UseParameters(isManualRelease, isCancelled);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenSingleFinalisation_ShouldBeSingleCount)}_intervals")
+            .UseParameters(isManualRelease, isCancelled);
     }
 
     [Fact]
@@ -100,6 +113,18 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseMethodName($"{nameof(WhenMultipleFinalisationForSameMrn_ShouldBeSingleCount)}_data");
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleFinalisationForSameMrn_ShouldBeSingleCount)}_intervals");
     }
 
     [Fact]
@@ -153,6 +178,20 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             );
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleFinalisationForSameMrn_AndChangeFromAutomaticToManual_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Fact]
@@ -201,6 +240,20 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseMethodName(
                 $"{nameof(WhenMultipleFinalisationForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
             );
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleFinalisationForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Theory]
@@ -235,5 +288,67 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleFinalisationForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
             .UseParameters(unit);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleFinalisationForDifferentMrn_ShouldBeExpectedBuckets)}_intervals")
+            .UseParameters(unit);
+    }
+
+    [Fact]
+    public async Task WhenCallingFor24Hours_ShouldBeExpectedBuckets()
+    {
+        var messageSentAt = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        // First bucket
+        await SendFinalisation(messageSentAt);
+        await SendFinalisation(messageSentAt.AddMinutes(1));
+        // Second bucket
+        await SendFinalisation(messageSentAt.AddHours(13));
+        await SendFinalisation(messageSentAt.AddHours(15));
+        await SendFinalisation(messageSentAt.AddHours(17));
+        await SendFinalisation(messageSentAt.AddHours(19));
+        // Returned in the second request (see below) as would be the next day based on
+        // 2025-09-03 00:00:00 to 2025-09-04 00:00:00
+        await SendFinalisation(messageSentAt.AddHours(24));
+
+        var from = messageSentAt;
+        var to = messageSentAt.AddDays(1);
+
+        // First request
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+
+        from = from.AddDays(1);
+        to = to.AddDays(1);
+
+        // Second request
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
 }
