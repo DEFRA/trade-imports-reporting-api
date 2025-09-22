@@ -24,11 +24,8 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(importNotificationType)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseParameters(importNotificationType);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
@@ -39,12 +36,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleNotification_ShouldBeSingleCount)}_buckets")
-            .UseParameters(importNotificationType)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(importNotificationType);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
@@ -55,12 +49,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleNotification_ShouldBeSingleCount)}_intervals")
-            .UseParameters(importNotificationType)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(importNotificationType);
     }
 
     [Fact]
@@ -82,10 +73,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
@@ -96,11 +84,8 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_buckets")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_buckets");
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
@@ -111,11 +96,8 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_intervals")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_intervals");
     }
 
     [Fact]
@@ -135,10 +117,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
@@ -149,13 +128,10 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleNotificationForDifferentChed_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
@@ -166,13 +142,10 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleNotificationForDifferentChed_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
     }
 
     [Theory]
@@ -198,11 +171,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Buckets(
@@ -213,12 +182,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
@@ -229,12 +195,9 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_intervals")
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(unit);
     }
 
     [Fact]
@@ -267,10 +230,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         from = from.AddDays(1);
         to = to.AddDays(1);
@@ -285,10 +245,7 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
 }

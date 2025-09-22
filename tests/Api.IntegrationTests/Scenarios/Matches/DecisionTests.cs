@@ -332,10 +332,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         from = from.AddDays(1);
         to = to.AddDays(1);
@@ -350,10 +347,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
 }
