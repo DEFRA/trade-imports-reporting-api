@@ -25,6 +25,6 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
     }
 }

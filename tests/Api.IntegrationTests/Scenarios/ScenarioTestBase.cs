@@ -18,6 +18,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     public required IMongoCollection<Decision> Decisions { get; set; }
     public required IMongoCollection<Request> Requests { get; set; }
     public required IMongoCollection<Notification> Notifications { get; set; }
+    public required VerifySettings JsonVerifySettings { get; set; }
 
     public async Task InitializeAsync()
     {
@@ -30,6 +31,11 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
         await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
         await Notifications.DeleteManyAsync(FilterDefinition<Notification>.Empty);
+
+        JsonVerifySettings = new VerifySettings();
+        JsonVerifySettings.UseStrictJson();
+        JsonVerifySettings.DontScrubDateTimes();
+        JsonVerifySettings.DontIgnoreEmptyCollections();
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

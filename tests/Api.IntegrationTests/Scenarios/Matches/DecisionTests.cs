@@ -23,11 +23,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(decisionCode)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(decisionCode);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
@@ -38,12 +34,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_buckets")
-            .UseParameters(decisionCode)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(decisionCode);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
@@ -54,12 +47,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_data")
-            .UseParameters(decisionCode)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(decisionCode);
     }
 
     [Fact]
@@ -82,10 +72,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
@@ -96,11 +83,8 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_buckets")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_buckets");
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
@@ -111,11 +95,8 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_data")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_data");
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
     }
@@ -140,10 +121,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
@@ -154,13 +132,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_buckets"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
@@ -171,13 +146,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_data"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
     }
@@ -199,10 +171,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
@@ -213,13 +182,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
@@ -230,13 +196,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
     }
 
     [Theory]
@@ -257,11 +220,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
@@ -272,11 +231,8 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(unit);
     }
 }

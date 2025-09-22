@@ -14,7 +14,7 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         var response = await DefaultClient.GetAsync(Testing.Endpoints.LastReceived.Get());
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
     }
 
     [Fact]
@@ -29,6 +29,6 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         var response = await DefaultClient.GetAsync(Testing.Endpoints.LastReceived.Get());
 
-        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().DontScrubDateTimes();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
     }
 }

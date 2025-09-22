@@ -19,10 +19,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
@@ -33,11 +30,8 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_buckets")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_buckets");
     }
 
     [Fact]
@@ -59,10 +53,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
@@ -73,11 +64,8 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_buckets")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_buckets");
     }
 
     [Fact]
@@ -99,10 +87,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
@@ -113,13 +98,10 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleRequestForSameMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
     }
 
     [Theory]
@@ -140,11 +122,7 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Buckets(
@@ -155,11 +133,8 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(unit);
     }
 }
