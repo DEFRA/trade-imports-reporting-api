@@ -1,7 +1,3 @@
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
-using Defra.TradeImportsDataApi.Domain.Events;
-using Defra.TradeImportsReportingApi.Api.Models;
-
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios.General;
 
 public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTestFixture)
@@ -11,39 +7,9 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt,
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt.AddSeconds(10),
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendFinalisation(messageSentAt, mrn, wait: false);
+        await SendFinalisation(messageSentAt.AddSeconds(10), mrn, wait: false);
         await WaitForFinalisationMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -58,24 +24,9 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt.AddSeconds(10) },
-            },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendClearanceRequest(messageSentAt, mrn, wait: false);
+        await SendClearanceRequest(messageSentAt.AddSeconds(10), mrn, wait: false);
         await WaitForRequestMrn(mrn, count: 2);
 
         var client = CreateHttpClient();

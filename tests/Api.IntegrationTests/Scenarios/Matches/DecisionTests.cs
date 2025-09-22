@@ -1,7 +1,4 @@
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
-using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
-using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
 using FluentAssertions;
 
@@ -14,31 +11,9 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     [InlineData(DecisionCode.Match)]
     public async Task WhenSingleDecision_ShouldBeSingleCount(string decisionCode)
     {
-        var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks = [new ClearanceDecisionCheck { CheckCode = "IGNORE", DecisionCode = decisionCode }],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
-        await WaitForDecisionMrn(mrn);
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), decisionCode: decisionCode);
 
         var client = CreateHttpClient();
 
@@ -94,64 +69,11 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     {
         var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
         var expectedTimestamp = mrnCreated.AddSeconds(40);
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = expectedTimestamp, // Different timestamp
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn, wait: false);
+        // Different timestamp
+        await SendDecision(mrnCreated, expectedTimestamp, mrn, wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -207,64 +129,11 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     {
         var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
         var expectedTimestamp = mrnCreated.AddSeconds(40);
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = expectedTimestamp, // Different timestamp
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.Match, // Change from NoMatch to Match
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn, wait: false);
+        // Different timestamp and change from NoMatch to Match
+        await SendDecision(mrnCreated, expectedTimestamp, mrn, decisionCode: DecisionCode.Match, wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -322,68 +191,11 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     [Fact]
     public async Task WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount()
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated.AddHours(2), // Outside From and To,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddHours(2).AddSeconds(40),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForDecisionMrn(mrn1);
-        await WaitForDecisionMrn(mrn2);
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        // Outside From and To
+        await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
 
         var client = CreateHttpClient();
 
@@ -440,68 +252,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     [InlineData(Units.Day)]
     public async Task WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets(string unit)
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated.AddHours(2),
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddHours(2).AddSeconds(40),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForDecisionMrn(mrn1);
-        await WaitForDecisionMrn(mrn2);
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
 
         var client = CreateHttpClient();
 

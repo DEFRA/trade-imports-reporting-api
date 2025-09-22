@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Amazon.SQS.Model;
+using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsDataApi.Domain.Ipaffs;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
@@ -7,6 +8,7 @@ using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
 using Decision = Defra.TradeImportsReportingApi.Api.Data.Entities.Decision;
+using Finalisation = Defra.TradeImportsReportingApi.Api.Data.Entities.Finalisation;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
@@ -153,7 +155,8 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         DateTime created,
         string? ched = null,
         DateTime? updated = null,
-        string type = ImportPreNotificationType.CVEDA
+        string type = ImportPreNotificationType.CVEDA,
+        bool wait = true
     )
     {
         ched ??= Guid.NewGuid().ToString();
@@ -170,8 +173,94 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         );
 
         await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
-        await WaitForNotificationChed(ched);
+
+        if (wait)
+            await WaitForNotificationChed(ched);
     }
 
-    // Add methods for other types of notification
+    protected async Task SendClearanceRequest(DateTime messageSentAt, string? mrn = null, bool wait = true)
+    {
+        mrn ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            ResourceEventSubResourceTypes.ClearanceRequest
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForRequestMrn(mrn);
+    }
+
+    protected async Task SendDecision(
+        DateTime mrnCreated,
+        DateTime decisionCreated,
+        string? mrn = null,
+        string decisionCode = DecisionCode.NoMatch,
+        bool wait = true
+    )
+    {
+        mrn ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity
+            {
+                Created = mrnCreated,
+                ClearanceDecision = new ClearanceDecision
+                {
+                    Created = decisionCreated,
+                    Items =
+                    [
+                        new ClearanceDecisionItem
+                        {
+                            Checks = [new ClearanceDecisionCheck { CheckCode = "IGNORE", DecisionCode = decisionCode }],
+                        },
+                    ],
+                },
+            },
+            ResourceEventSubResourceTypes.ClearanceDecision
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForDecisionMrn(mrn);
+    }
+
+    protected async Task SendFinalisation(
+        DateTime messageSentAt,
+        string? mrn = null,
+        bool isCancelled = false,
+        bool isManualRelease = false,
+        bool wait = true
+    )
+    {
+        mrn ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclaration
+            {
+                Finalisation = new Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation
+                {
+                    ExternalVersion = 1,
+                    FinalState = isCancelled ? "1" : "0",
+                    IsManualRelease = isManualRelease,
+                    MessageSentAt = messageSentAt,
+                },
+            },
+            ResourceEventSubResourceTypes.Finalisation
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForFinalisationMrn(mrn);
+    }
 }

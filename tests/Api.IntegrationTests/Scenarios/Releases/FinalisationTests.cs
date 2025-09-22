@@ -1,9 +1,6 @@
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
-using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Testing;
 using FluentAssertions;
-using Finalisation = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios.Releases;
 
@@ -15,26 +12,9 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     [InlineData(false, true)]
     public async Task WhenSingleFinalisation_ShouldBeSingleCount(bool isManualRelease, bool isCancelled)
     {
-        var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = isCancelled ? "1" : "0",
-                    IsManualRelease = isManualRelease,
-                    MessageSentAt = messageSentAt,
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
 
-        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
-        await WaitForFinalisationMrn(mrn);
+        await SendFinalisation(messageSentAt, isCancelled: isCancelled, isManualRelease: isManualRelease);
 
         var client = CreateHttpClient();
 
@@ -90,40 +70,10 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt,
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
         var expectedTimestamp = messageSentAt.AddMinutes(5);
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = expectedTimestamp, // Different message sent at
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendFinalisation(messageSentAt, mrn, wait: false);
+        await SendFinalisation(expectedTimestamp, mrn, wait: false);
         await WaitForFinalisationMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -179,40 +129,11 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt,
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
         var expectedTimestamp = messageSentAt.AddMinutes(5);
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = true, // Change from Automatic to Manual
-                    MessageSentAt = expectedTimestamp, // Different message sent at
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendFinalisation(messageSentAt, mrn, wait: false);
+        // Change from Automatic to Manual and different message sent at
+        await SendFinalisation(expectedTimestamp, mrn, isManualRelease: true, wait: false);
         await WaitForFinalisationMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -270,44 +191,11 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     [Fact]
     public async Task WhenMultipleFinalisationForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount()
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt,
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt.AddHours(2), // Outside From and To
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForFinalisationMrn(mrn1);
-        await WaitForFinalisationMrn(mrn2);
+        await SendFinalisation(messageSentAt);
+        // Outside From and To
+        await SendFinalisation(messageSentAt.AddHours(2));
 
         var client = CreateHttpClient();
 
@@ -364,44 +252,10 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
     [InlineData(Units.Day)]
     public async Task WhenMultipleFinalisationForDifferentMrn_ShouldBeExpectedBuckets(string unit)
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt,
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
-            {
-                Finalisation = new Finalisation
-                {
-                    ExternalVersion = 1,
-                    FinalState = "0",
-                    IsManualRelease = false,
-                    MessageSentAt = messageSentAt.AddHours(2),
-                },
-            },
-            ResourceEventSubResourceTypes.Finalisation
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForFinalisationMrn(mrn1);
-        await WaitForFinalisationMrn(mrn2);
+        await SendFinalisation(messageSentAt);
+        await SendFinalisation(messageSentAt.AddHours(2));
 
         var client = CreateHttpClient();
 

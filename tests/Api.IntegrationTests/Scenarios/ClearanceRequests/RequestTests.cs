@@ -1,6 +1,3 @@
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
-using Defra.TradeImportsDataApi.Domain.Events;
-using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios.ClearanceRequests;
@@ -10,17 +7,9 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     [Fact]
     public async Task WhenSingleRequest_ShouldBeSingleCount()
     {
-        var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
 
-        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
-        await WaitForRequestMrn(mrn);
+        await SendClearanceRequest(messageSentAt);
 
         var client = CreateHttpClient();
 
@@ -58,27 +47,10 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                ClearanceRequest = new ClearanceRequest
-                {
-                    MessageSentAt = messageSentAt.AddMinutes(10), // Different message sent at
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendClearanceRequest(messageSentAt, mrn, wait: false);
+        // Different message sent at
+        await SendClearanceRequest(messageSentAt.AddMinutes(10), mrn, wait: false);
         await WaitForRequestMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -117,27 +89,10 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     {
         var mrn = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                ClearanceRequest = new ClearanceRequest
-                {
-                    MessageSentAt = messageSentAt.AddHours(2), // Outside From and To,
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendClearanceRequest(messageSentAt, mrn, wait: false);
+        // Outside From and To
+        await SendClearanceRequest(messageSentAt.AddHours(2), mrn, wait: false);
         await WaitForRequestMrn(mrn, count: 2);
 
         var client = CreateHttpClient();
@@ -178,29 +133,10 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     [InlineData(Units.Day)]
     public async Task WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets(string unit)
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var messageSentAt = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt.AddHours(2) },
-            },
-            ResourceEventSubResourceTypes.ClearanceRequest
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForRequestMrn(mrn1);
-        await WaitForRequestMrn(mrn2);
+        await SendClearanceRequest(messageSentAt);
+        await SendClearanceRequest(messageSentAt.AddHours(2));
 
         var client = CreateHttpClient();
 

@@ -21,7 +21,7 @@ public abstract class IntegrationTestBase
         return httpClient;
     }
 
-    protected static IMongoDatabase GetMongoDatabase()
+    private static IMongoDatabase GetMongoDatabase()
     {
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017/?directConnection=true");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
