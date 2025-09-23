@@ -1094,6 +1094,24 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 }
             ),
             new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", $"${Fields.Notification.ReferenceNumber}" },
+                    {
+                        "latest",
+                        new BsonDocument(
+                            "$top",
+                            new BsonDocument
+                            {
+                                { "sortBy", new BsonDocument(Fields.Notification.Timestamp, -1) },
+                                { "output", "$$ROOT" },
+                            }
+                        )
+                    },
+                }
+            ),
+            new BsonDocument(
                 "$set",
                 new BsonDocument("boundaries", new BsonArray(boundaries.Select(x => (BsonValue)x)))
             ),
@@ -1122,7 +1140,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                                     new BsonArray
                                                     {
                                                         "$$b",
-                                                        $"${Fields.Notification.NotificationCreated}",
+                                                        $"$latest.{Fields.Notification.NotificationCreated}",
                                                     }
                                                 )
                                             },
@@ -1153,22 +1171,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 "$group",
                 new BsonDocument
                 {
-                    {
-                        "_id",
-                        new BsonDocument
-                        {
-                            { "bucket", "$bucket" },
-                            { Fields.Notification.ReferenceNumber, $"${Fields.Notification.ReferenceNumber}" },
-                        }
-                    },
-                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
-                }
-            ),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", new BsonDocument("bucket", "$_id.bucket") },
+                    { "_id", new BsonDocument("bucket", "$bucket") },
                     FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
                     FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
                     FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
