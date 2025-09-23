@@ -848,7 +848,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                                         {
                                             { "input", "$boundaries" },
                                             { "as", "b" },
-                                            { "cond", new BsonDocument("$lte", new BsonArray { "$$b", "$timestamp" }) },
+                                            {
+                                                "cond",
+                                                new BsonDocument(
+                                                    "$lte",
+                                                    new BsonArray { "$$b", $"${Fields.Request.Timestamp}" }
+                                                )
+                                            },
                                         }
                                     )
                                 )
@@ -891,7 +897,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         new BsonDocument
                         {
                             { "unique", "$unique" },
-                            { "total", new BsonDocument("$literal", -1) }, // total not applicable for intervals (deduped by MRN)
+                            { "total", new BsonDocument("$literal", -1) }, // Cannot return, see comment at start of method
                         }
                     },
                 }
