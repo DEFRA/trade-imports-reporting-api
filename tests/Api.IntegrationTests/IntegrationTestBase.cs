@@ -9,7 +9,9 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 [Collection("Integration Tests")]
 public abstract class IntegrationTestBase
 {
-    protected static HttpClient CreateHttpClient()
+    protected static HttpClient DefaultClient { get; } = CreateHttpClient();
+
+    private static HttpClient CreateHttpClient()
     {
         var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:8080") };
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
@@ -21,7 +23,7 @@ public abstract class IntegrationTestBase
         return httpClient;
     }
 
-    protected static IMongoDatabase GetMongoDatabase()
+    private static IMongoDatabase GetMongoDatabase()
     {
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017/?directConnection=true");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);

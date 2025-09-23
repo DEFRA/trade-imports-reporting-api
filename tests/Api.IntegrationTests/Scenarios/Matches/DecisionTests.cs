@@ -1,7 +1,4 @@
-using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
-using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
-using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Testing;
 using FluentAssertions;
 
@@ -14,49 +11,21 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     [InlineData(DecisionCode.Match)]
     public async Task WhenSingleDecision_ShouldBeSingleCount(string decisionCode)
     {
-        var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks = [new ClearanceDecisionCheck { CheckCode = "IGNORE", DecisionCode = decisionCode }],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
-        await WaitForDecisionMrn(mrn);
-
-        var client = CreateHttpClient();
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), decisionCode: decisionCode);
 
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(decisionCode)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(decisionCode);
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -65,14 +34,11 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_buckets")
-            .UseParameters(decisionCode)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(decisionCode);
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -81,12 +47,22 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_data")
-            .UseParameters(decisionCode)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(decisionCode);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_intervals")
+            .UseParameters(decisionCode);
     }
 
     [Fact]
@@ -94,82 +70,24 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     {
         var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
         var expectedTimestamp = mrnCreated.AddSeconds(40);
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = expectedTimestamp, // Different timestamp
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn, wait: false);
+        // Different timestamp
+        await SendDecision(mrnCreated, expectedTimestamp, mrn, wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
-
-        var client = CreateHttpClient();
 
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -178,13 +96,10 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_buckets")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_buckets");
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -193,13 +108,22 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_data")
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_data");
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_intervals");
     }
 
     [Fact]
@@ -207,82 +131,24 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     {
         var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
         var expectedTimestamp = mrnCreated.AddSeconds(40);
-        var resourceEvent2 = CreateResourceEvent(
-            mrn,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = expectedTimestamp, // Different timestamp
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.Match, // Change from NoMatch to Match
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn, wait: false);
+        // Different timestamp and change from NoMatch to Match
+        await SendDecision(mrnCreated, expectedTimestamp, mrn, decisionCode: DecisionCode.Match, wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
-
-        var client = CreateHttpClient();
 
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -291,15 +157,12 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_buckets"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -308,99 +171,48 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync())
+        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_data"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
         verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Fact]
     public async Task WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount()
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated.AddHours(2), // Outside From and To,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddHours(2).AddSeconds(40),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForDecisionMrn(mrn1);
-        await WaitForDecisionMrn(mrn2);
-
-        var client = CreateHttpClient();
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        // Outside From and To
+        await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
 
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(1);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -409,15 +221,12 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            );
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -426,13 +235,24 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
+            );
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
             )
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
+            );
     }
 
     [Theory]
@@ -440,86 +260,22 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     [InlineData(Units.Day)]
     public async Task WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets(string unit)
     {
-        var mrn1 = Guid.NewGuid().ToString();
-        var mrn2 = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
-        var resourceEvent1 = CreateResourceEvent(
-            mrn1,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated,
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddSeconds(20),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
-        var resourceEvent2 = CreateResourceEvent(
-            mrn2,
-            ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
-            {
-                Created = mrnCreated.AddHours(2),
-                ClearanceDecision = new ClearanceDecision
-                {
-                    Created = mrnCreated.AddHours(2).AddSeconds(40),
-                    Items =
-                    [
-                        new ClearanceDecisionItem
-                        {
-                            Checks =
-                            [
-                                new ClearanceDecisionCheck
-                                {
-                                    CheckCode = "IGNORE",
-                                    DecisionCode = DecisionCode.NoMatch,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            ResourceEventSubResourceTypes.ClearanceDecision
-        );
 
-        await SendMessage(resourceEvent1, CreateMessageAttributes(resourceEvent1));
-        await SendMessage(resourceEvent2, CreateMessageAttributes(resourceEvent2));
-        await WaitForDecisionMrn(mrn1);
-        await WaitForDecisionMrn(mrn2);
-
-        var client = CreateHttpClient();
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
 
         var from = mrnCreated.AddHours(-1);
         var to = mrnCreated.AddHours(3);
-        var response = await client.GetAsync(
+        var response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Summary(
                 EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
 
-        response = await client.GetAsync(
+        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Buckets(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -528,11 +284,70 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             )
         );
 
-        await VerifyJson(await response.Content.ReadAsStringAsync())
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit)
-            .UseStrictJson()
-            .DontScrubDateTimes()
-            .DontIgnoreEmptyCollections();
+            .UseParameters(unit);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets)}_intervals")
+            .UseParameters(unit);
+    }
+
+    [Fact]
+    public async Task WhenCallingFor24Hours_ShouldBeExpectedBuckets()
+    {
+        var mrnCreated = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        // First bucket
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        await SendDecision(mrnCreated.AddMinutes(1), mrnCreated.AddMinutes(1).AddSeconds(20));
+        // Second bucket
+        await SendDecision(mrnCreated.AddHours(13), mrnCreated.AddHours(13).AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(15), mrnCreated.AddHours(15).AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(17), mrnCreated.AddHours(17).AddSeconds(20));
+        await SendDecision(mrnCreated.AddHours(19), mrnCreated.AddHours(19).AddSeconds(20));
+        // Returned in the second request (see below) as would be the next day based on
+        // 2025-09-03 00:00:00 to 2025-09-04 00:00:00
+        await SendDecision(mrnCreated.AddHours(24), mrnCreated.AddHours(24).AddSeconds(20));
+
+        var from = mrnCreated;
+        var to = mrnCreated.AddDays(1);
+
+        // First request
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+
+        from = from.AddDays(1);
+        to = to.AddDays(1);
+
+        // Second request
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([from.AddHours(12)]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
 }

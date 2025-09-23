@@ -1,0 +1,28 @@
+﻿{
+  "intervals": [
+    {
+      "interval": "2025-09-03T15:08:00Z",
+      "summary": {
+        "automatic": 1,
+        "manual": 0,
+        "total": 1
+      }
+    },
+    {
+      "interval": "2025-09-03T16:28:00Z",
+      "summary": {
+        "automatic": 0,
+        "manual": 0,
+        "total": 0
+      }
+    },
+    {
+      "interval": "2025-09-03T17:48:00Z",
+      "summary": {
+        "automatic": 1,
+        "manual": 0,
+        "total": 1
+      }
+    }
+  ]
+}

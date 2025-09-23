@@ -2,7 +2,7 @@ using Defra.TradeImportsReportingApi.Testing;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios.General;
 
-public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTestFixture)
+public class IntervalsTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTestFixture)
 {
     [Fact]
     public async Task WhenSingleOfEach_ShouldBeAsExpected()
@@ -20,8 +20,11 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         var from = utcDate.AddHours(-1);
         var to = utcDate.AddHours(1);
         var response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Summary.Get(
-                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            Testing.Endpoints.Intervals.Get(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
             )
         );
 

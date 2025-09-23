@@ -1,9 +1,14 @@
 using System.Text.Json;
 using Amazon.SQS.Model;
+using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsDataApi.Domain.Ipaffs;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Extensions;
+using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
+using Decision = Defra.TradeImportsReportingApi.Api.Data.Entities.Decision;
+using Finalisation = Defra.TradeImportsReportingApi.Api.Data.Entities.Finalisation;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
@@ -13,6 +18,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     public required IMongoCollection<Decision> Decisions { get; set; }
     public required IMongoCollection<Request> Requests { get; set; }
     public required IMongoCollection<Notification> Notifications { get; set; }
+    public required VerifySettings JsonVerifySettings { get; set; }
 
     public async Task InitializeAsync()
     {
@@ -25,6 +31,11 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
         await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
         await Notifications.DeleteManyAsync(FilterDefinition<Notification>.Empty);
+
+        JsonVerifySettings = new VerifySettings();
+        JsonVerifySettings.UseStrictJson();
+        JsonVerifySettings.DontScrubDateTimes();
+        JsonVerifySettings.DontIgnoreEmptyCollections();
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -128,5 +139,134 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                 return (await notifications.ToListAsync()).Count == count;
             })
         );
+    }
+
+    protected static DateTime[] CreateIntervals(DateTime from, DateTime to, int numberRequired = 1)
+    {
+        var totalTicks = to.Ticks - from.Ticks;
+        var denominator = numberRequired + 1;
+        var result = new DateTime[numberRequired];
+
+        for (var i = 1; i <= numberRequired; i++)
+        {
+            var ticks = from.Ticks + totalTicks * i / denominator;
+
+            result[i - 1] = new DateTime(ticks, from.Kind);
+        }
+
+        return result;
+    }
+
+    protected async Task SendNotification(
+        DateTime created,
+        string? ched = null,
+        DateTime? updated = null,
+        string type = ImportPreNotificationType.CVEDA,
+        bool wait = true
+    )
+    {
+        ched ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            ched,
+            ResourceEventResourceTypes.ImportPreNotification,
+            new ImportPreNotificationEntity
+            {
+                Created = created,
+                Updated = updated ?? created,
+                ImportPreNotification = new ImportPreNotification { ImportNotificationType = type },
+            }
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForNotificationChed(ched);
+    }
+
+    protected async Task SendClearanceRequest(DateTime messageSentAt, string? mrn = null, bool wait = true)
+    {
+        mrn ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            ResourceEventSubResourceTypes.ClearanceRequest
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForRequestMrn(mrn);
+    }
+
+    protected async Task SendDecision(
+        DateTime mrnCreated,
+        DateTime decisionCreated,
+        string? mrn = null,
+        string decisionCode = DecisionCode.NoMatch,
+        bool wait = true
+    )
+    {
+        mrn ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclarationEntity
+            {
+                Created = mrnCreated,
+                ClearanceDecision = new ClearanceDecision
+                {
+                    Created = decisionCreated,
+                    Items =
+                    [
+                        new ClearanceDecisionItem
+                        {
+                            Checks = [new ClearanceDecisionCheck { CheckCode = "IGNORE", DecisionCode = decisionCode }],
+                        },
+                    ],
+                },
+            },
+            ResourceEventSubResourceTypes.ClearanceDecision
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForDecisionMrn(mrn);
+    }
+
+    protected async Task SendFinalisation(
+        DateTime messageSentAt,
+        string? mrn = null,
+        bool isCancelled = false,
+        bool isManualRelease = false,
+        bool wait = true
+    )
+    {
+        mrn ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            mrn,
+            ResourceEventResourceTypes.CustomsDeclaration,
+            new CustomsDeclaration
+            {
+                Finalisation = new Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation
+                {
+                    ExternalVersion = 1,
+                    FinalState = isCancelled ? "1" : "0",
+                    IsManualRelease = isManualRelease,
+                    MessageSentAt = messageSentAt,
+                },
+            },
+            ResourceEventSubResourceTypes.Finalisation
+        );
+
+        await SendMessage(resourceEvent, CreateMessageAttributes(resourceEvent));
+
+        if (wait)
+            await WaitForFinalisationMrn(mrn);
     }
 }
