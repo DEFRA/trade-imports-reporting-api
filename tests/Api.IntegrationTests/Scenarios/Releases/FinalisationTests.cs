@@ -351,4 +351,27 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
+
+    [Fact]
+    public async Task WhenRequestingData_ShouldBeOrdered()
+    {
+        var messageSentAt = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        await SendFinalisation(messageSentAt.AddMinutes(-10), mrn: "oldest");
+        await SendFinalisation(messageSentAt, mrn: "newest");
+
+        var from = messageSentAt.AddDays(-1);
+        var to = messageSentAt.AddDays(1);
+
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Releases.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.ReleaseType(ReleaseType.Automatic))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+    }
 }
