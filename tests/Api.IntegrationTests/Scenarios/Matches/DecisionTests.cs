@@ -350,4 +350,27 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
+
+    [Fact]
+    public async Task WhenRequestingData_ShouldBeOrdered()
+    {
+        var mrnCreated = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        await SendDecision(mrnCreated.AddMinutes(-10), mrnCreated.AddMinutes(-10).AddSeconds(20), mrn: "oldest");
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn: "newest");
+
+        var from = mrnCreated.AddDays(-1);
+        var to = mrnCreated.AddDays(1);
+
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(false))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+    }
 }

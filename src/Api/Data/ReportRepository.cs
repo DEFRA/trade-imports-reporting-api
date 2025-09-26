@@ -387,6 +387,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             ),
             new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
             new BsonDocument("$match", new BsonDocument(Fields.Finalisation.ReleaseType, releaseType)),
+            new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
         };
 
         var aggregateTask = dbContext.Finalisations.AggregateAsync<Finalisation>(
@@ -675,6 +676,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             ),
             new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
             new BsonDocument("$match", new BsonDocument(Fields.Decision.Match, match)),
+            new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
         };
 
         var aggregateTask = dbContext.Decisions.AggregateAsync<Decision>(
