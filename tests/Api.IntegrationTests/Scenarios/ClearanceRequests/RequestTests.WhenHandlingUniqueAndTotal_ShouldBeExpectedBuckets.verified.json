@@ -1,0 +1,25 @@
+﻿{
+  "intervals": [
+    {
+      "interval": "2025-09-03T00:00:00Z",
+      "summary": {
+        "unique": 1,
+        "total": 3
+      }
+    },
+    {
+      "interval": "2025-09-03T12:00:00Z",
+      "summary": {
+        "unique": 2,
+        "total": 5
+      }
+    },
+    {
+      "interval": "2025-09-03T23:00:00Z",
+      "summary": {
+        "unique": 0,
+        "total": 0
+      }
+    }
+  ]
+}

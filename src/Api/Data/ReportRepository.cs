@@ -803,11 +803,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         GuardUtc(from, to, intervals);
         GuardIntervals(from, to, intervals);
 
-        // Can only return buckets for unique MRNs across the time period.
-        // Cannot return total overall as MRN might appear in more than one timestamp.
-
         var boundaries = new[] { from }.Concat(intervals).Concat([to]).OrderBy(x => x).ToHashSet();
-        var pipeline = new[]
+        var uniquePipeline = new[]
         {
             ClearanceRequestMatch(from, to),
             new BsonDocument(
@@ -894,25 +891,116 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 {
                     { "_id", 0 },
                     { "bucket", "$_id.bucket" },
-                    {
-                        "summary",
-                        new BsonDocument
-                        {
-                            { "unique", "$unique" },
-                            { "total", new BsonDocument("$literal", -1) }, // Cannot return, see comment at start of method
-                        }
-                    },
+                    { "unique", 1 },
                 }
             ),
             new BsonDocument("$sort", new BsonDocument("bucket", 1)),
         };
 
-        var aggregateTask = dbContext.Requests.AggregateAsync<ClearanceRequestsBucket>(
-            pipeline,
+        var totalPipeline = new[]
+        {
+            ClearanceRequestMatch(from, to),
+            new BsonDocument("$project", new BsonDocument { { "_id", 0 }, { Fields.Request.Timestamp, 1 } }),
+            new BsonDocument(
+                "$set",
+                new BsonDocument("boundaries", new BsonArray(boundaries.Select(x => (BsonValue)x)))
+            ),
+            new BsonDocument(
+                "$set",
+                new BsonDocument(
+                    "bucket",
+                    new BsonDocument(
+                        "$let",
+                        new BsonDocument
+                        {
+                            {
+                                "vars",
+                                new BsonDocument(
+                                    "le",
+                                    new BsonDocument(
+                                        "$filter",
+                                        new BsonDocument
+                                        {
+                                            { "input", "$boundaries" },
+                                            { "as", "b" },
+                                            {
+                                                "cond",
+                                                new BsonDocument(
+                                                    "$lte",
+                                                    new BsonArray { "$$b", $"${Fields.Request.Timestamp}" }
+                                                )
+                                            },
+                                        }
+                                    )
+                                )
+                            },
+                            {
+                                "in",
+                                new BsonDocument(
+                                    "$arrayElemAt",
+                                    new BsonArray
+                                    {
+                                        "$$le",
+                                        new BsonDocument(
+                                            "$subtract",
+                                            new BsonArray { new BsonDocument("$size", "$$le"), 1 }
+                                        ),
+                                    }
+                                )
+                            },
+                        }
+                    )
+                )
+            ),
+            new BsonDocument("$unset", "boundaries"),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", new BsonDocument("bucket", "$bucket") },
+                    { "total", new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { "bucket", "$_id.bucket" },
+                    { "total", 1 },
+                }
+            ),
+            new BsonDocument("$sort", new BsonDocument("bucket", 1)),
+        };
+
+        var uniqueTask = dbContext.Requests.AggregateAsync<BsonDocument>(
+            uniquePipeline,
+            cancellationToken: cancellationToken
+        );
+        var totalTask = dbContext.Requests.AggregateAsync<BsonDocument>(
+            totalPipeline,
             cancellationToken: cancellationToken
         );
 
-        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+        await Task.WhenAll(uniqueTask, totalTask);
+
+        var uniques = await (await uniqueTask).ToListAsync(cancellationToken);
+        var totals = await (await totalTask).ToListAsync(cancellationToken);
+
+        var uniqueByBucket = uniques.ToDictionary(x => x["bucket"].ToUniversalTime(), x => (int)x["unique"]);
+        var totalByBucket = totals.ToDictionary(x => x["bucket"].ToUniversalTime(), x => (int)x["total"]);
+
+        var allBuckets = uniqueByBucket.Keys.Union(totalByBucket.Keys).OrderBy(x => x);
+
+        var results = allBuckets
+            .Select(x => new ClearanceRequestsBucket(
+                x,
+                new ClearanceRequestsSummary(
+                    uniqueByBucket.GetValueOrDefault(x, 0),
+                    totalByBucket.GetValueOrDefault(x, 0)
+                )
+            ))
+            .ToList();
 
         return AddEmptyIntervals(
             intervals,

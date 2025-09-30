@@ -237,4 +237,46 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenCallingFor24Hours_ShouldBeExpectedBuckets)}_second");
     }
+
+    [Fact]
+    public async Task WhenHandlingUniqueAndTotal_ShouldBeExpectedBuckets()
+    {
+        var messageSentAt = new DateTime(2025, 9, 3, 0, 0, 0, DateTimeKind.Utc);
+        var from = messageSentAt;
+        var to = messageSentAt.AddDays(1);
+
+        var mrn1 = Guid.NewGuid().ToString();
+        var mrn2 = Guid.NewGuid().ToString();
+        var mrn3 = Guid.NewGuid().ToString();
+
+        // Bucket 1 - 2 x mrn1, 1 x mrn3
+        var bucket1 = from;
+        await SendClearanceRequest(messageSentAt, mrn: mrn1, wait: false);
+        await SendClearanceRequest(messageSentAt.AddMinutes(1), mrn: mrn1, wait: false);
+        await WaitForRequestMrn(mrn1, count: 2);
+        await SendClearanceRequest(messageSentAt.AddMinutes(10), mrn: mrn3);
+
+        // Bucket 2 - 4 x mrn2, 1 x mrn3
+        var bucket2 = bucket1.AddHours(12);
+        await SendClearanceRequest(messageSentAt.AddHours(13), mrn: mrn2, wait: false);
+        await SendClearanceRequest(messageSentAt.AddHours(15), mrn: mrn2, wait: false);
+        await SendClearanceRequest(messageSentAt.AddHours(17), mrn: mrn2, wait: false);
+        await SendClearanceRequest(messageSentAt.AddHours(19), mrn: mrn2, wait: false);
+        await WaitForRequestMrn(mrn2, count: 4);
+        await SendClearanceRequest(messageSentAt.AddHours(13).AddMinutes(10), mrn: mrn3);
+
+        // Bucket 3 - empty
+        var bucket3 = to.AddHours(-1);
+
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.ClearanceRequests.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals([bucket2, bucket3]))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+    }
 }
