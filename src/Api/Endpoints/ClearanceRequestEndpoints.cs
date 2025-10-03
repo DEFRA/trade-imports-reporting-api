@@ -23,7 +23,7 @@ public static class ClearanceRequestEndpoints
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests buckets by day or hour")
             .WithDescription(Descriptions.SearchablePeriod)
-            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -33,7 +33,7 @@ public static class ClearanceRequestEndpoints
             .WithTags("Clearance Requests")
             .WithSummary("Get clearance requests by interval")
             .WithDescription(Descriptions.SearchablePeriod)
-            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>>>()
+            .Produces<IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryResponse>>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();

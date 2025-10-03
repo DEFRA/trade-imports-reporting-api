@@ -44,13 +44,15 @@
       {
         "interval": "2025-09-03T15:48:00Z",
         "summary": {
-          "unique": 1
+          "unique": 1,
+          "total": 1
         }
       },
       {
         "interval": "2025-09-03T16:28:00Z",
         "summary": {
-          "unique": 0
+          "unique": 0,
+          "total": 0
         }
       }
     ]

@@ -3,13 +3,15 @@
     {
       "interval": "2025-09-04T00:00:00Z",
       "summary": {
-        "unique": 1
+        "unique": 1,
+        "total": 1
       }
     },
     {
       "interval": "2025-09-04T12:00:00Z",
       "summary": {
-        "unique": 0
+        "unique": 0,
+        "total": 0
       }
     }
   ]

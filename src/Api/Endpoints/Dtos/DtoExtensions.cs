@@ -6,9 +6,6 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
 public static class DtoExtensions
 {
-    public static ClearanceRequestsSummaryIntervalResponse ToBucketResponse(this ClearanceRequestsSummary summary) =>
-        new(summary.Unique);
-
     public static ReleasesSummaryResponse ToResponse(this ReleasesSummary summary) =>
         new(summary.Automatic, summary.Manual, summary.Total);
 
@@ -37,15 +34,12 @@ public static class DtoExtensions
             buckets.Select(x => new IntervalResponse<MatchesSummaryResponse>(x.Bucket, x.Summary.ToResponse())).ToList()
         );
 
-    public static IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryIntervalResponse>> ToResponse(
+    public static IntervalsResponse<IntervalResponse<ClearanceRequestsSummaryResponse>> ToResponse(
         this IReadOnlyList<ClearanceRequestsBucket> buckets
     ) =>
         new(
             buckets
-                .Select(x => new IntervalResponse<ClearanceRequestsSummaryIntervalResponse>(
-                    x.Bucket,
-                    x.Summary.ToBucketResponse()
-                ))
+                .Select(x => new IntervalResponse<ClearanceRequestsSummaryResponse>(x.Bucket, x.Summary.ToResponse()))
                 .ToList()
         );
 

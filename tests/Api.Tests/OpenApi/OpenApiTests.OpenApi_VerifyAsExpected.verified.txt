@@ -129,7 +129,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -208,7 +208,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse"
                 }
               }
             }
@@ -1310,46 +1310,6 @@
   },
   "components": {
     "schemas": {
-      "ClearanceRequestsSummaryIntervalResponse": {
-        "type": "object",
-        "properties": {
-          "unique": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClearanceRequestsSummaryIntervalResponseIntervalResponse": {
-        "type": "object",
-        "properties": {
-          "interval": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "summary": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponse"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse": {
-        "type": "object",
-        "properties": {
-          "intervals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponse"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
       "ClearanceRequestsSummaryResponse": {
         "type": "object",
         "properties": {
@@ -1360,6 +1320,36 @@
           "total": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClearanceRequestsSummaryResponseIntervalResponse": {
+        "type": "object",
+        "properties": {
+          "interval": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "summary": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse": {
+        "type": "object",
+        "properties": {
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponse"
+            }
           }
         },
         "additionalProperties": false
@@ -1384,7 +1374,7 @@
           "clearanceRequests": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryIntervalResponseIntervalResponseIntervalsResponse"
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse"
               }
             ]
           },
