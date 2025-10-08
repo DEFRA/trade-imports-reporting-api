@@ -1347,6 +1347,47 @@
           }
         }
       }
+    },
+    "/status": {
+      "get": {
+        "tags": [
+          "Status Information"
+        ],
+        "summary": "Get status",
+        "operationId": "Status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1711,6 +1752,26 @@
             "items": {
               "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponse"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatusResponse": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastReceivedResponse"
+              }
+            ]
+          },
+          "sent": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastSentResponse"
+              }
+            ]
           }
         },
         "additionalProperties": false

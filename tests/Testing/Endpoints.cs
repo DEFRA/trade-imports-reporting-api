@@ -93,4 +93,11 @@ public static class Endpoints
 
         public static string Get() => $"{Root}";
     }
+
+    public static class Status
+    {
+        private const string Root = "/status";
+
+        public static string Get() => $"{Root}";
+    }
 }
