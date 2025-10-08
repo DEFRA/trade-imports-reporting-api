@@ -1306,6 +1306,47 @@
           }
         }
       }
+    },
+    "/last-sent": {
+      "get": {
+        "tags": [
+          "Status Information"
+        ],
+        "summary": "Get last sent",
+        "operationId": "LastSent",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastSentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1388,7 +1429,7 @@
         },
         "additionalProperties": false
       },
-      "LastReceivedMessageResponse": {
+      "LastMessageResponse": {
         "type": "object",
         "properties": {
           "timestamp": {
@@ -1407,7 +1448,7 @@
           "finalisation": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/LastReceivedMessageResponse"
+                "$ref": "#/components/schemas/LastMessageResponse"
               }
             ],
             "nullable": true
@@ -1415,7 +1456,7 @@
           "request": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/LastReceivedMessageResponse"
+                "$ref": "#/components/schemas/LastMessageResponse"
               }
             ],
             "nullable": true
@@ -1423,7 +1464,21 @@
           "notification": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/LastReceivedMessageResponse"
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastSentResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
               }
             ],
             "nullable": true

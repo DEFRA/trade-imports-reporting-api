@@ -86,4 +86,11 @@ public static class Endpoints
 
         public static string Get() => $"{Root}";
     }
+
+    public static class LastSent
+    {
+        private const string Root = "/last-sent";
+
+        public static string Get() => $"{Root}";
+    }
 }

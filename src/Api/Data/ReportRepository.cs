@@ -1330,6 +1330,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return new LastReceivedSummary(latestFinalisation, latestRequest, latestNotification);
     }
 
+    public async Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken)
+    {
+        var decision = await dbContext
+            .Decisions.Find(FilterDefinition<Decision>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastSent(x.Timestamp, x.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new LastSentSummary(decision);
+    }
+
     private static List<T> AddEmptyBuckets<T>(
         DateTime from,
         DateTime to,

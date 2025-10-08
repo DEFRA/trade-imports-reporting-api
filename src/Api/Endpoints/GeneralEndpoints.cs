@@ -9,7 +9,7 @@ public static class GeneralEndpoints
     public static void MapGeneralEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("summary", Summary)
-            .WithName("Summary")
+            .WithName(nameof(Summary))
             .WithTags("General")
             .WithSummary("Get summary")
             .WithDescription(Descriptions.SearchablePeriod)
@@ -19,7 +19,7 @@ public static class GeneralEndpoints
             .RequireAuthorization();
 
         app.MapGet("buckets", Buckets)
-            .WithName("Buckets")
+            .WithName(nameof(Buckets))
             .WithTags("General")
             .WithSummary("Get buckets by day or hour")
             .WithDescription(Descriptions.SearchablePeriod)
@@ -29,7 +29,7 @@ public static class GeneralEndpoints
             .RequireAuthorization();
 
         app.MapGet("intervals", Intervals)
-            .WithName("Intervals")
+            .WithName(nameof(Intervals))
             .WithTags("General")
             .WithSummary("Get by interval")
             .WithDescription(Descriptions.SearchablePeriod)
@@ -39,10 +39,19 @@ public static class GeneralEndpoints
             .RequireAuthorization();
 
         app.MapGet("last-received", LastReceived)
-            .WithName("LastReceived")
+            .WithName(nameof(LastReceived))
             .WithTags("Status Information")
             .WithSummary("Get last received")
             .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("last-sent", LastSent)
+            .WithName(nameof(LastSent))
+            .WithTags("Status Information")
+            .WithSummary("Get last sent")
+            .Produces<LastSentResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -191,19 +200,30 @@ public static class GeneralEndpoints
         return Results.Ok(
             new LastReceivedResponse(
                 lastReceived.Finalisation is not null
-                    ? new LastReceivedMessageResponse(
-                        lastReceived.Finalisation.Timestamp,
-                        lastReceived.Finalisation.Reference
-                    )
+                    ? new LastMessageResponse(lastReceived.Finalisation.Timestamp, lastReceived.Finalisation.Reference)
                     : null,
                 lastReceived.Request is not null
-                    ? new LastReceivedMessageResponse(lastReceived.Request.Timestamp, lastReceived.Request.Reference)
+                    ? new LastMessageResponse(lastReceived.Request.Timestamp, lastReceived.Request.Reference)
                     : null,
                 lastReceived.Notification is not null
-                    ? new LastReceivedMessageResponse(
-                        lastReceived.Notification.Timestamp,
-                        lastReceived.Notification.Reference
-                    )
+                    ? new LastMessageResponse(lastReceived.Notification.Timestamp, lastReceived.Notification.Reference)
+                    : null
+            )
+        );
+    }
+
+    [HttpGet]
+    private static async Task<IResult> LastSent(
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var lastSent = await reportRepository.GetLastSentSummary(cancellationToken);
+
+        return Results.Ok(
+            new LastSentResponse(
+                lastSent.Decision is not null
+                    ? new LastMessageResponse(lastSent.Decision.Timestamp, lastSent.Decision.Reference)
                     : null
             )
         );
