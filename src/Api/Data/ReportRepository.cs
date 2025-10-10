@@ -1303,19 +1303,31 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     public async Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken)
     {
-        var latestFinalisation = await dbContext
+        var finalisationTask = dbContext
             .Finalisations.Find(FilterDefinition<Finalisation>.Empty)
             .SortByDescending(x => x.Timestamp)
             .Project(x => new LastReceived(x.Timestamp, x.Mrn))
             .FirstOrDefaultAsync(cancellationToken);
 
-        var latestRequest = await dbContext
+        var requestTask = dbContext
             .Requests.Find(FilterDefinition<Request>.Empty)
             .SortByDescending(x => x.Timestamp)
             .Project(x => new LastReceived(x.Timestamp, x.Mrn))
             .FirstOrDefaultAsync(cancellationToken);
 
-        return new LastReceivedSummary(latestFinalisation, latestRequest);
+        var notificationTask = dbContext
+            .Notifications.Find(FilterDefinition<Notification>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        await Task.WhenAll(finalisationTask, requestTask, notificationTask);
+
+        var latestFinalisation = await finalisationTask;
+        var latestRequest = await requestTask;
+        var latestNotification = await notificationTask;
+
+        return new LastReceivedSummary(latestFinalisation, latestRequest, latestNotification);
     }
 
     private static List<T> AddEmptyBuckets<T>(

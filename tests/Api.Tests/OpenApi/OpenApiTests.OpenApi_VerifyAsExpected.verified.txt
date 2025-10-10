@@ -1419,6 +1419,14 @@
               }
             ],
             "nullable": true
+          },
+          "notification": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastReceivedMessageResponse"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false

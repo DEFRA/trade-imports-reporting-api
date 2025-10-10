@@ -4,5 +4,6 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
 public record LastReceivedResponse(
     [property: JsonPropertyName("finalisation")] LastReceivedMessageResponse? Finalisation,
-    [property: JsonPropertyName("request")] LastReceivedMessageResponse? Request
+    [property: JsonPropertyName("request")] LastReceivedMessageResponse? Request,
+    [property: JsonPropertyName("notification")] LastReceivedMessageResponse? Notification
 );

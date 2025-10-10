@@ -198,6 +198,12 @@ public static class GeneralEndpoints
                     : null,
                 lastReceived.Request is not null
                     ? new LastReceivedMessageResponse(lastReceived.Request.Timestamp, lastReceived.Request.Reference)
+                    : null,
+                lastReceived.Notification is not null
+                    ? new LastReceivedMessageResponse(
+                        lastReceived.Notification.Timestamp,
+                        lastReceived.Notification.Reference
+                    )
                     : null
             )
         );

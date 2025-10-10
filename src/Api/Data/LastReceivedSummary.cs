@@ -1,3 +1,3 @@
 namespace Defra.TradeImportsReportingApi.Api.Data;
 
-public record LastReceivedSummary(LastReceived? Finalisation, LastReceived? Request);
+public record LastReceivedSummary(LastReceived? Finalisation, LastReceived? Request, LastReceived? Notification);

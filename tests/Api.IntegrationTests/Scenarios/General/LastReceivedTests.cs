@@ -31,4 +31,19 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
     }
+
+    [Fact]
+    public async Task WhenMultipleNotificationForSameChed_LatestShouldBeReturned()
+    {
+        var ched = Guid.NewGuid().ToString();
+        var created = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+
+        await SendNotification(created, ched, wait: false);
+        await SendNotification(created.AddSeconds(10), ched, wait: false);
+        await WaitForNotificationChed(ched, count: 2);
+
+        var response = await DefaultClient.GetAsync(Testing.Endpoints.LastReceived.Get());
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+    }
 }
