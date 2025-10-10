@@ -8,9 +8,11 @@ public static class GeneralEndpoints
 {
     public static void MapGeneralEndpoints(this IEndpointRouteBuilder app)
     {
+        const string general = "General";
+
         app.MapGet("summary", Summary)
-            .WithName("Summary")
-            .WithTags("General")
+            .WithName(nameof(Summary))
+            .WithTags(general)
             .WithSummary("Get summary")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<SummaryResponse>()
@@ -19,8 +21,8 @@ public static class GeneralEndpoints
             .RequireAuthorization();
 
         app.MapGet("buckets", Buckets)
-            .WithName("Buckets")
-            .WithTags("General")
+            .WithName(nameof(Buckets))
+            .WithTags(general)
             .WithSummary("Get buckets by day or hour")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<IntervalsResponse>()
@@ -29,8 +31,8 @@ public static class GeneralEndpoints
             .RequireAuthorization();
 
         app.MapGet("intervals", Intervals)
-            .WithName("Intervals")
-            .WithTags("General")
+            .WithName(nameof(Intervals))
+            .WithTags(general)
             .WithSummary("Get by interval")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<IntervalsResponse>()
@@ -38,11 +40,31 @@ public static class GeneralEndpoints
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
+        const string statusInformation = "Status Information";
+
         app.MapGet("last-received", LastReceived)
-            .WithName("LastReceived")
-            .WithTags("Status Information")
+            .WithName(nameof(LastReceived))
+            .WithTags(statusInformation)
             .WithSummary("Get last received")
             .Produces<LastReceivedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("last-sent", LastSent)
+            .WithName(nameof(LastSent))
+            .WithTags(statusInformation)
+            .WithSummary("Get last sent")
+            .Produces<LastSentResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("status", Status)
+            .WithName(nameof(Status))
+            .WithTags(statusInformation)
+            .WithSummary("Get status")
+            .Produces<StatusResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -188,24 +210,34 @@ public static class GeneralEndpoints
     {
         var lastReceived = await reportRepository.GetLastReceivedSummary(cancellationToken);
 
-        return Results.Ok(
-            new LastReceivedResponse(
-                lastReceived.Finalisation is not null
-                    ? new LastReceivedMessageResponse(
-                        lastReceived.Finalisation.Timestamp,
-                        lastReceived.Finalisation.Reference
-                    )
-                    : null,
-                lastReceived.Request is not null
-                    ? new LastReceivedMessageResponse(lastReceived.Request.Timestamp, lastReceived.Request.Reference)
-                    : null,
-                lastReceived.Notification is not null
-                    ? new LastReceivedMessageResponse(
-                        lastReceived.Notification.Timestamp,
-                        lastReceived.Notification.Reference
-                    )
-                    : null
-            )
-        );
+        return Results.Ok(lastReceived.ToResponse());
+    }
+
+    [HttpGet]
+    private static async Task<IResult> LastSent(
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var lastSent = await reportRepository.GetLastSentSummary(cancellationToken);
+
+        return Results.Ok(lastSent.ToResponse());
+    }
+
+    [HttpGet]
+    private static async Task<IResult> Status(
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var lastReceivedTask = reportRepository.GetLastReceivedSummary(cancellationToken);
+        var lastSentTask = reportRepository.GetLastSentSummary(cancellationToken);
+
+        await Task.WhenAll(lastReceivedTask, lastSentTask);
+
+        var lastReceived = await lastReceivedTask;
+        var lastSent = await lastSentTask;
+
+        return Results.Ok(new StatusResponse(lastReceived.ToResponse(), lastSent.ToResponse()));
     }
 }
