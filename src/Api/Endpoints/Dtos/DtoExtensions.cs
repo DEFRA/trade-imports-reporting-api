@@ -58,6 +58,26 @@ public static class DtoExtensions
     public static DatumResponse<ReleasesResponse> ToResponse(this IReadOnlyList<Finalisation> finalisations) =>
         new(finalisations.Select(x => new ReleasesResponse(x.Timestamp, x.Mrn)).ToList());
 
+    public static LastReceivedResponse ToResponse(this LastReceivedSummary lastReceived) =>
+        new(
+            lastReceived.Finalisation is not null
+                ? new LastMessageResponse(lastReceived.Finalisation.Timestamp, lastReceived.Finalisation.Reference)
+                : null,
+            lastReceived.Request is not null
+                ? new LastMessageResponse(lastReceived.Request.Timestamp, lastReceived.Request.Reference)
+                : null,
+            lastReceived.Notification is not null
+                ? new LastMessageResponse(lastReceived.Notification.Timestamp, lastReceived.Notification.Reference)
+                : null
+        );
+
+    public static LastSentResponse ToResponse(this LastSentSummary lastSent) =>
+        new(
+            lastSent.Decision is not null
+                ? new LastMessageResponse(lastSent.Decision.Timestamp, lastSent.Decision.Reference)
+                : null
+        );
+
     public static string ToCsvResponse(this IReadOnlyList<Decision> matches)
     {
         var csv = new StringBuilder();
