@@ -1,14 +1,14 @@
-﻿{
+{
   "received": {
     "finalisation": {
       "timestamp": "2025-09-03T16:08:10Z",
       "reference": "Guid_1"
     },
-    "request": {
+    "clearanceRequest": {
       "timestamp": "2025-09-04T16:08:10Z",
       "reference": "Guid_2"
     },
-    "notification": {
+    "preNotification": {
       "timestamp": "2025-09-05T16:08:10Z",
       "reference": "Guid_3"
     }
