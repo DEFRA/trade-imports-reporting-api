@@ -3,11 +3,11 @@
     "timestamp": "2025-09-08T16:00:00Z",
     "reference": "mrn1"
   },
-  "request": {
+  "clearanceRequest": {
     "timestamp": "2025-09-08T17:00:00Z",
     "reference": "mrn2"
   },
-  "notification": {
+  "preNotification": {
     "timestamp": "2025-09-08T18:00:00Z",
     "reference": "ched"
   }

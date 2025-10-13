@@ -1494,7 +1494,7 @@
             ],
             "nullable": true
           },
-          "request": {
+          "clearanceRequest": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
@@ -1502,7 +1502,7 @@
             ],
             "nullable": true
           },
-          "notification": {
+          "preNotification": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
