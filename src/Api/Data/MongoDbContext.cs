@@ -8,12 +8,14 @@ namespace Defra.TradeImportsReportingApi.Api.Data;
 public class MongoDbContext(IMongoDatabase database) : IDbContext
 {
     public IMongoCollection<Finalisation> Finalisations { get; } =
-        database.GetCollection<Finalisation>(nameof(Finalisation));
+        database.GetCollection<Finalisation>(typeof(Finalisation).DataEntityName());
 
-    public IMongoCollection<Decision> Decisions { get; } = database.GetCollection<Decision>(nameof(Decision));
+    public IMongoCollection<Decision> Decisions { get; } =
+        database.GetCollection<Decision>(typeof(Decision).DataEntityName());
 
-    public IMongoCollection<Request> Requests { get; } = database.GetCollection<Request>(nameof(Request));
+    public IMongoCollection<Request> Requests { get; } =
+        database.GetCollection<Request>(typeof(Request).DataEntityName());
 
     public IMongoCollection<Notification> Notifications { get; } =
-        database.GetCollection<Notification>(nameof(Notification));
+        database.GetCollection<Notification>(typeof(Notification).DataEntityName());
 }
