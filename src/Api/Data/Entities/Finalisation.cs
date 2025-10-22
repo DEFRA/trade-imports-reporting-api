@@ -1,5 +1,8 @@
+using Defra.TradeImportsReportingApi.Api.Data.Extensions;
+
 namespace Defra.TradeImportsReportingApi.Api.Data.Entities;
 
+[DbCollection(nameof(Finalisation))]
 public class Finalisation
 {
     public required string Id { get; init; }

@@ -1,5 +1,8 @@
+using Defra.TradeImportsReportingApi.Api.Data.Extensions;
+
 namespace Defra.TradeImportsReportingApi.Api.Data.Entities;
 
+[DbCollection(nameof(Notification))]
 public class Notification
 {
     public required string Id { get; init; }
