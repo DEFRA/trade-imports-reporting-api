@@ -2,7 +2,7 @@ using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 
 namespace Defra.TradeImportsReportingApi.Api.Data.Entities;
 
-[DbCollection(nameof(Decision))]
+[DbCollection("Decision")]
 public class Decision
 {
     public required string Id { get; init; }
