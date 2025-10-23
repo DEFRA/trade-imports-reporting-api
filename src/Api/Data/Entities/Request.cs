@@ -1,5 +1,8 @@
+using Defra.TradeImportsReportingApi.Api.Data.Extensions;
+
 namespace Defra.TradeImportsReportingApi.Api.Data.Entities;
 
+[DbCollection("Request")]
 public class Request
 {
     public required string Id { get; init; }
