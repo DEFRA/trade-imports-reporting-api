@@ -192,7 +192,11 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var resourceEvent = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEvent { Id = "test", ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            new CustomsDeclarationEvent
+            {
+                Id = "test",
+                ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt },
+            },
             ResourceEventSubResourceTypes.ClearanceRequest
         );
 
@@ -253,8 +257,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var resourceEvent = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclaration
+            new CustomsDeclarationEvent
             {
+                Id = "Test",
                 Finalisation = new Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation
                 {
                     ExternalVersion = 1,
