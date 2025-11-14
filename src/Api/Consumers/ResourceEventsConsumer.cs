@@ -52,7 +52,7 @@ public class ResourceEventsConsumer(
 
     private async Task HandleFinalisation(string received, CancellationToken cancellationToken)
     {
-        var customsDeclaration = DeserializeReceived<CustomsDeclarationEntity>(received);
+        var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
         if (customsDeclaration.Resource?.Finalisation is null)
             throw new InvalidOperationException("Finalisation is null");
 
@@ -75,7 +75,7 @@ public class ResourceEventsConsumer(
 
     private async Task HandleDecision(string received, CancellationToken cancellationToken)
     {
-        var customsDeclaration = DeserializeReceived<CustomsDeclarationEntity>(received);
+        var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
         if (customsDeclaration.Resource?.ClearanceDecision is null)
             throw new InvalidOperationException("Decision is null");
 
@@ -90,7 +90,7 @@ public class ResourceEventsConsumer(
 
     private async Task HandleRequest(string received, CancellationToken cancellationToken)
     {
-        var customsDeclaration = DeserializeReceived<CustomsDeclarationEntity>(received);
+        var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
         if (customsDeclaration.Resource?.ClearanceRequest is null)
             throw new InvalidOperationException("Request is null");
 
@@ -102,7 +102,7 @@ public class ResourceEventsConsumer(
 
     private async Task HandleNotification(string received, CancellationToken cancellationToken)
     {
-        var importPreNotification = DeserializeReceived<ImportPreNotificationEntity>(received);
+        var importPreNotification = DeserializeReceived<ImportPreNotificationEvent>(received);
         if (importPreNotification.Resource is null)
             throw new InvalidOperationException("Resource is null");
 

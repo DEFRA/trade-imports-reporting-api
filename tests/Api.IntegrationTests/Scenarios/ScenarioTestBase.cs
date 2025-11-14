@@ -170,8 +170,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var resourceEvent = CreateResourceEvent(
             ched,
             ResourceEventResourceTypes.ImportPreNotification,
-            new ImportPreNotificationEntity
+            new ImportPreNotificationEvent
             {
+                Id = "test",
                 Created = created,
                 Updated = updated ?? created,
                 ImportPreNotification = new ImportPreNotification { ImportNotificationType = type },
@@ -191,7 +192,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var resourceEvent = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity { ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
+            new CustomsDeclarationEvent { Id = "test", ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt } },
             ResourceEventSubResourceTypes.ClearanceRequest
         );
 
@@ -214,8 +215,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var resourceEvent = CreateResourceEvent(
             mrn,
             ResourceEventResourceTypes.CustomsDeclaration,
-            new CustomsDeclarationEntity
+            new CustomsDeclarationEvent
             {
+                Id = "test",
                 Created = mrnCreated,
                 ClearanceDecision = new ClearanceDecision
                 {
