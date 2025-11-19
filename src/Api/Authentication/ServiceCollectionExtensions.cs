@@ -18,7 +18,12 @@ public static class ServiceCollectionExtensions
                 _ => { }
             );
 
-        services.AddAuthorizationBuilder();
+        services
+            .AddAuthorizationBuilder()
+            .AddPolicy(
+                PolicyNames.Execute,
+                builder => builder.RequireAuthenticatedUser().RequireClaim(Claims.Scope, Scopes.Execute)
+            );
 
         return services;
     }
