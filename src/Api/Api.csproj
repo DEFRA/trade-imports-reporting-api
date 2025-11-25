@@ -15,7 +15,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.32.0-pr-327.1601" />
+    <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.32.0" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="9.0.0" />
     <PackageReference Include="Elastic.Serilog.Enrichers.Web" Version="9.0.0" />
     <PackageReference Include="FluentValidation" Version="12.1.0" />
