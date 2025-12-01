@@ -409,6 +409,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
+            LookupFinalisation(),
+            SetFinalisation(),
+            FilterOutManualReleasesAndCancelled(),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -466,6 +469,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
+            LookupFinalisation(),
+            SetFinalisation(),
+            FilterOutManualReleasesAndCancelled(),
             new BsonDocument("$set", Bucket(Fields.Decision.MrnCreated, unit)),
             new BsonDocument(
                 "$group",
@@ -539,6 +545,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
+            LookupFinalisation(),
+            SetFinalisation(),
+            FilterOutManualReleasesAndCancelled(),
             new BsonDocument(
                 "$project",
                 new BsonDocument
@@ -665,6 +674,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
+            LookupFinalisation(),
+            SetFinalisation(),
+            FilterOutManualReleasesAndCancelled(),
             new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
             new BsonDocument(
                 "$group",
@@ -1423,6 +1435,51 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static BsonDocument MatchesMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.Decision.MrnCreated, from, to));
+
+    private static BsonDocument LookupFinalisation() =>
+        new(
+            "$lookup",
+            new BsonDocument
+            {
+                { "from", "Finalisation" },
+                { "localField", "mrn" },
+                { "foreignField", "mrn" },
+                { "as", "finalisation" },
+                {
+                    "pipeline",
+                    new BsonArray
+                    {
+                        new BsonDocument("$sort", new BsonDocument("timestamp", -1)),
+                        new BsonDocument("$limit", 1),
+                    }
+                },
+            }
+        );
+
+    private static BsonDocument SetFinalisation() =>
+        new(
+            "$set",
+            new BsonDocument
+            {
+                { "finalisation", new BsonDocument("$arrayElemAt", new BsonArray { "$finalisation", 0 }) },
+            }
+        );
+
+    private static BsonDocument FilterOutManualReleasesAndCancelled() =>
+        new(
+            "$match",
+            new BsonDocument
+            {
+                {
+                    "$or",
+                    new BsonArray
+                    {
+                        new BsonDocument("finalisation.releaseType", "Automatic"),
+                        new BsonDocument("finalisation", BsonNull.Value),
+                    }
+                },
+            }
+        );
 
     private static BsonDocument ClearanceRequestMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.Request.Timestamp, from, to));
