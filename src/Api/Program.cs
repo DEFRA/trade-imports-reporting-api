@@ -2,6 +2,7 @@ using Defra.TradeImportsReportingApi.Api.Authentication;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 using Defra.TradeImportsReportingApi.Api.Endpoints;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Admin;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Health;
 using Defra.TradeImportsReportingApi.Api.Metrics;
@@ -91,6 +92,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.MapClearanceRequestEndpoints();
     app.MapNotificationEndpoints();
     app.MapGeneralEndpoints();
+    app.MapAdminEndpoints();
     app.UseOpenApi();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions

@@ -1,6 +1,8 @@
+using Amazon.SQS;
 using Defra.TradeImportsReportingApi.Api.Configuration;
 using Defra.TradeImportsReportingApi.Api.Consumers;
 using Defra.TradeImportsReportingApi.Api.Metrics;
+using Defra.TradeImportsReportingApi.Api.Services.Admin;
 using Defra.TradeImportsReportingApi.Api.Utils;
 using Defra.TradeImportsReportingApi.Api.Utils.CorrelationId;
 using Defra.TradeImportsReportingApi.Api.Utils.Logging;
@@ -19,9 +21,10 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
+        services.AddSingleton<ISqsDeadLetterService, SqsDeadLetterService>();
         services.AddSingleton<ICorrelationIdGenerator, CorrelationIdGenerator>();
         services.AddOptions<CdpOptions>().Bind(configuration).ValidateDataAnnotations();
-
+        services.AddAWSService<IAmazonSQS>();
         return services;
     }
 
