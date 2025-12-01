@@ -288,7 +288,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
-                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_buckets"
             );
 
         response = await DefaultClient.GetAsync(
@@ -302,7 +302,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
-                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_data"
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_data"
             );
 
         response = await DefaultClient.GetAsync(
@@ -316,7 +316,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
-                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_intervals"
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_intervals"
             );
     }
 
