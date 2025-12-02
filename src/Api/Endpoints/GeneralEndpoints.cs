@@ -20,16 +20,6 @@ public static class GeneralEndpoints
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
-        app.MapGet("buckets", Buckets)
-            .WithName(nameof(Buckets))
-            .WithTags(general)
-            .WithSummary("Get buckets by day or hour")
-            .WithDescription(Descriptions.SearchablePeriod)
-            .Produces<IntervalsResponse>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
-
         app.MapGet("intervals", Intervals)
             .WithName(nameof(Intervals))
             .WithTags(general)
@@ -103,49 +93,6 @@ public static class GeneralEndpoints
 
         return Results.Ok(
             new SummaryResponse(
-                releases.ToResponse(),
-                matches.ToResponse(),
-                clearanceRequests.ToResponse(),
-                notifications.ToResponse()
-            )
-        );
-    }
-
-    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="unit">"hour" or "day"</param>
-    /// <param name="reportRepository"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    [HttpGet]
-    private static async Task<IResult> Buckets(
-        [FromQuery] DateTime from,
-        [FromQuery] DateTime to,
-        [FromQuery] string unit,
-        [FromServices] IReportRepository reportRepository,
-        CancellationToken cancellationToken
-    )
-    {
-        var errors = Request.Validate(from, to, unit);
-        if (errors.Count > 0)
-        {
-            return Results.ValidationProblem(errors);
-        }
-
-        var releasesTask = reportRepository.GetReleasesBuckets(from, to, unit, cancellationToken);
-        var matchesTask = reportRepository.GetMatchesBuckets(from, to, unit, cancellationToken);
-        var clearanceRequestsTask = reportRepository.GetClearanceRequestsBuckets(from, to, unit, cancellationToken);
-        var notificationsTask = reportRepository.GetNotificationsBuckets(from, to, unit, cancellationToken);
-
-        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
-
-        var releases = await releasesTask;
-        var matches = await matchesTask;
-        var clearanceRequests = await clearanceRequestsTask;
-        var notifications = await notificationsTask;
-
-        return Results.Ok(
-            new IntervalsResponse(
                 releases.ToResponse(),
                 matches.ToResponse(),
                 clearanceRequests.ToResponse(),

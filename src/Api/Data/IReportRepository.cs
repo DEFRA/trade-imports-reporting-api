@@ -6,13 +6,6 @@ public interface IReportRepository
 {
     Task<ReleasesSummary> GetReleasesSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    );
-
     Task<IReadOnlyList<ReleasesBucket>> GetReleasesIntervals(
         DateTime from,
         DateTime to,
@@ -28,13 +21,6 @@ public interface IReportRepository
     );
 
     Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
-
-    Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    );
 
     Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
         DateTime from,
@@ -56,13 +42,6 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
-    Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    );
-
     Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
         DateTime from,
         DateTime to,
@@ -71,13 +50,6 @@ public interface IReportRepository
     );
 
     Task<NotificationsSummary> GetNotificationsSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
-
-    Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    );
 
     Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
         DateTime from,
