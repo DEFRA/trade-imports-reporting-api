@@ -1476,6 +1476,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                     {
                         new BsonDocument("finalisation.releaseType", "Automatic"),
                         new BsonDocument("finalisation", BsonNull.Value),
+                        new BsonDocument("match", true),
                     }
                 },
             }
