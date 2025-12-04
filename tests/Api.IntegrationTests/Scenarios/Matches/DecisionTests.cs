@@ -255,6 +255,71 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
             );
     }
 
+    [Fact]
+    public async Task WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount()
+    {
+        var mrn = "Test-Mrn";
+        var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
+
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn: mrn);
+        await SendFinalisation(mrnCreated.AddSeconds(40), mrn: mrn, isCancelled: true, isManualRelease: false);
+        await SendDecision(mrnCreated, mrnCreated.AddSeconds(20));
+        // Outside From and To
+        await SendDecision(mrnCreated.AddHours(2), mrnCreated.AddHours(2).AddSeconds(40));
+
+        var from = mrnCreated.AddHours(-1);
+        var to = mrnCreated.AddHours(1);
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Summary(
+                EndpointQuery.New.Where(EndpointFilter.From(from)).Where(EndpointFilter.To(to))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Buckets(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Unit(Units.Hour))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_buckets"
+            );
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(false))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_data"
+            );
+
+        response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Matches.Intervals(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Intervals(CreateIntervals(from, to, 2)))
+            )
+        );
+
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+            .UseMethodName(
+                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_intervals"
+            );
+    }
+
     [Theory]
     [InlineData(Units.Hour)]
     [InlineData(Units.Day)]
