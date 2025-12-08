@@ -17,8 +17,6 @@ public static class Endpoints
 
         public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
 
-        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
-
         public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
 
         public static string Data(EndpointQuery? query = null) => $"{Root}/data{query}";
@@ -29,8 +27,6 @@ public static class Endpoints
         private const string Root = "/matches";
 
         public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
-
-        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
 
         public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
 
@@ -43,8 +39,6 @@ public static class Endpoints
 
         public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
 
-        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
-
         public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
     }
 
@@ -53,8 +47,6 @@ public static class Endpoints
         private const string Root = "/notifications";
 
         public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
-
-        public static string Buckets(EndpointQuery? query = null) => $"{Root}/buckets{query}";
 
         public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
     }

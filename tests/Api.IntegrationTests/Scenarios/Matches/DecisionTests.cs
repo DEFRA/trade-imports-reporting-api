@@ -26,19 +26,6 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(decisionCode);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Matches.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenSingleDecision_ShouldBeSingleCount)}_buckets")
-            .UseParameters(decisionCode);
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -86,18 +73,6 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Matches.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenMultipleDecisionForSameMrn_ShouldBeSingleCount)}_buckets");
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
@@ -149,20 +124,6 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Matches.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName(
-                $"{nameof(WhenMultipleDecisionForSameMrn_AndChangeFromNoMatchToMatch_ShouldBeSingleCount)}_buckets"
-            );
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -211,20 +172,6 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Matches.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName(
-                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            );
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
@@ -278,20 +225,6 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Matches.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName(
-                $"{nameof(WhenMultipleDecisionForDifferentMrn_AndOneOutsideFromAndTo_AndOneCancelled_ShouldBeSingleCount)}_buckets"
-            );
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -339,19 +272,6 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Matches.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(unit))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenMultipleDecisionForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Matches.Intervals(
