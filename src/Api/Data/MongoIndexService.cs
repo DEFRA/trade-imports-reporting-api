@@ -24,7 +24,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
     {
         await CreateIndex(
             LatestMrnIdx,
-            Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp).Descending(x => x.Timestamp),
+            Builders<Finalisation>.IndexKeys.Ascending(x => x.Mrn).Descending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
         await CreateIndex(
