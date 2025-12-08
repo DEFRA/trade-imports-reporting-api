@@ -58,13 +58,6 @@ public static class Endpoints
         public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
     }
 
-    public static class Buckets
-    {
-        private const string Root = "/buckets";
-
-        public static string Get(EndpointQuery? query = null) => $"{Root}/{query}";
-    }
-
     public static class Intervals
     {
         private const string Root = "/intervals";
