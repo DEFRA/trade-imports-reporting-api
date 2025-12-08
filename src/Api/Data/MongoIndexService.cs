@@ -10,6 +10,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
 {
     private const string TimestampIdx = "TimestampIdx";
     private const string MatchIdx = "MatchIdx";
+    private const string LatestMrnIdx = "LatestMrnIdx";
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -21,6 +22,11 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
 
     private async Task CreateFinalisationIndexes(CancellationToken cancellationToken)
     {
+        await CreateIndex(
+            LatestMrnIdx,
+            Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp).Descending(x => x.Timestamp),
+            cancellationToken: cancellationToken
+        );
         await CreateIndex(
             TimestampIdx,
             Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp),
