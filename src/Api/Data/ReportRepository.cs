@@ -412,6 +412,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             LookupFinalisation(),
             SetFinalisation(),
             FilterOutManualReleasesAndCancelled(),
+            UnSetFinalisation(),
             new BsonDocument(
                 "$group",
                 new BsonDocument
@@ -472,6 +473,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             LookupFinalisation(),
             SetFinalisation(),
             FilterOutManualReleasesAndCancelled(),
+            UnSetFinalisation(),
             new BsonDocument("$set", Bucket(Fields.Decision.MrnCreated, unit)),
             new BsonDocument(
                 "$group",
@@ -548,6 +550,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             LookupFinalisation(),
             SetFinalisation(),
             FilterOutManualReleasesAndCancelled(),
+            UnSetFinalisation(),
             new BsonDocument(
                 "$project",
                 new BsonDocument
@@ -677,6 +680,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             LookupFinalisation(),
             SetFinalisation(),
             FilterOutManualReleasesAndCancelled(),
+            UnSetFinalisation(),
             new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
             new BsonDocument(
                 "$group",
@@ -1464,6 +1468,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 { "finalisation", new BsonDocument("$arrayElemAt", new BsonArray { "$finalisation", 0 }) },
             }
         );
+
+    private static BsonDocument UnSetFinalisation() => new("$unset", "finalisation");
 
     private static BsonDocument FilterOutManualReleasesAndCancelled() =>
         new(
