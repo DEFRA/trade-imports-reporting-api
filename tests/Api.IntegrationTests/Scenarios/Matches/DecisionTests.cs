@@ -423,6 +423,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendDecision(mrnCreated.AddMinutes(-10), mrnCreated.AddMinutes(-10).AddSeconds(20), mrn: "oldest");
         await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn: "newest");
+        await SendFinalisation(mrnCreated.AddSeconds(40), mrn: "newest");
 
         var from = mrnCreated.AddDays(-1);
         var to = mrnCreated.AddDays(1);
