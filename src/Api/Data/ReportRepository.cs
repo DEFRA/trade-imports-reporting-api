@@ -29,30 +29,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static class Units
     {
-        private const string Hour = "hour";
-        private const string Day = "day";
-
-        private static readonly IReadOnlyList<string> s_all = [Hour, Day];
-
-        public static bool IsSupported(string unit) => s_all.Contains(unit);
-
         public static bool IsUtc(DateTime value) => value.Kind == DateTimeKind.Utc;
-
-        public static DateTime GetBucketStart(DateTime from, string unit) =>
-            unit switch
-            {
-                Hour => new DateTime(from.Year, from.Month, from.Day, from.Hour, 0, 0, from.Kind),
-                Day => new DateTime(from.Year, from.Month, from.Day, 0, 0, 0, from.Kind),
-                _ => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit"),
-            };
-
-        public static DateTime GetNextBucket(DateTime bucket, string unit) =>
-            unit switch
-            {
-                Hour => bucket.AddHours(1),
-                Day => bucket.AddDays(1),
-                _ => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit"),
-            };
     }
 
     private static class Fields
@@ -150,82 +127,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var results = await (await aggregateTask).ToListAsync(cancellationToken);
 
         return results.FirstOrDefault() ?? ReleasesSummary.Empty;
-    }
-
-    public async Task<IReadOnlyList<ReleasesBucket>> GetReleasesBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    )
-    {
-        GuardUtc(from, to);
-        GuardUnit(unit);
-
-        const string automatic = nameof(automatic);
-        const string manual = nameof(manual);
-        const string total = nameof(total);
-
-        var pipeline = new[]
-        {
-            ReleasesMatch(from, to),
-            new BsonDocument("$set", Bucket(Fields.Finalisation.Timestamp, unit)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument
-                        {
-                            { "bucket", "$bucket" },
-                            { Fields.Finalisation.Mrn, $"${Fields.Finalisation.Mrn}" },
-                        }
-                    },
-                    SortAndTakeLatest(Fields.Finalisation.Timestamp, Fields.Finalisation.ReleaseType),
-                }
-            ),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument { { "bucket", "$_id.bucket" } }
-                    },
-                    FieldSum(automatic, Fields.Finalisation.ReleaseType, ReleaseType.Automatic),
-                    FieldSum(manual, Fields.Finalisation.ReleaseType, ReleaseType.Manual),
-                    { total, new BsonDocument("$sum", 1) },
-                }
-            ),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "bucket", "$_id.bucket" },
-                    {
-                        "summary",
-                        new BsonDocument
-                        {
-                            { automatic, $"${automatic}" },
-                            { manual, $"${manual}" },
-                            { total, $"${total}" },
-                        }
-                    },
-                }
-            ),
-            new BsonDocument("$sort", new BsonDocument { { "bucket", 1 } }),
-        };
-
-        var aggregateTask = dbContext.Finalisations.AggregateAsync<ReleasesBucket>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
-
-        return AddEmptyBuckets(from, to, unit, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
     public async Task<IReadOnlyList<ReleasesBucket>> GetReleasesIntervals(
@@ -453,82 +354,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return results.FirstOrDefault() ?? MatchesSummary.Empty;
     }
 
-    public async Task<IReadOnlyList<MatchesBucket>> GetMatchesBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    )
-    {
-        GuardUtc(from, to);
-        GuardUnit(unit);
-
-        const string match = nameof(match);
-        const string noMatch = nameof(noMatch);
-        const string total = nameof(total);
-
-        var pipeline = new[]
-        {
-            MatchesMatch(from, to),
-            LookupFinalisation(),
-            SetFinalisation(),
-            FilterOutManualReleasesAndCancelled(),
-            UnSetFinalisation(),
-            new BsonDocument("$set", Bucket(Fields.Decision.MrnCreated, unit)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument { { "bucket", "$bucket" }, { Fields.Decision.Mrn, $"${Fields.Decision.Mrn}" } }
-                    },
-                    SortAndTakeLatest(Fields.Decision.Timestamp, Fields.Decision.Match),
-                }
-            ),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument { { "bucket", "$_id.bucket" } }
-                    },
-                    FieldSum(match, Fields.Decision.Match, true),
-                    FieldSum(noMatch, Fields.Decision.Match, false),
-                    { total, new BsonDocument("$sum", 1) },
-                }
-            ),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "bucket", "$_id.bucket" },
-                    {
-                        "summary",
-                        new BsonDocument
-                        {
-                            { match, $"${match}" },
-                            { noMatch, $"${noMatch}" },
-                            { total, $"${total}" },
-                        }
-                    },
-                }
-            ),
-            new BsonDocument("$sort", new BsonDocument { { "bucket", 1 } }),
-        };
-
-        var aggregateTask = dbContext.Decisions.AggregateAsync<MatchesBucket>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
-
-        return AddEmptyBuckets(from, to, unit, results, x => new MatchesBucket(x, MatchesSummary.Empty));
-    }
-
     public async Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
         DateTime from,
         DateTime to,
@@ -747,77 +572,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var total = await (await totalTask).FirstOrDefaultAsync(cancellationToken);
 
         return new ClearanceRequestsSummary((int)(unique?["count"] ?? 0), (int)(total?["count"] ?? 0));
-    }
-
-    public async Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    )
-    {
-        GuardUtc(from, to);
-        GuardUnit(unit);
-
-        // Can only return buckets for unique MRNs across the time period.
-        // Cannot return total overall as MRN might appear in more than one timestamp.
-
-        var pipeline = new[]
-        {
-            ClearanceRequestMatch(from, to),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", $"${Fields.Request.Mrn}" },
-                    SortAndTakeLatest(Fields.Request.Timestamp, Fields.Request.Timestamp),
-                }
-            ),
-            new BsonDocument("$set", Bucket(Fields.Request.Timestamp, unit, fieldPrefix: "latest.")),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument { { "bucket", "$bucket" } }
-                    },
-                    { "unique", new BsonDocument("$sum", 1) },
-                }
-            ),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "bucket", "$_id.bucket" },
-                    {
-                        "summary",
-                        new BsonDocument
-                        {
-                            { "unique", "$unique" },
-                            { "total", new BsonDocument("$literal", -1) }, // Cannot return, see comment at start of method
-                        }
-                    },
-                }
-            ),
-            new BsonDocument("$sort", new BsonDocument { { "bucket", 1 } }),
-        };
-
-        var aggregateTask = dbContext.Requests.AggregateAsync<ClearanceRequestsBucket>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
-
-        return AddEmptyBuckets(
-            from,
-            to,
-            unit,
-            results,
-            x => new ClearanceRequestsBucket(x, ClearanceRequestsSummary.Empty)
-        );
     }
 
     public async Task<IReadOnlyList<ClearanceRequestsBucket>> GetClearanceRequestsIntervals(
@@ -1097,88 +851,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return results.FirstOrDefault() ?? NotificationsSummary.Empty;
     }
 
-    public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsBuckets(
-        DateTime from,
-        DateTime to,
-        string unit,
-        CancellationToken cancellationToken
-    )
-    {
-        GuardUtc(from, to);
-        GuardUnit(unit);
-
-        const string chedA = nameof(chedA);
-        const string chedP = nameof(chedP);
-        const string chedPP = nameof(chedPP);
-        const string chedD = nameof(chedD);
-        const string total = nameof(total);
-
-        var pipeline = new[]
-        {
-            NotificationsMatch(from, to),
-            new BsonDocument("$set", Bucket(Fields.Notification.NotificationCreated, unit)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument
-                        {
-                            { "bucket", "$bucket" },
-                            { Fields.Notification.ReferenceNumber, $"${Fields.Notification.ReferenceNumber}" },
-                        }
-                    },
-                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
-                }
-            ),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    {
-                        "_id",
-                        new BsonDocument { { "bucket", "$_id.bucket" } }
-                    },
-                    FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
-                    FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
-                    FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
-                    FieldSum(chedD, Fields.Notification.NotificationType, NotificationType.ChedD),
-                    { total, new BsonDocument("$sum", 1) },
-                }
-            ),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { "bucket", "$_id.bucket" },
-                    {
-                        "summary",
-                        new BsonDocument
-                        {
-                            { chedA, $"${chedA}" },
-                            { chedP, $"${chedP}" },
-                            { chedPP, $"${chedPP}" },
-                            { chedD, $"${chedD}" },
-                            { total, $"${total}" },
-                        }
-                    },
-                }
-            ),
-            new BsonDocument("$sort", new BsonDocument { { "bucket", 1 } }),
-        };
-
-        var aggregateTask = dbContext.Notifications.AggregateAsync<NotificationsBucket>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        var results = await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
-
-        return AddEmptyBuckets(from, to, unit, results, x => new NotificationsBucket(x, NotificationsSummary.Empty));
-    }
-
     public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
         DateTime from,
         DateTime to,
@@ -1368,29 +1040,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return new LastSentSummary(decision);
     }
 
-    private static List<T> AddEmptyBuckets<T>(
-        DateTime from,
-        DateTime to,
-        string unit,
-        List<T> results,
-        Func<DateTime, T> emptyBucketFunc
-    )
-        where T : IBucket
-    {
-        var bucketStart = Units.GetBucketStart(from, unit);
-        var resultsByBucket = results.ToDictionary(x => x.Bucket, x => x);
-
-        for (var bucket = bucketStart; bucket <= to; bucket = Units.GetNextBucket(bucket, unit))
-        {
-            if (!resultsByBucket.ContainsKey(bucket))
-            {
-                resultsByBucket.Add(bucket, emptyBucketFunc(bucket));
-            }
-        }
-
-        return resultsByBucket.Values.OrderBy(x => x.Bucket).ToList();
-    }
-
     private static List<T> AddEmptyIntervals<T>(
         DateTime[] intervals,
         List<T> results,
@@ -1418,12 +1067,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         if (intervals != null && intervals.Any(interval => !Units.IsUtc(interval)))
             throw new ArgumentOutOfRangeException(nameof(intervals), intervals, "Intervals must be UTC");
-    }
-
-    private static void GuardUnit(string unit)
-    {
-        if (!Units.IsSupported(unit))
-            throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unexpected unit");
     }
 
     private static void GuardIntervals(DateTime from, DateTime to, DateTime[] intervals)
@@ -1535,24 +1178,5 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 }
             )
         );
-    }
-
-    private static BsonDocument Bucket(string field, string unit, string? fieldPrefix = null)
-    {
-        return new BsonDocument
-        {
-            {
-                "bucket",
-                new BsonDocument(
-                    "$dateTrunc",
-                    new BsonDocument
-                    {
-                        { "date", $"${fieldPrefix}{field}" },
-                        { "unit", unit },
-                        { "timezone", "UTC" },
-                    }
-                )
-            },
-        };
     }
 }

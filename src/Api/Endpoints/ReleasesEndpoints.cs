@@ -18,16 +18,6 @@ public static class ReleasesEndpoints
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
-        app.MapGet("releases/buckets", ReleasesBuckets)
-            .WithName("ReleasesBuckets")
-            .WithTags("Finalisations")
-            .WithSummary("Get releases buckets by day or hour")
-            .WithDescription(Descriptions.SearchablePeriod)
-            .Produces<IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>>>()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization();
-
         app.MapGet("releases/intervals", ReleasesIntervals)
             .WithName("ReleasesIntervals")
             .WithTags("Finalisations")
@@ -71,32 +61,6 @@ public static class ReleasesEndpoints
         var releasesSummary = await reportRepository.GetReleasesSummary(from, to, cancellationToken);
 
         return Results.Ok(releasesSummary.ToResponse());
-    }
-
-    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="unit">"hour" or "day"</param>
-    /// <param name="reportRepository"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    [HttpGet]
-    private static async Task<IResult> ReleasesBuckets(
-        [FromQuery] DateTime from,
-        [FromQuery] DateTime to,
-        [FromQuery] string unit,
-        [FromServices] IReportRepository reportRepository,
-        CancellationToken cancellationToken
-    )
-    {
-        var errors = Request.Validate(from, to, unit);
-        if (errors.Count > 0)
-        {
-            return Results.ValidationProblem(errors);
-        }
-
-        var releasesBuckets = await reportRepository.GetReleasesBuckets(from, to, unit, cancellationToken);
-
-        return Results.Ok(releasesBuckets.ToResponse());
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
