@@ -22,18 +22,6 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.ClearanceRequests.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenSingleRequest_ShouldBeSingleCount)}_buckets");
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -66,18 +54,6 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.ClearanceRequests.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenMultipleRequestForSameMrn_ShouldBeSingleSingleUniqueAndTwoTotal)}_buckets");
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Intervals(
@@ -114,20 +90,6 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.ClearanceRequests.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName(
-                $"{nameof(WhenMultipleRequestForSameMrn_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            );
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -161,19 +123,6 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.ClearanceRequests.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(unit))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenMultipleRequestsForDifferentMrn_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.ClearanceRequests.Intervals(

@@ -28,19 +28,6 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             .UseParameters(importNotificationType);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Notifications.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenSingleNotification_ShouldBeSingleCount)}_buckets")
-            .UseParameters(importNotificationType);
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -76,18 +63,6 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
 
         response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Notifications.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenMultipleNotificationForSameChed_ShouldBeSingleCount)}_buckets");
-
-        response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
                 EndpointQuery
                     .New.Where(EndpointFilter.From(from))
@@ -118,20 +93,6 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Notifications.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(Units.Hour))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName(
-                $"{nameof(WhenMultipleNotificationForDifferentChed_AndOneOutsideFromAndTo_ShouldBeSingleCount)}_buckets"
-            );
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
@@ -172,19 +133,6 @@ public class NotificationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
         );
 
         await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings).UseParameters(unit);
-
-        response = await DefaultClient.GetAsync(
-            Testing.Endpoints.Notifications.Buckets(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Unit(unit))
-            )
-        );
-
-        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
-            .UseMethodName($"{nameof(WhenMultipleNotificationForDifferentChed_ShouldBeExpectedBuckets)}_buckets")
-            .UseParameters(unit);
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Notifications.Intervals(
