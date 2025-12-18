@@ -547,10 +547,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
-            LookupFinalisation(),
-            SetFinalisation(),
-            FilterOutManualReleasesAndCancelled(),
-            UnSetFinalisation(),
             new BsonDocument(
                 "$project",
                 new BsonDocument
@@ -562,6 +558,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                     { Fields.Decision.MrnCreated, 1 },
                 }
             ),
+            LookupFinalisation(),
+            SetFinalisation(),
+            FilterOutManualReleasesAndCancelled(),
+            UnSetFinalisation(),
             new BsonDocument(
                 "$set",
                 new BsonDocument("boundaries", new BsonArray(boundaries.Select(x => (BsonValue)x)))
@@ -677,6 +677,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var pipeline = new[]
         {
             MatchesMatch(from, to),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { Fields.Decision.Mrn, 1 },
+                    { Fields.Decision.Timestamp, 1 },
+                    { Fields.Decision.Match, 1 },
+                    { Fields.Decision.MrnCreated, 1 },
+                }
+            ),
             LookupFinalisation(),
             SetFinalisation(),
             FilterOutManualReleasesAndCancelled(),
