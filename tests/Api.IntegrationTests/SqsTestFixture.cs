@@ -4,6 +4,7 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
+using SlimMessageBus.Host;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 
@@ -11,12 +12,15 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests;
 public class SqsTestFixture : IAsyncLifetime
 {
     private SqsQueueClient? _resourceEventsQueue;
+    private SqsQueueClient? _activityEventsQueue;
 
     public SqsQueueClient ResourceEventsQueue => _resourceEventsQueue!;
+    public SqsQueueClient ActivityEventsQueue => _activityEventsQueue!;
 
     public Task InitializeAsync()
     {
         _resourceEventsQueue = new SqsQueueClient("trade_imports_data_upserted_reporting_api");
+        _activityEventsQueue = new SqsQueueClient("trade_imports_activity_reporting_api");
 
         return Task.CompletedTask;
     }
@@ -32,11 +36,6 @@ public class SqsTestFixture : IAsyncLifetime
 [Collection("UsesSqs")]
 public class SqsTestBase : IntegrationTestBase
 {
-    protected const string QueueUrl =
-        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_data_upserted_reporting_api";
-    protected const string DeadLetterQueueUrl =
-        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_data_upserted_reporting_api-deadletter";
-
     private readonly AmazonSQSClient _sqsClient = new(
         new BasicAWSCredentials("test", "test"),
         new AmazonSQSConfig { AuthenticationRegion = "eu-west-2", ServiceURL = "http://localhost:4566" }
@@ -77,7 +76,7 @@ public class SqsTestBase : IntegrationTestBase
         );
     }
 
-    protected static Dictionary<string, MessageAttributeValue> WithResourceEventAttributes(
+    protected static Dictionary<string, MessageAttributeValue> WithResourceEventAttributes<T>(
         string resourceType,
         string? subResourceType,
         string resourceId
@@ -85,6 +84,14 @@ public class SqsTestBase : IntegrationTestBase
     {
         var messageAttributes = new Dictionary<string, MessageAttributeValue>
         {
+            {
+                "MessageType",
+                new MessageAttributeValue
+                {
+                    DataType = "String",
+                    StringValue = new AssemblyQualifiedNameMessageTypeResolver().ToName(typeof(T)),
+                }
+            },
             {
                 MessageBusHeaders.ResourceType,
                 new MessageAttributeValue { DataType = "String", StringValue = resourceType }

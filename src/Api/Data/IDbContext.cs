@@ -9,4 +9,5 @@ public interface IDbContext
     IMongoCollection<Decision> Decisions { get; }
     IMongoCollection<Request> Requests { get; }
     IMongoCollection<Notification> Notifications { get; }
+    IMongoCollection<BtmsToCdsActivity> BtmsToCdsActivities { get; }
 }

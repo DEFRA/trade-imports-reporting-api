@@ -1031,6 +1031,22 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     public async Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken)
     {
+        var filter = Builders<BtmsToCdsActivity>.Filter.And(
+            Builders<BtmsToCdsActivity>.Filter.Eq(a => a.Id, "BtmsToCdsActivity_Decision"),
+            Builders<BtmsToCdsActivity>.Filter.Eq(a => a.Success, true)
+        );
+
+        var activity = await dbContext
+            .BtmsToCdsActivities.Find(filter)
+            .Project(a => new LastSent(a.Timestamp, a.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (activity is not null)
+        {
+            return new LastSentSummary(activity);
+        }
+
+        // fallback to old way
         var decision = await dbContext
             .Decisions.Find(FilterDefinition<Decision>.Empty)
             .SortByDescending(x => x.Timestamp)

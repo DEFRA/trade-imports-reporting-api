@@ -1,4 +1,5 @@
 using Amazon.SQS;
+using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Configuration;
 using Defra.TradeImportsReportingApi.Api.Consumers;
 using Defra.TradeImportsReportingApi.Api.Metrics;
@@ -11,6 +12,7 @@ using SlimMessageBus.Host;
 using SlimMessageBus.Host.AmazonSQS;
 using SlimMessageBus.Host.Interceptor;
 using SlimMessageBus.Host.Serialization;
+using SlimMessageBus.Host.Serialization.SystemTextJson;
 
 namespace Defra.TradeImportsReportingApi.Api.Extensions;
 
@@ -44,12 +46,17 @@ public static class ServiceCollectionExtensions
             .AddValidateOptions<ResourceEventsConsumerOptions>(ResourceEventsConsumerOptions.SectionName)
             .Get();
 
+        var activityEventsConsumerOptions = services
+            .AddValidateOptions<ActivityEventsConsumerOptions>(ActivityEventsConsumerOptions.SectionName)
+            .Get();
+
         // The order of interceptors is important here!
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(TraceContextInterceptor<>));
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(LoggingInterceptor<>));
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(ConsumerMetricsInterceptor<>));
 
         services.AddTransient<ResourceEventsConsumer>();
+        services.AddTransient<BtmsToCdsActivityConsumer>();
 
         services.AddSlimMessageBus(smb =>
         {
@@ -83,6 +90,35 @@ public static class ServiceCollectionExtensions
                                 x.WithConsumer<ResourceEventsConsumer>()
                                     .Queue(resourceEventsConsumerOptions.QueueName)
                                     .Instances(resourceEventsConsumerOptions.ConsumersPerHost)
+                            );
+                    }
+                );
+            }
+
+            if (activityEventsConsumerOptions.AutoStartConsumers)
+            {
+                smb.AddChildBus(
+                    "SQS_ActivityEvents",
+                    mbb =>
+                    {
+                        mbb.WithProviderAmazonSQS(cfg =>
+                        {
+                            cfg.TopologyProvisioning.Enabled = false;
+                            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(
+                                cfg.SqsClientConfig,
+                                configuration
+                            );
+                        });
+
+                        mbb.AddJsonSerializer();
+
+                        mbb.WithSerializer<JsonMessageSerializer>();
+
+                        mbb.AutoStartConsumersEnabled(resourceEventsConsumerOptions.AutoStartConsumers)
+                            .Consume<BtmsActivityEvent<BtmsToCdsActivity>>(x =>
+                                x.WithConsumer<BtmsToCdsActivityConsumer>()
+                                    .Queue(activityEventsConsumerOptions.QueueName)
+                                    .Instances(activityEventsConsumerOptions.ConsumersPerHost)
                             );
                     }
                 );

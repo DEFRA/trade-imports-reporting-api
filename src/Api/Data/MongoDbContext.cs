@@ -18,4 +18,7 @@ public class MongoDbContext(IMongoDatabase database) : IDbContext
 
     public IMongoCollection<Notification> Notifications { get; } =
         database.GetCollection<Notification>(typeof(Notification).DataEntityName());
+
+    public IMongoCollection<BtmsToCdsActivity> BtmsToCdsActivities { get; } =
+        database.GetCollection<BtmsToCdsActivity>(typeof(BtmsToCdsActivity).DataEntityName());
 }

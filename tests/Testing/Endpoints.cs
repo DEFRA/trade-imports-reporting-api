@@ -90,16 +90,34 @@ public static class Endpoints
     {
         private const string Root = "/admin";
 
-        public static class DeadLetterQueue
+        public static class ResourceEvents
         {
-            private const string SubRoot = $"{Root}/dlq";
+            public static class DeadLetterQueue
+            {
+                private const string SubRoot = $"{Root}/dlq/resource-events";
 
-            public static string Redrive() => $"{SubRoot}/redrive";
+                public static string Redrive() => $"{SubRoot}/redrive";
 
-            public static string RemoveMessage(string? messageId = null) =>
-                $"{SubRoot}/remove-message?messageId={messageId}";
+                public static string RemoveMessage(string? messageId = null) =>
+                    $"{SubRoot}/remove-message?messageId={messageId}";
 
-            public static string Drain() => $"{SubRoot}/drain";
+                public static string Drain() => $"{SubRoot}/drain";
+            }
+        }
+
+        public static class ActivityEvents
+        {
+            public static class DeadLetterQueue
+            {
+                private const string SubRoot = $"{Root}/dlq/activity-events";
+
+                public static string Redrive() => $"{SubRoot}/redrive";
+
+                public static string RemoveMessage(string? messageId = null) =>
+                    $"{SubRoot}/remove-message?messageId={messageId}";
+
+                public static string Drain() => $"{SubRoot}/drain";
+            }
         }
     }
 }
