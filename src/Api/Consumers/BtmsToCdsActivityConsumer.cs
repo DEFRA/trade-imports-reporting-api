@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data;
 using MongoDB.Driver;
@@ -5,6 +6,7 @@ using SlimMessageBus;
 
 namespace Defra.TradeImportsReportingApi.Api.Consumers;
 
+[ExcludeFromCodeCoverage]
 public class BtmsToCdsActivityConsumer(IDbContext dbContext) : IConsumer<BtmsActivityEvent<BtmsToCdsActivity>>
 {
     private static readonly FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> s_upsertFilter =
