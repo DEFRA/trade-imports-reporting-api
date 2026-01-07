@@ -31,7 +31,8 @@ public class BtmsToCdsActivityConsumer(IDbContext dbContext) : IConsumer<BtmsAct
                 Id = "BtmsToCdsActivity_Decision",
                 Mrn = message.ResourceId,
                 Timestamp = message.Activity.Timestamp,
-                Success = message.Activity.StatusCode == 200,
+                Success = message.Activity.StatusCode is >= 200 and <= 299,
+                StatusCode = message.Activity.StatusCode
             };
 
             await dbContext.BtmsToCdsActivities.ReplaceOneAsync(
