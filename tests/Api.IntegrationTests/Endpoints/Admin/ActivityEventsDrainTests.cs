@@ -9,9 +9,9 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Endpoints.Admin;
 public class ActivityEventsDrainTests : AdminTestBase
 {
     protected const string QueueUrl =
-        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_activity_reporting_api";
+        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_btms_activity_reporting_api";
     protected const string DeadLetterQueueUrl =
-        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_activity_reporting_api-deadletter";
+        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_btms_activity_reporting_api-deadletter";
 
     [Fact]
     public async Task When_message_processing_fails_and_moved_to_dlq_Then_dlq_can_be_drained()

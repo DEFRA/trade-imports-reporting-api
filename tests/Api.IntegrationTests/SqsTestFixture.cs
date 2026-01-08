@@ -20,7 +20,7 @@ public class SqsTestFixture : IAsyncLifetime
     public Task InitializeAsync()
     {
         _resourceEventsQueue = new SqsQueueClient("trade_imports_data_upserted_reporting_api");
-        _activityEventsQueue = new SqsQueueClient("trade_imports_activity_reporting_api");
+        _activityEventsQueue = new SqsQueueClient("trade_imports_btms_activity_reporting_api");
 
         return Task.CompletedTask;
     }

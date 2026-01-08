@@ -353,12 +353,12 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             ResourceId = mrn,
             ResourceType = ResourceEventResourceTypes.CustomsDeclaration,
             SubResourceType = ResourceEventSubResourceTypes.ClearanceDecision,
-            ServiceName = "int-tests",
+            OriginatingServiceName = "int-tests",
             Activity = new BtmsToCdsActivity()
             {
                 CorrelationId = "123",
-                StatusCode = 200,
-                Timestamp = sent,
+                ResponseStatusCode = 200,
+                ResponseTimestamp = sent,
             },
         };
 
