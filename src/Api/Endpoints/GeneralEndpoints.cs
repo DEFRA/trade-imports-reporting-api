@@ -50,6 +50,15 @@ public static class GeneralEndpoints
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
 
+        app.MapGet("last-created", LastCreated)
+            .WithName(nameof(LastCreated))
+            .WithTags(statusInformation)
+            .WithSummary("Get last created decision")
+            .Produces<LastCreatedResponse>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
         app.MapGet("status", Status)
             .WithName(nameof(Status))
             .WithTags(statusInformation)
@@ -169,6 +178,17 @@ public static class GeneralEndpoints
         var lastSent = await reportRepository.GetLastSentSummary(cancellationToken);
 
         return Results.Ok(lastSent.ToResponse());
+    }
+
+    [HttpGet]
+    private static async Task<IResult> LastCreated(
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var lastCreated = await reportRepository.GetLastCreatedSummary(cancellationToken);
+
+        return Results.Ok(lastCreated.ToResponse());
     }
 
     [HttpGet]
