@@ -1323,6 +1323,47 @@
         }
       }
     },
+    "/last-created": {
+      "get": {
+        "tags": [
+          "Status Information"
+        ],
+        "summary": "Get last created decision",
+        "operationId": "LastCreated",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/status": {
       "get": {
         "tags": [
@@ -1441,6 +1482,20 @@
                 "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
               }
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false

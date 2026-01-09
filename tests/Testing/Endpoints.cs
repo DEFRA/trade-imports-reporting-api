@@ -79,6 +79,13 @@ public static class Endpoints
         public static string Get() => $"{Root}";
     }
 
+    public static class LastCreated
+    {
+        private const string Root = "/last-created";
+
+        public static string Get() => $"{Root}";
+    }
+
     public static class Status
     {
         private const string Root = "/status";

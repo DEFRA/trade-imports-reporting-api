@@ -78,6 +78,13 @@ public static class DtoExtensions
                 : null
         );
 
+    public static LastSentResponse ToResponse(this LastCreatedSummary lastCreated) =>
+        new(
+            lastCreated.Decision is not null
+                ? new LastMessageResponse(lastCreated.Decision.Timestamp, lastCreated.Decision.Reference)
+                : null
+        );
+
     public static string ToCsvResponse(this IReadOnlyList<Decision> matches)
     {
         var csv = new StringBuilder();

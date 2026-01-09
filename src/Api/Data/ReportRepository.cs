@@ -1056,6 +1056,17 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return new LastSentSummary(decision);
     }
 
+    public async Task<LastCreatedSummary> GetLastCreatedSummary(CancellationToken cancellationToken)
+    {
+        var decision = await dbContext
+            .Decisions.Find(FilterDefinition<Decision>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastCreated(x.Timestamp, x.Mrn))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new LastCreatedSummary(decision);
+    }
+
     private static List<T> AddEmptyIntervals<T>(
         DateTime[] intervals,
         List<T> results,
