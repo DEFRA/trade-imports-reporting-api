@@ -1802,6 +1802,13 @@
                 "$ref": "#/components/schemas/LastSentResponse"
               }
             ]
+          },
+          "created": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastCreatedResponse"
+              }
+            ]
           }
         },
         "additionalProperties": false

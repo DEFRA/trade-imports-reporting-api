@@ -45,6 +45,12 @@ public class GetStatusTests(ApiWebApplicationFactory factory, ITestOutputHelper 
             .GetLastSentSummary(Arg.Any<CancellationToken>())
             .Returns(new LastSentSummary(new LastSent(new DateTime(2025, 9, 8, 19, 0, 0, DateTimeKind.Utc), "mrn3")));
 
+        MockReportRepository
+            .GetLastCreatedSummary(Arg.Any<CancellationToken>())
+            .Returns(
+                new LastCreatedSummary(new LastCreated(new DateTime(2025, 9, 8, 19, 0, 0, DateTimeKind.Utc), "mrn3"))
+            );
+
         var response = await client.GetAsync(Testing.Endpoints.Status.Get());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);

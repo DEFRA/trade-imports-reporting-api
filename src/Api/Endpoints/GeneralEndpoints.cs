@@ -199,12 +199,16 @@ public static class GeneralEndpoints
     {
         var lastReceivedTask = reportRepository.GetLastReceivedSummary(cancellationToken);
         var lastSentTask = reportRepository.GetLastSentSummary(cancellationToken);
+        var lastCreatedTask = reportRepository.GetLastCreatedSummary(cancellationToken);
 
-        await Task.WhenAll(lastReceivedTask, lastSentTask);
+        await Task.WhenAll(lastReceivedTask, lastSentTask, lastCreatedTask);
 
-        var lastReceived = await lastReceivedTask;
-        var lastSent = await lastSentTask;
-
-        return Results.Ok(new StatusResponse(lastReceived.ToResponse(), lastSent.ToResponse()));
+        return Results.Ok(
+            new StatusResponse(
+                lastReceivedTask.Result.ToResponse(),
+                lastSentTask.Result.ToResponse(),
+                lastCreatedTask.Result.ToResponse()
+            )
+        );
     }
 }

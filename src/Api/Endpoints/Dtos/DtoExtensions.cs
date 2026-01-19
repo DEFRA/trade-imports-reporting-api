@@ -78,7 +78,7 @@ public static class DtoExtensions
                 : null
         );
 
-    public static LastSentResponse ToResponse(this LastCreatedSummary lastCreated) =>
+    public static LastCreatedResponse ToResponse(this LastCreatedSummary lastCreated) =>
         new(
             lastCreated.Decision is not null
                 ? new LastMessageResponse(lastCreated.Decision.Timestamp, lastCreated.Decision.Reference)
