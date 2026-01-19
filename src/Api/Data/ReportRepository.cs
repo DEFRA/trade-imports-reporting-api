@@ -1032,7 +1032,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     public async Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken)
     {
         var filter = Builders<BtmsToCdsActivity>.Filter.And(
-            Builders<BtmsToCdsActivity>.Filter.Eq(a => a.Id, "BtmsToCdsActivity_Decision"),
+            Builders<BtmsToCdsActivity>.Filter.Eq(a => a.Id, "BtmsToCdsActivity_Decision_Sent"),
             Builders<BtmsToCdsActivity>.Filter.Eq(a => a.Success, true)
         );
 
