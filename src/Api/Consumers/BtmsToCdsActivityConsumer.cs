@@ -9,10 +9,16 @@ namespace Defra.TradeImportsReportingApi.Api.Consumers;
 [ExcludeFromCodeCoverage]
 public class BtmsToCdsActivityConsumer(IDbContext dbContext) : IConsumer<BtmsActivityEvent<BtmsToCdsActivity>>
 {
-    private static readonly FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> s_upsertFilter =
+    private static readonly FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> s_upsertSentFilter =
         Builders<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Filter.Eq(
             r => r.Id,
-            "BtmsToCdsActivity_Decision"
+            "BtmsToCdsActivity_Decision_Sent"
+        );
+
+    private static readonly FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> s_upsertFailedFilter =
+        Builders<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Filter.Eq(
+            r => r.Id,
+            "BtmsToCdsActivity_Decision_Failed"
         );
     private static readonly ReplaceOptions s_upsertOptions = new() { IsUpsert = true };
 
@@ -38,7 +44,7 @@ public class BtmsToCdsActivityConsumer(IDbContext dbContext) : IConsumer<BtmsAct
             };
 
             await dbContext.BtmsToCdsActivities.ReplaceOneAsync(
-                s_upsertFilter,
+                success ? s_upsertSentFilter : s_upsertFailedFilter,
                 entity,
                 s_upsertOptions,
                 cancellationToken: cancellationToken
