@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace Defra.TradeImportsReportingApi.Api.Tests.Endpoints.General;
 
-public class GetStatusTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
+public class GetLastCreatedTests(ApiWebApplicationFactory factory, ITestOutputHelper outputHelper)
     : EndpointTestBase(factory, outputHelper)
 {
     private IReportRepository MockReportRepository { get; } = Substitute.For<IReportRepository>();
@@ -23,7 +23,7 @@ public class GetStatusTests(ApiWebApplicationFactory factory, ITestOutputHelper 
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.GetAsync(Testing.Endpoints.Status.Get());
+        var response = await client.GetAsync(Testing.Endpoints.LastCreated.Get());
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -33,25 +33,12 @@ public class GetStatusTests(ApiWebApplicationFactory factory, ITestOutputHelper 
     {
         var client = CreateClient();
         MockReportRepository
-            .GetLastReceivedSummary(Arg.Any<CancellationToken>())
-            .Returns(
-                new LastReceivedSummary(
-                    new LastReceived(new DateTime(2025, 9, 8, 16, 0, 0, DateTimeKind.Utc), "mrn1"),
-                    new LastReceived(new DateTime(2025, 9, 8, 17, 0, 0, DateTimeKind.Utc), "mrn2"),
-                    new LastReceived(new DateTime(2025, 9, 8, 18, 0, 0, DateTimeKind.Utc), "ched")
-                )
-            );
-        MockReportRepository
-            .GetLastSentSummary(Arg.Any<CancellationToken>())
-            .Returns(new LastSentSummary(new LastSent(new DateTime(2025, 9, 8, 19, 0, 0, DateTimeKind.Utc), "mrn3")));
-
-        MockReportRepository
             .GetLastCreatedSummary(Arg.Any<CancellationToken>())
             .Returns(
-                new LastCreatedSummary(new LastCreated(new DateTime(2025, 9, 8, 19, 0, 0, DateTimeKind.Utc), "mrn3"))
+                new LastCreatedSummary(new LastCreated(new DateTime(2025, 9, 8, 16, 0, 0, DateTimeKind.Utc), "mrn1"))
             );
 
-        var response = await client.GetAsync(Testing.Endpoints.Status.Get());
+        var response = await client.GetAsync(Testing.Endpoints.LastCreated.Get());
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

@@ -16,14 +16,14 @@
     }
   ],
   "paths": {
-    "/admin/dlq/redrive": {
+    "/admin/dlq/resource-events/redrive": {
       "post": {
         "tags": [
           "Admin"
         ],
         "summary": "Initiates redrive of messages from the dead letter queue",
         "description": "Redrives all messages on the resource events dead letter queue",
-        "operationId": "Redrive",
+        "operationId": "RedriveResourceEvents",
         "responses": {
           "202": {
             "description": "Accepted"
@@ -71,14 +71,14 @@
         }
       }
     },
-    "/admin/dlq/remove-message": {
+    "/admin/dlq/resource-events/remove-message": {
       "post": {
         "tags": [
           "Admin"
         ],
         "summary": "Initiates removal of message from the dead letter queue",
         "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
-        "operationId": "RemoveMessage",
+        "operationId": "RemoveResourceEventMessage",
         "parameters": [
           {
             "name": "messageId",
@@ -136,14 +136,189 @@
         }
       }
     },
-    "/admin/dlq/drain": {
+    "/admin/dlq/resource-events/drain": {
       "post": {
         "tags": [
           "Admin"
         ],
         "summary": "Initiates drain of all messages from the dead letter queue",
         "description": "Drains all messages on the resource events dead letter queue",
-        "operationId": "Drain",
+        "operationId": "DrainResourceEvents",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/redrive": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates redrive of messages from the activity events dead letter queue",
+        "description": "Redrives all messages on the activity events dead letter queue",
+        "operationId": "RedriveActivityEvents",
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/remove-message": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates removal of message from the activity events dead letter queue",
+        "description": "Attempts to find and remove a message on the activity events dead letter queue by message ID",
+        "operationId": "RemoveActivityEventMessage",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/drain": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates drain of all messages from the dead letter queue",
+        "description": "Drains all messages on the activity events dead letter queue",
+        "operationId": "DrainActivityEvents",
         "responses": {
           "200": {
             "description": "OK"
@@ -1148,6 +1323,47 @@
         }
       }
     },
+    "/last-created": {
+      "get": {
+        "tags": [
+          "Status Information"
+        ],
+        "summary": "Get last created decision",
+        "operationId": "LastCreated",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LastCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/status": {
       "get": {
         "tags": [
@@ -1266,6 +1482,20 @@
                 "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
               }
             ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "LastCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1570,6 +1800,13 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/LastSentResponse"
+              }
+            ]
+          },
+          "created": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastCreatedResponse"
               }
             ]
           }

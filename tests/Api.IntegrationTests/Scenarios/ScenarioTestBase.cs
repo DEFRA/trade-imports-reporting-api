@@ -7,6 +7,9 @@ using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
+using SlimMessageBus.Host;
+using Assert = Xunit.Assert;
+using BtmsToCdsActivity = Defra.TradeImportsDataApi.Domain.Events.BtmsToCdsActivity;
 using Decision = Defra.TradeImportsReportingApi.Api.Data.Entities.Decision;
 using Finalisation = Defra.TradeImportsReportingApi.Api.Data.Entities.Finalisation;
 
@@ -18,6 +21,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     public required IMongoCollection<Decision> Decisions { get; set; }
     public required IMongoCollection<Request> Requests { get; set; }
     public required IMongoCollection<Notification> Notifications { get; set; }
+    public required IMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> BtmsToCdsActivities { get; set; }
     public required VerifySettings JsonVerifySettings { get; set; }
 
     public async Task InitializeAsync()
@@ -26,11 +30,15 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Decisions = GetMongoCollection<Decision>();
         Requests = GetMongoCollection<Request>();
         Notifications = GetMongoCollection<Notification>();
+        BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
         await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
         await Notifications.DeleteManyAsync(FilterDefinition<Notification>.Empty);
+        await BtmsToCdsActivities.DeleteManyAsync(
+            FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
+        );
 
         JsonVerifySettings = new VerifySettings();
         JsonVerifySettings.UseStrictJson();
@@ -47,6 +55,14 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var messageAttributes = new Dictionary<string, MessageAttributeValue>
         {
             {
+                "MessageType",
+                new MessageAttributeValue
+                {
+                    DataType = "String",
+                    StringValue = new AssemblyQualifiedNameMessageTypeResolver().ToName(typeof(ResourceEvent<T>)),
+                }
+            },
+            {
                 MessageBusHeaders.ResourceId,
                 new MessageAttributeValue { DataType = "String", StringValue = resourceEvent.ResourceId }
             },
@@ -61,6 +77,41 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             messageAttributes.Add(
                 MessageBusHeaders.SubResourceType,
                 new MessageAttributeValue { DataType = "String", StringValue = resourceEvent.SubResourceType }
+            );
+        }
+
+        return messageAttributes;
+    }
+
+    protected static Dictionary<string, MessageAttributeValue> CreateMessageAttributes<T>(
+        BtmsActivityEvent<T> activityEvent
+    )
+    {
+        var messageAttributes = new Dictionary<string, MessageAttributeValue>
+        {
+            {
+                "MessageType",
+                new MessageAttributeValue
+                {
+                    DataType = "String",
+                    StringValue = new AssemblyQualifiedNameMessageTypeResolver().ToName(typeof(BtmsActivityEvent<T>)),
+                }
+            },
+            {
+                MessageBusHeaders.ResourceId,
+                new MessageAttributeValue { DataType = "String", StringValue = activityEvent.ResourceId }
+            },
+            {
+                MessageBusHeaders.ResourceType,
+                new MessageAttributeValue { DataType = "String", StringValue = activityEvent.ResourceType }
+            },
+        };
+
+        if (activityEvent.SubResourceType is not null)
+        {
+            messageAttributes.Add(
+                MessageBusHeaders.SubResourceType,
+                new MessageAttributeValue { DataType = "String", StringValue = activityEvent.SubResourceType }
             );
         }
 
@@ -137,6 +188,23 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                 );
 
                 return (await notifications.ToListAsync()).Count == count;
+            })
+        );
+    }
+
+    protected async Task WaitForActivity(string mrn, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var decisions = await BtmsToCdsActivities.FindAsync(
+                    Builders<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Filter.Eq(
+                        x => x.Mrn,
+                        mrn
+                    )
+                );
+
+                return (await decisions.ToListAsync()).Count == count;
             })
         );
     }
@@ -275,5 +343,31 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
 
         if (wait)
             await WaitForFinalisationMrn(mrn);
+    }
+
+    protected async Task SendBtmsToCdsActivity(DateTime sent, string? mrn = null, bool wait = true)
+    {
+        mrn ??= Guid.NewGuid().ToString();
+        var @event = new BtmsActivityEvent<BtmsToCdsActivity>()
+        {
+            ResourceId = mrn,
+            ResourceType = ResourceEventResourceTypes.CustomsDeclaration,
+            SubResourceType = ResourceEventSubResourceTypes.ClearanceDecision,
+            OriginatingServiceName = "int-tests",
+            Activity = new BtmsToCdsActivity()
+            {
+                CorrelationId = "123",
+                ResponseStatusCode = 200,
+                ResponseTimestamp = sent,
+            },
+        };
+
+        await sqsTestFixture.ActivityEventsQueue.SendMessage(
+            JsonSerializer.Serialize(@event),
+            CreateMessageAttributes(@event)
+        );
+
+        if (wait)
+            await WaitForActivity(mrn);
     }
 }

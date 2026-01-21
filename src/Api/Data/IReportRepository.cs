@@ -61,4 +61,6 @@ public interface IReportRepository
     Task<LastReceivedSummary> GetLastReceivedSummary(CancellationToken cancellationToken);
 
     Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken);
+
+    Task<LastCreatedSummary> GetLastCreatedSummary(CancellationToken cancellationToken);
 }

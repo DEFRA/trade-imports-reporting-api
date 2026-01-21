@@ -15,29 +15,32 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.32.0" />
+    <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.33.0" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="9.0.0" />
     <PackageReference Include="Elastic.Serilog.Enrichers.Web" Version="9.0.0" />
-    <PackageReference Include="FluentValidation" Version="12.1.0" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.6.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageReference Include="SlimMessageBus" Version="3.0.0" />
-    <PackageReference Include="SlimMessageBus.Host.AmazonSQS" Version="3.3.5" />
-    <PackageReference Include="SlimMessageBus.Host.Serialization.SystemTextJson" Version="3.3.5" />
+    <PackageReference Include="SlimMessageBus.Host.AmazonSQS" Version="3.3.6" />
+    <PackageReference Include="SlimMessageBus.Host.Serialization.SystemTextJson" Version="3.3.6" />
     <PackageReference Include="Amazon.CloudWatch.EMF" Version="2.2.0" />
-    <PackageReference Include="MongoDB.Driver.Authentication.AWS" Version="3.5.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
+    <PackageReference Include="MongoDB.Driver.Authentication.AWS" Version="3.6.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
     <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="9.0.3" />
-    <PackageReference Include="AWSSDK.Core" Version="4.0.3.1" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.12" />
-    <PackageReference Include="AWSSDK.SQS" Version="4.0.2.3" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.3.9" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.20" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.2.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="10.18.0.131500" />
   </ItemGroup>
 </Project>

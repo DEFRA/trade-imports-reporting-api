@@ -1,11 +1,17 @@
 using System.Net;
+using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.IntegrationTests.TestUtils;
 using FluentAssertions;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Endpoints.Admin;
 
-public class DrainTests : AdminTestBase
+public class ResourceEventsDrainTests : AdminTestBase
 {
+    protected const string QueueUrl =
+        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_data_upserted_reporting_api";
+    protected const string DeadLetterQueueUrl =
+        "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/trade_imports_data_upserted_reporting_api-deadletter";
+
     [Fact]
     public async Task When_message_processing_fails_and_moved_to_dlq_Then_dlq_can_be_drained()
     {
@@ -20,7 +26,11 @@ public class DrainTests : AdminTestBase
             mrn,
             resourceEvent,
             DeadLetterQueueUrl,
-            WithResourceEventAttributes("CustomsDeclaration", "ClearanceDecision", mrn),
+            WithResourceEventAttributes<ResourceEvent<CustomsDeclarationEvent>>(
+                "CustomsDeclaration",
+                "ClearanceDecision",
+                mrn
+            ),
             false
         );
 
@@ -30,7 +40,7 @@ public class DrainTests : AdminTestBase
         Assert.True(messagesOnDeadLetterQueue, "Messages on dead letter queue was not drained");
 
         var httpClient = CreateHttpClient();
-        var response = await httpClient.PostAsync(Testing.Endpoints.Admin.DeadLetterQueue.Drain(), null);
+        var response = await httpClient.PostAsync(Testing.Endpoints.Admin.ResourceEvents.DeadLetterQueue.Drain(), null);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -60,7 +70,11 @@ public class DrainTests : AdminTestBase
             mrn,
             resourceEvent,
             DeadLetterQueueUrl,
-            WithResourceEventAttributes("CustomsDeclaration", "ClearanceDecision", mrn),
+            WithResourceEventAttributes<ResourceEvent<CustomsDeclarationEvent>>(
+                "CustomsDeclaration",
+                "ClearanceDecision",
+                mrn
+            ),
             false
         );
 
@@ -70,7 +84,10 @@ public class DrainTests : AdminTestBase
         Assert.True(messagesOnDeadLetterQueue, "Messages on dead letter queue was not received");
 
         var httpClient = CreateHttpClient();
-        var response = await httpClient.PostAsync(Testing.Endpoints.Admin.DeadLetterQueue.Redrive(), null);
+        var response = await httpClient.PostAsync(
+            Testing.Endpoints.Admin.ResourceEvents.DeadLetterQueue.Redrive(),
+            null
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
@@ -101,7 +118,11 @@ public class DrainTests : AdminTestBase
             mrn,
             resourceEvent,
             DeadLetterQueueUrl,
-            WithResourceEventAttributes("CustomsDeclaration", "ClearanceDecision", mrn),
+            WithResourceEventAttributes<ResourceEvent<CustomsDeclarationEvent>>(
+                "CustomsDeclaration",
+                "ClearanceDecision",
+                mrn
+            ),
             false
         );
 
@@ -112,7 +133,7 @@ public class DrainTests : AdminTestBase
 
         var httpClient = CreateHttpClient();
         var response = await httpClient.PostAsync(
-            Testing.Endpoints.Admin.DeadLetterQueue.RemoveMessage(messageId),
+            Testing.Endpoints.Admin.ResourceEvents.DeadLetterQueue.RemoveMessage(messageId),
             null
         );
 
