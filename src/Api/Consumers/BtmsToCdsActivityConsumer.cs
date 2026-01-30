@@ -38,7 +38,7 @@ public class BtmsToCdsActivityConsumer(IDbContext dbContext) : IConsumer<BtmsAct
             {
                 Id = $"BtmsToCdsActivity_Decision_{idSuffix}",
                 Mrn = message.ResourceId,
-                Timestamp = message.Activity.ResponseTimestamp,
+                Timestamp = message.Timestamp,
                 Success = success,
                 StatusCode = message.Activity.ResponseStatusCode,
             };
