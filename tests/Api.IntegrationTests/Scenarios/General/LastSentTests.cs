@@ -20,6 +20,7 @@ public class LastSentTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
     [Fact]
     public async Task WhenMultipleDecisionForSameMrn__AndActivityExists_ThenFallbackShouldNotBeReturned()
     {
+        JsonVerifySettings.ScrubDateTimes();
         var mrn = Guid.NewGuid().ToString();
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
 
