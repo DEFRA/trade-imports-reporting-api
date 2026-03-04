@@ -1,8 +1,9 @@
+using Defra.TradeImports.SQS.Endpoints.Endpoints;
 using Defra.TradeImportsReportingApi.Api.Authentication;
+using Defra.TradeImportsReportingApi.Api.Configuration;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 using Defra.TradeImportsReportingApi.Api.Endpoints;
-using Defra.TradeImportsReportingApi.Api.Endpoints.Admin;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Health;
 using Defra.TradeImportsReportingApi.Api.Metrics;
@@ -12,6 +13,7 @@ using Defra.TradeImportsReportingApi.Api.Utils.Http;
 using Defra.TradeImportsReportingApi.Api.Utils.Logging;
 using Elastic.CommonSchema.Serilog;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console(new EcsTextFormatter()).CreateBootstrapLogger();
@@ -92,7 +94,22 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.MapClearanceRequestEndpoints();
     app.MapNotificationEndpoints();
     app.MapGeneralEndpoints();
-    app.MapAdminEndpoints();
+    var resourceEventsOptions = app.Services.GetRequiredService<IOptions<ResourceEventsConsumerOptions>>();
+    app.MapDeadLetterQueueEndpoints(
+        resourceEventsOptions.Value.QueueName,
+        resourceEventsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/resource-events",
+        nameSuffix: "resource-events"
+    );
+    var activityEventsOptions = app.Services.GetRequiredService<IOptions<ActivityEventsConsumerOptions>>();
+    app.MapDeadLetterQueueEndpoints(
+        activityEventsOptions.Value.QueueName,
+        activityEventsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/activity-events",
+        nameSuffix: "activity-events"
+    );
     app.UseOpenApi();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
