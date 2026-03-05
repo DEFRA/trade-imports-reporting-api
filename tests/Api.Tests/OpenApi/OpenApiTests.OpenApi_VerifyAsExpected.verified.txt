@@ -1215,7 +1215,7 @@
       "post": {
         "summary": "Initiates redrive of messages from the dead letter queue",
         "description": "Redrives all messages on the resource events dead letter queue",
-        "operationId": "activity-events_Redrive",
+        "operationId": "Redrive_activity-events",
         "responses": {
           "202": {
             "description": "Accepted"
@@ -1267,7 +1267,7 @@
       "post": {
         "summary": "Initiates removal of message from the dead letter queue",
         "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
-        "operationId": "activity-events_RemoveMessage",
+        "operationId": "RemoveMessage_activity-events",
         "parameters": [
           {
             "name": "messageId",
@@ -1329,7 +1329,7 @@
       "post": {
         "summary": "Initiates drain of all messages from the dead letter queue",
         "description": "Drains all messages on the resource events dead letter queue",
-        "operationId": "activity-events_Drain",
+        "operationId": "Drain_activity-events",
         "responses": {
           "200": {
             "description": "OK"
@@ -1384,7 +1384,7 @@
         ],
         "summary": "Gets the count of messages on the resource events dead letter queue",
         "description": "Gets the count of messages on the resource events dead letter queue",
-        "operationId": "activity-events_Count",
+        "operationId": "Count_activity-events",
         "responses": {
           "200": {
             "description": "OK"

@@ -13,13 +13,18 @@
   ReasonPhrase: OK,
   Headers: [
     {
+      x-redoc-version: [
+        2.5.2
+      ]
+    },
+    {
       Cache-Control: [
-        max-age=604800, private
+        max-age=0, private
       ]
     },
     {
       ETag: [
-        W/"k+Zetl0LJSS2iJ+AJSOeUszOxHE="
+        "k+Zetl0LJSS2iJ+AJSOeUszOxHE="
       ]
     }
   ],
