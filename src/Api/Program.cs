@@ -101,7 +101,8 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         resourceEventsOptions.Value.QueueName,
         resourceEventsOptions.Value.DeadLetterQueueName,
         policyName: PolicyNames.Execute,
-        pattern: "admin/dlq/resource-events"
+        pattern: "admin/dlq/resource-events",
+        tags: "Admin"
     );
     var activityEventsOptions = app.Services.GetRequiredService<IOptions<ActivityEventsConsumerOptions>>();
     app.MapDeadLetterQueueEndpoints(
@@ -109,7 +110,8 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         activityEventsOptions.Value.DeadLetterQueueName,
         policyName: PolicyNames.Execute,
         pattern: "admin/dlq/activity-events",
-        nameSuffix: "activity-events"
+        nameSuffix: "activity-events",
+        tags: "Admin"
     );
     app.UseOpenApi();
 

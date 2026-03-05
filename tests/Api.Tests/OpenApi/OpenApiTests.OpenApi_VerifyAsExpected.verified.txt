@@ -1002,6 +1002,9 @@
     },
     "/admin/dlq/resource-events/redrive": {
       "post": {
+        "tags": [
+          "Admin"
+        ],
         "summary": "Initiates redrive of messages from the dead letter queue",
         "description": "Redrives all messages on the resource events dead letter queue",
         "operationId": "Redrive",
@@ -1054,6 +1057,9 @@
     },
     "/admin/dlq/resource-events/remove-message": {
       "post": {
+        "tags": [
+          "Admin"
+        ],
         "summary": "Initiates removal of message from the dead letter queue",
         "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
         "operationId": "RemoveMessage",
@@ -1116,6 +1122,9 @@
     },
     "/admin/dlq/resource-events/drain": {
       "post": {
+        "tags": [
+          "Admin"
+        ],
         "summary": "Initiates drain of all messages from the dead letter queue",
         "description": "Drains all messages on the resource events dead letter queue",
         "operationId": "Drain",
@@ -1213,6 +1222,9 @@
     },
     "/admin/dlq/activity-events/redrive": {
       "post": {
+        "tags": [
+          "Admin"
+        ],
         "summary": "Initiates redrive of messages from the dead letter queue",
         "description": "Redrives all messages on the resource events dead letter queue",
         "operationId": "Redrive_activity-events",
@@ -1265,6 +1277,9 @@
     },
     "/admin/dlq/activity-events/remove-message": {
       "post": {
+        "tags": [
+          "Admin"
+        ],
         "summary": "Initiates removal of message from the dead letter queue",
         "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
         "operationId": "RemoveMessage_activity-events",
@@ -1327,6 +1342,9 @@
     },
     "/admin/dlq/activity-events/drain": {
       "post": {
+        "tags": [
+          "Admin"
+        ],
         "summary": "Initiates drain of all messages from the dead letter queue",
         "description": "Drains all messages on the resource events dead letter queue",
         "operationId": "Drain_activity-events",
