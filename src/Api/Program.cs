@@ -14,7 +14,9 @@ using Defra.TradeImportsReportingApi.Api.Utils.Logging;
 using Elastic.CommonSchema.Serilog;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using Serilog;
+using Log = Serilog.Log;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console(new EcsTextFormatter()).CreateBootstrapLogger();
 
@@ -99,8 +101,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         resourceEventsOptions.Value.QueueName,
         resourceEventsOptions.Value.DeadLetterQueueName,
         policyName: PolicyNames.Execute,
-        pattern: "admin/dlq/resource-events",
-        nameSuffix: "resource-events"
+        pattern: "admin/dlq/resource-events"
     );
     var activityEventsOptions = app.Services.GetRequiredService<IOptions<ActivityEventsConsumerOptions>>();
     app.MapDeadLetterQueueEndpoints(
@@ -111,6 +112,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         nameSuffix: "activity-events"
     );
     app.UseOpenApi();
+
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
         {
