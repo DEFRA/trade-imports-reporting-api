@@ -10,4 +10,5 @@ public interface IDbContext
     IMongoCollection<Request> Requests { get; }
     IMongoCollection<Notification> Notifications { get; }
     IMongoCollection<BtmsToCdsActivity> BtmsToCdsActivities { get; }
+    IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; }
 }

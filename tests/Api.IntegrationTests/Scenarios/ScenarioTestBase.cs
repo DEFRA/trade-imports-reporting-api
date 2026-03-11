@@ -10,6 +10,8 @@ using MongoDB.Driver;
 using SlimMessageBus.Host;
 using Assert = Xunit.Assert;
 using BtmsToCdsActivity = Defra.TradeImportsDataApi.Domain.Events.BtmsToCdsActivity;
+using CommodityCheck = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.CommodityCheck;
+using CustomsDeclaration = Defra.TradeImportsReportingApi.Api.Data.Entities.CustomsDeclaration;
 using Decision = Defra.TradeImportsReportingApi.Api.Data.Entities.Decision;
 using Finalisation = Defra.TradeImportsReportingApi.Api.Data.Entities.Finalisation;
 
@@ -17,6 +19,7 @@ namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
 public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsyncLifetime
 {
+    public required IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; set; }
     public required IMongoCollection<Finalisation> Finalisations { get; set; }
     public required IMongoCollection<Decision> Decisions { get; set; }
     public required IMongoCollection<Request> Requests { get; set; }
@@ -31,6 +34,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Requests = GetMongoCollection<Request>();
         Notifications = GetMongoCollection<Notification>();
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
+        CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
@@ -39,6 +43,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         await BtmsToCdsActivities.DeleteManyAsync(
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
         );
+        await CustomsDeclarations.DeleteManyAsync(FilterDefinition<CustomsDeclaration>.Empty);
 
         JsonVerifySettings = new VerifySettings();
         JsonVerifySettings.UseStrictJson();
@@ -289,8 +294,31 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             ResourceEventResourceTypes.CustomsDeclaration,
             new CustomsDeclarationEvent
             {
-                Id = "test",
+                Id = mrn,
                 Created = mrnCreated,
+                ClearanceRequest = new ClearanceRequest
+                {
+                    MessageSentAt = mrnCreated,
+                    Commodities =
+                    [
+                        new Commodity()
+                        {
+                            ItemNumber = 1,
+                            TaricCommodityCode = "1234856",
+                            GoodsDescription = "This is goods description",
+                            SupplementaryUnits = 4,
+                            Documents =
+                            [
+                                new ImportDocument()
+                                {
+                                    DocumentCode = "N853",
+                                    DocumentReference = new ImportDocumentReference("GBCHD2024.5343259"),
+                                },
+                            ],
+                            Checks = [new CommodityCheck() { CheckCode = "H222", DepartmentCode = "PHA" }],
+                        },
+                    ],
+                },
                 ClearanceDecision = new ClearanceDecision
                 {
                     Created = decisionCreated,
@@ -298,7 +326,8 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                     [
                         new ClearanceDecisionItem
                         {
-                            Checks = [new ClearanceDecisionCheck { CheckCode = "IGNORE", DecisionCode = decisionCode }],
+                            ItemNumber = 1,
+                            Checks = [new ClearanceDecisionCheck { CheckCode = "H222", DecisionCode = decisionCode }],
                         },
                     ],
                 },
@@ -327,7 +356,54 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             ResourceEventResourceTypes.CustomsDeclaration,
             new CustomsDeclarationEvent
             {
-                Id = "Test",
+                Id = mrn,
+                ClearanceRequest = new ClearanceRequest
+                {
+                    MessageSentAt = messageSentAt,
+                    Commodities =
+                    [
+                        new Commodity()
+                        {
+                            ItemNumber = 1,
+                            TaricCommodityCode = "1234856",
+                            GoodsDescription = "This is goods description",
+                            SupplementaryUnits = 4,
+                            Documents =
+                            [
+                                new ImportDocument()
+                                {
+                                    DocumentCode = "N853",
+                                    DocumentReference = new ImportDocumentReference("GBCHD2024.5343259"),
+                                },
+                            ],
+                            Checks =
+                            [
+                                new CommodityCheck() { CheckCode = "H222", DepartmentCode = "PHA" },
+                                new CommodityCheck() { CheckCode = "H224", DepartmentCode = "PHA" },
+                            ],
+                        },
+                    ],
+                },
+                ClearanceDecision = new ClearanceDecision()
+                {
+                    Items =
+                    [
+                        new ClearanceDecisionItem()
+                        {
+                            ItemNumber = 1,
+                            Checks =
+                            [
+                                new ClearanceDecisionCheck() { CheckCode = "H222", DecisionCode = "C03" },
+                                new ClearanceDecisionCheck()
+                                {
+                                    CheckCode = "H224",
+                                    DecisionCode = "X00",
+                                    DecisionReasons = ["No match decision Reason"],
+                                },
+                            ],
+                        },
+                    ],
+                },
                 Finalisation = new Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation
                 {
                     ExternalVersion = 1,

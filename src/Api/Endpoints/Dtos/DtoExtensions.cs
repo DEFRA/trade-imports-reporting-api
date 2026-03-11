@@ -1,6 +1,9 @@
+using System.Globalization;
 using System.Text;
+using CsvHelper;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using static Defra.TradeImportsReportingApi.Api.Endpoints.Dtos.MatchResponse;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
@@ -52,8 +55,10 @@ public static class DtoExtensions
                 .ToList()
         );
 
-    public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<Decision> matches) =>
-        new(matches.Select(x => new MatchResponse(x.Timestamp, x.Mrn)).ToList());
+    public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<MatchResponse> data)
+    {
+        return new DatumResponse<MatchResponse>(data);
+    }
 
     public static DatumResponse<ReleasesResponse> ToResponse(this IReadOnlyList<Finalisation> finalisations) =>
         new(finalisations.Select(x => new ReleasesResponse(x.Timestamp, x.Mrn)).ToList());
@@ -85,16 +90,15 @@ public static class DtoExtensions
                 : null
         );
 
-    public static string ToCsvResponse(this IReadOnlyList<Decision> matches)
+    public static string ToCsvResponse(this IReadOnlyList<MatchResponse> data)
     {
-        var csv = new StringBuilder();
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-        foreach (var decision in matches)
-        {
-            csv.AppendLine($"{decision.Timestamp:O},{EscapeCsv(decision.Mrn)}");
-        }
+        csv.Context.RegisterClassMap<MatchResponseMap>();
+        csv.WriteRecords(data);
 
-        return csv.ToString();
+        return writer.ToString();
     }
 
     public static string ToCsvResponse(this IReadOnlyList<Finalisation> finalisations)

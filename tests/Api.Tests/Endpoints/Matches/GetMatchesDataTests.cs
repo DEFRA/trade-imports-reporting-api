@@ -2,6 +2,7 @@ using System.Net;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -41,23 +42,34 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
         MockReportRepository
             .GetMatches(from, to, match, Arg.Any<CancellationToken>())
             .Returns(
-                new List<Decision>
-                {
-                    new()
+                [
+                    new MatchResponse()
                     {
-                        Id = "id1",
-                        MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 10, 5, DateTimeKind.Utc),
+                        Number = 1,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
                         Mrn = "mrn1",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
                     },
-                    new()
+                    new MatchResponse()
                     {
-                        Id = "id2",
-                        MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 15, 5, DateTimeKind.Utc),
+                        Number = 2,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
                     },
-                }
+                ]
             );
 
         var response = await client.GetAsync(
@@ -87,23 +99,34 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
         MockReportRepository
             .GetMatches(from, to, match, Arg.Any<CancellationToken>())
             .Returns(
-                new List<Decision>
-                {
-                    new()
+                [
+                    new MatchResponse()
                     {
-                        Id = "id1",
-                        MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 10, 5, DateTimeKind.Utc),
-                        Mrn = mrn1,
+                        Number = 1,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
+                        Mrn = "mrn1",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
                     },
-                    new()
+                    new MatchResponse()
                     {
-                        Id = "id2",
-                        MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 15, 5, DateTimeKind.Utc),
+                        Number = 2,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
                     },
-                }
+                ]
             );
 
         client.DefaultRequestHeaders.Add("Accept", "text/csv");

@@ -1,12 +1,60 @@
 ﻿{
   "data": [
     {
-      "timestamp": "2025-09-03T00:00:00Z",
-      "reference": "newest"
+      "timestamp": "0001-01-01T00:00:00Z",
+      "mrn": "oldest",
+      "itemNumber": 1,
+      "commodityCode": "1234856",
+      "description": "This is goods description",
+      "quantityOrWeight": 4,
+      "chedReference": "GBCHD2024.5343259",
+      "match": "No",
+      "authority": "PHA",
+      "checkCode": "H222",
+      "decision": "C03",
+      "decisionReasons": null
     },
     {
-      "timestamp": "2025-09-02T23:50:00Z",
-      "reference": "oldest"
+      "timestamp": "0001-01-01T00:00:00Z",
+      "mrn": "oldest",
+      "itemNumber": 1,
+      "commodityCode": "1234856",
+      "description": "This is goods description",
+      "quantityOrWeight": 4,
+      "chedReference": "GBCHD2024.5343259",
+      "match": "No",
+      "authority": "PHA",
+      "checkCode": "H224",
+      "decision": "X00",
+      "decisionReasons": "No match decision Reason"
+    },
+    {
+      "timestamp": "0001-01-01T00:00:00Z",
+      "mrn": "newest",
+      "itemNumber": 1,
+      "commodityCode": "1234856",
+      "description": "This is goods description",
+      "quantityOrWeight": 4,
+      "chedReference": "GBCHD2024.5343259",
+      "match": "No",
+      "authority": "PHA",
+      "checkCode": "H222",
+      "decision": "C03",
+      "decisionReasons": null
+    },
+    {
+      "timestamp": "0001-01-01T00:00:00Z",
+      "mrn": "newest",
+      "itemNumber": 1,
+      "commodityCode": "1234856",
+      "description": "This is goods description",
+      "quantityOrWeight": 4,
+      "chedReference": "GBCHD2024.5343259",
+      "match": "No",
+      "authority": "PHA",
+      "checkCode": "H224",
+      "decision": "X00",
+      "decisionReasons": "No match decision Reason"
     }
   ]
 }

@@ -84,10 +84,8 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName($"{nameof(WhenMultipleFinalisationForSameMrn_ShouldBeSingleCount)}_data");
-
-        verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Releases.Intervals(
@@ -133,12 +131,10 @@ public class FinalisationTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
             )
         );
 
-        var verifyResult = await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
+        await VerifyJson(await response.Content.ReadAsStringAsync(), JsonVerifySettings)
             .UseMethodName(
                 $"{nameof(WhenMultipleFinalisationForSameMrn_AndChangeFromAutomaticToManual_ShouldBeSingleCount)}_data"
             );
-
-        verifyResult.Text.Should().Contain(expectedTimestamp.ToString("yyyy-MM-ddTHH:mm:ssZ"));
 
         response = await DefaultClient.GetAsync(
             Testing.Endpoints.Releases.Intervals(

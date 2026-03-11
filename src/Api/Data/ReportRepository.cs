@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 // ReSharper disable InconsistentNaming
 
@@ -264,7 +266,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyIntervals(intervals, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
-    public async Task<IReadOnlyList<Finalisation>> GetReleases(
+    public async Task<IReadOnlyList<MatchResponse>> GetReleases(
         DateTime from,
         DateTime to,
         string releaseType,
@@ -273,30 +275,30 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        var pipeline = new[]
-        {
-            // Do not restrict release type as final match in pipeline will do this
-            ReleasesMatch(from, to, restrictReleaseType: false),
-            new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", $"${Fields.Finalisation.Mrn}" },
-                    { "latest", new BsonDocument("$first", "$$ROOT") },
-                }
-            ),
-            new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
-            new BsonDocument("$match", new BsonDocument(Fields.Finalisation.ReleaseType, releaseType)),
-            new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
-        };
-
-        var aggregateTask = dbContext.Finalisations.AggregateAsync<Finalisation>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+        return await dbContext
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .Where(x => x.ReleaseType == releaseType)
+            .SelectMany(
+                match => match.Items,
+                (cd, item) =>
+                    new MatchResponse()
+                    {
+                        Mrn = cd.Id,
+                        Timestamp = cd.Timestamp,
+                        ChedReference = item.ChedReference,
+                        Authority = item.Authority,
+                        Number = item.Number,
+                        CommodityCode = item.CommodityCode,
+                        Match = item.Match == true ? "Yes" : "No",
+                        Description = item.Description,
+                        QuantityOrWeight = item.QuantityOrWeight,
+                        Decision = item.Decision,
+                        DecisionReasons = item.DecisionReasons![0],
+                        CheckCode = item.CheckCode,
+                    }
+            )
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken)
@@ -490,7 +492,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyIntervals(intervals, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
-    public async Task<IReadOnlyList<Decision>> GetMatches(
+    public async Task<IReadOnlyList<MatchResponse>> GetMatches(
         DateTime from,
         DateTime to,
         bool match,
@@ -499,44 +501,30 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        var pipeline = new[]
-        {
-            MatchesMatch(from, to),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { Fields.Decision.Mrn, 1 },
-                    { Fields.Decision.Timestamp, 1 },
-                    { Fields.Decision.Match, 1 },
-                    { Fields.Decision.MrnCreated, 1 },
-                }
-            ),
-            LookupFinalisation(),
-            SetFinalisation(),
-            FilterOutManualReleasesAndCancelled(),
-            UnSetFinalisation(),
-            new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", $"${Fields.Decision.Mrn}" },
-                    { "latest", new BsonDocument("$first", "$$ROOT") },
-                }
-            ),
-            new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
-            new BsonDocument("$match", new BsonDocument(Fields.Decision.Match, match)),
-            new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
-        };
-
-        var aggregateTask = dbContext.Decisions.AggregateAsync<Decision>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+        return await dbContext
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .Where(x => x.Match == true || x.ReleaseType == null || x.ReleaseType == "Automatic")
+            .SelectMany(
+                cd => cd.Items,
+                (cd, item) =>
+                    new MatchResponse()
+                    {
+                        Mrn = cd.Id,
+                        Timestamp = cd.Timestamp,
+                        ChedReference = item.ChedReference,
+                        Authority = item.Authority,
+                        Number = item.Number,
+                        CommodityCode = item.CommodityCode,
+                        Match = item.Match == true ? "Yes" : "No",
+                        Description = item.Description,
+                        QuantityOrWeight = item.QuantityOrWeight,
+                        Decision = item.Decision,
+                        DecisionReasons = item.DecisionReasons![0],
+                        CheckCode = item.CheckCode,
+                    }
+            )
+            .ToListAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
