@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data;
+using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 using Defra.TradeImportsReportingApi.Api.Extensions;
-using Defra.TradeImportsReportingApi.Api.Models;
 using Defra.TradeImportsReportingApi.Api.Utils;
+using MongoDB.Driver;
 using SlimMessageBus;
 
 namespace Defra.TradeImportsReportingApi.Api.Consumers;
@@ -20,39 +22,56 @@ public class ResourceEventsConsumer(
         var resourceType = context.GetResourceType();
         var subResourceType = context.GetSubResourceType();
 
-        if (
-            resourceType == ResourceEventResourceTypes.CustomsDeclaration
-            && subResourceType == ResourceEventSubResourceTypes.Finalisation
-        )
+        switch (resourceType)
         {
-            await HandleFinalisation(received, cancellationToken);
-        }
+            case ResourceEventResourceTypes.CustomsDeclaration:
+                var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
+                await HandleCustomsDeclaration(customsDeclaration, cancellationToken);
+                switch (subResourceType)
+                {
+                    case ResourceEventSubResourceTypes.Finalisation:
+                        await HandleFinalisation(customsDeclaration, cancellationToken);
+                        break;
 
-        if (
-            resourceType == ResourceEventResourceTypes.CustomsDeclaration
-            && subResourceType == ResourceEventSubResourceTypes.ClearanceDecision
-        )
-        {
-            await HandleDecision(received, cancellationToken);
-        }
+                    case ResourceEventSubResourceTypes.ClearanceDecision:
+                        await HandleDecision(customsDeclaration, cancellationToken);
+                        break;
 
-        if (
-            resourceType == ResourceEventResourceTypes.CustomsDeclaration
-            && subResourceType == ResourceEventSubResourceTypes.ClearanceRequest
-        )
-        {
-            await HandleRequest(received, cancellationToken);
-        }
+                    case ResourceEventSubResourceTypes.ClearanceRequest:
+                        await HandleRequest(customsDeclaration, cancellationToken);
+                        break;
+                }
+                break;
 
-        if (resourceType == ResourceEventResourceTypes.ImportPreNotification)
-        {
-            await HandleNotification(received, cancellationToken);
+            case ResourceEventResourceTypes.ImportPreNotification:
+                await HandleNotification(received, cancellationToken);
+                break;
         }
     }
 
-    private async Task HandleFinalisation(string received, CancellationToken cancellationToken)
+    private async Task HandleCustomsDeclaration(
+        ResourceEvent<CustomsDeclarationEvent> customsDeclaration,
+        CancellationToken cancellationToken
+    )
     {
-        var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
+        if (customsDeclaration.Resource is null)
+            throw new InvalidOperationException("Resource is null");
+
+        var entity = customsDeclaration.Resource.ToCustomsDeclaration();
+        var filter = Builders<CustomsDeclaration>.Filter.Eq(x => x.Id, entity.Id);
+        await dbContext.CustomsDeclarations.ReplaceOneAsync(
+            filter,
+            entity,
+            new ReplaceOptions() { IsUpsert = true },
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task HandleFinalisation(
+        ResourceEvent<CustomsDeclarationEvent> customsDeclaration,
+        CancellationToken cancellationToken
+    )
+    {
         if (customsDeclaration.Resource?.Finalisation is null)
             throw new InvalidOperationException("Finalisation is null");
 
@@ -73,9 +92,11 @@ public class ResourceEventsConsumer(
         );
     }
 
-    private async Task HandleDecision(string received, CancellationToken cancellationToken)
+    private async Task HandleDecision(
+        ResourceEvent<CustomsDeclarationEvent> customsDeclaration,
+        CancellationToken cancellationToken
+    )
     {
-        var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
         if (customsDeclaration.Resource?.ClearanceDecision is null)
             throw new InvalidOperationException("Decision is null");
 
@@ -88,9 +109,11 @@ public class ResourceEventsConsumer(
         await dbContext.Decisions.InsertOneAsync(entityDecision, cancellationToken: cancellationToken);
     }
 
-    private async Task HandleRequest(string received, CancellationToken cancellationToken)
+    private async Task HandleRequest(
+        ResourceEvent<CustomsDeclarationEvent> customsDeclaration,
+        CancellationToken cancellationToken
+    )
     {
-        var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
         if (customsDeclaration.Resource?.ClearanceRequest is null)
             throw new InvalidOperationException("Request is null");
 

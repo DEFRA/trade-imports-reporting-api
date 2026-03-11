@@ -2,6 +2,7 @@ using System.Net;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -41,19 +42,31 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
             .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new Finalisation
+                    new MatchResponse()
                     {
-                        Id = "id1",
+                        Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
                         Mrn = "mrn1",
-                        ReleaseType = ReleaseType.Automatic,
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
                     },
-                    new Finalisation
+                    new MatchResponse()
                     {
-                        Id = "id2",
+                        Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
-                        ReleaseType = ReleaseType.Automatic,
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
                     },
                 ]
             );
@@ -85,19 +98,31 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
             .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new Finalisation
+                    new MatchResponse()
                     {
-                        Id = "id1",
+                        Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
-                        Mrn = mrn1,
-                        ReleaseType = ReleaseType.Automatic,
+                        Mrn = "mrn1",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
                     },
-                    new Finalisation
+                    new MatchResponse()
                     {
-                        Id = "id2",
+                        Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
-                        ReleaseType = ReleaseType.Automatic,
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
                     },
                 ]
             );

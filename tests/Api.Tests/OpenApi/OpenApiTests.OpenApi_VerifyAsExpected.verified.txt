@@ -1558,14 +1558,60 @@
         "additionalProperties": false
       },
       "MatchResponse": {
+        "required": [
+          "authority",
+          "checkCode",
+          "chedReference",
+          "itemNumber",
+          "match",
+          "mrn",
+          "timestamp"
+        ],
         "type": "object",
         "properties": {
           "timestamp": {
             "type": "string",
             "format": "date-time"
           },
-          "reference": {
+          "mrn": {
             "type": "string"
+          },
+          "itemNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "commodityCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantityOrWeight": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "chedReference": {
+            "type": "string"
+          },
+          "match": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "checkCode": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "nullable": true
+          },
+          "decisionReasons": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

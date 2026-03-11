@@ -2,11 +2,31 @@
   "data": [
     {
       "timestamp": "2025-09-15T16:31:05Z",
-      "reference": "mrn1"
+      "mrn": "mrn1",
+      "itemNumber": 1,
+      "commodityCode": "commodityCode1",
+      "description": "description1",
+      "quantityOrWeight": null,
+      "chedReference": "chedReference1",
+      "match": "Yes",
+      "authority": "authority1",
+      "checkCode": "H222",
+      "decision": "X00",
+      "decisionReasons": null
     },
     {
       "timestamp": "2025-09-15T16:41:05Z",
-      "reference": "mrn2"
+      "mrn": "mrn2",
+      "itemNumber": 2,
+      "commodityCode": "commodityCode2",
+      "description": "description2",
+      "quantityOrWeight": null,
+      "chedReference": "chedReference1",
+      "match": "Yes",
+      "authority": "authority2",
+      "checkCode": "H222",
+      "decision": "X00",
+      "decisionReasons": null
     }
   ]
 }

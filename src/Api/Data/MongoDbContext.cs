@@ -21,4 +21,7 @@ public class MongoDbContext(IMongoDatabase database) : IDbContext
 
     public IMongoCollection<BtmsToCdsActivity> BtmsToCdsActivities { get; } =
         database.GetCollection<BtmsToCdsActivity>(typeof(BtmsToCdsActivity).DataEntityName());
+
+    public IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; } =
+        database.GetCollection<CustomsDeclaration>(typeof(CustomsDeclaration).DataEntityName());
 }
