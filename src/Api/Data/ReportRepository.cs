@@ -501,10 +501,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        return await dbContext
+        var query = dbContext
             .CustomsDeclarations.AsQueryable()
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
-            .Where(x => x.Match == true || x.ReleaseType == null || x.ReleaseType == "Automatic")
+            .Where(x => x.Match == match || x.ReleaseType == null || x.ReleaseType == "Automatic")
             .SelectMany(
                 cd => cd.Items,
                 (cd, item) =>
@@ -523,8 +523,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
                     }
-            )
-            .ToListAsync(cancellationToken: cancellationToken);
+            );
+
+        return await query.ToListAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
