@@ -39,10 +39,10 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
+            .GetReleasesV2(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new MatchResponse()
+                    new MatchResponseV2()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
@@ -55,7 +55,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                         Decision = "X00",
                         Description = "description1",
                     },
-                    new MatchResponse()
+                    new MatchResponseV2()
                     {
                         Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
@@ -71,6 +71,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                 ]
             );
 
+        client.DefaultRequestHeaders.Add("UseV2", "true");
         var response = await client.GetAsync(
             Testing.Endpoints.Releases.Data(
                 EndpointQuery
@@ -95,10 +96,10 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
+            .GetReleasesV2(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new MatchResponse()
+                    new MatchResponseV2()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
@@ -111,7 +112,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                         Decision = "X00",
                         Description = "description1",
                     },
-                    new MatchResponse()
+                    new MatchResponseV2()
                     {
                         Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
@@ -128,6 +129,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
             );
 
         client.DefaultRequestHeaders.Add("Accept", "text/csv");
+        client.DefaultRequestHeaders.Add("UseV2", "true");
         var response = await client.GetAsync(
             Testing.Endpoints.Releases.Data(
                 EndpointQuery

@@ -3,7 +3,12 @@ using CsvHelper.Configuration;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
-public class MatchResponse
+public record MatchResponse(
+    [property: JsonPropertyName("timestamp")] DateTime Timestamp,
+    [property: JsonPropertyName("reference")] string Reference
+);
+
+public class MatchResponseV2
 {
     [JsonPropertyName("timestamp")]
     public required DateTime Timestamp { get; init; }
@@ -41,7 +46,7 @@ public class MatchResponse
     [JsonPropertyName("decisionReasons")]
     public string? DecisionReasons { get; init; }
 
-    public sealed class MatchResponseMap : ClassMap<MatchResponse>
+    public sealed class MatchResponseMap : ClassMap<MatchResponseV2>
     {
         public MatchResponseMap()
         {

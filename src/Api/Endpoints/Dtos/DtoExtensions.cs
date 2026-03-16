@@ -55,10 +55,13 @@ public static class DtoExtensions
                 .ToList()
         );
 
-    public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<MatchResponse> data)
+    public static DatumResponse<MatchResponseV2> ToResponse(this IReadOnlyList<MatchResponseV2> data)
     {
-        return new DatumResponse<MatchResponse>(data);
+        return new DatumResponse<MatchResponseV2>(data);
     }
+
+    public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<Decision> matches) =>
+        new(matches.Select(x => new MatchResponse(x.Timestamp, x.Mrn)).ToList());
 
     public static DatumResponse<ReleasesResponse> ToResponse(this IReadOnlyList<Finalisation> finalisations) =>
         new(finalisations.Select(x => new ReleasesResponse(x.Timestamp, x.Mrn)).ToList());
@@ -90,12 +93,12 @@ public static class DtoExtensions
                 : null
         );
 
-    public static string ToCsvResponse(this IReadOnlyList<MatchResponse> data)
+    public static string ToCsvResponse(this IReadOnlyList<MatchResponseV2> data)
     {
         using var writer = new StringWriter();
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-        csv.Context.RegisterClassMap<MatchResponseMap>();
+        csv.Context.RegisterClassMap<MatchResponseV2.MatchResponseMap>();
         csv.WriteRecords(data);
 
         return writer.ToString();
@@ -108,6 +111,18 @@ public static class DtoExtensions
         foreach (var finalisation in finalisations)
         {
             csv.AppendLine($"{finalisation.Timestamp:O},{EscapeCsv(finalisation.Mrn)}");
+        }
+
+        return csv.ToString();
+    }
+
+    public static string ToCsvResponse(this IReadOnlyList<Decision> matches)
+    {
+        var csv = new StringBuilder();
+
+        foreach (var decision in matches)
+        {
+            csv.AppendLine($"{decision.Timestamp:O},{EscapeCsv(decision.Mrn)}");
         }
 
         return csv.ToString();
