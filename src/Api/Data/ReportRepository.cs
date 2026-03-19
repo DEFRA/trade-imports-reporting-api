@@ -590,7 +590,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .CustomsDeclarations.AsQueryable()
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
             .Where(x => x.Match == match)
-            .Where(x => x.ReleaseType == null || x.ReleaseType == "Automatic")
+            .Where(x => x.ReleaseType == null || x.ReleaseType == "Automatic" || x.ReleaseType == "Unknown")
             .SelectMany(
                 cd => cd.Items,
                 (cd, item) =>
