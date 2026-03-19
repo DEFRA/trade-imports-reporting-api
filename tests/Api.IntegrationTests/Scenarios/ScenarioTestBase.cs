@@ -331,6 +331,13 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                         },
                     ],
                 },
+                Finalisation = new TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation()
+                {
+                    MessageSentAt = mrnCreated,
+                    IsManualRelease = false,
+                    FinalState = "0",
+                    ExternalVersion = 1,
+                },
             },
             ResourceEventSubResourceTypes.ClearanceDecision
         );
