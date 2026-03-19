@@ -333,6 +333,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         CheckCode = item.CheckCode,
                     }
             )
+            .OrderByDescending(x => x.Timestamp)
             .ToListAsync(cancellationToken);
     }
 
@@ -588,7 +589,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var query = dbContext
             .CustomsDeclarations.AsQueryable()
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
-            .Where(x => x.Match == match || x.ReleaseType == null || x.ReleaseType == "Automatic")
+            .Where(x => x.Match == match)
+            .Where(x => x.ReleaseType == null || x.ReleaseType == "Automatic")
             .SelectMany(
                 cd => cd.Items,
                 (cd, item) =>
@@ -607,7 +609,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
                     }
-            );
+            )
+            .OrderByDescending(x => x.Timestamp);
 
         return await query.ToListAsync(cancellationToken: cancellationToken);
     }
