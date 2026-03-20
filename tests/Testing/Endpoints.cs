@@ -28,6 +28,8 @@ public static class Endpoints
 
         public static string Summary(EndpointQuery? query = null) => $"{Root}/summary{query}";
 
+        public static string SummaryByLevel(EndpointQuery? query = null) => $"{Root}/summary/levels{query}";
+
         public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
 
         public static string Data(EndpointQuery? query = null) => $"{Root}/data{query}";

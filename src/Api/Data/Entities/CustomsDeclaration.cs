@@ -25,4 +25,7 @@ public class CustomsDeclarationItem
     public required string CheckCode { get; set; }
     public string? Decision { get; set; }
     public string[]? DecisionReasons { get; set; } = [];
+    public string? Mode { get; set; }
+    public int? MatchLevel { get; set; }
+    public string? RuleName { get; set; }
 }

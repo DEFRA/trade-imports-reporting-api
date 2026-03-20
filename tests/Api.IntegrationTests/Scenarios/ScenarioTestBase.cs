@@ -330,6 +330,16 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             Checks = [new ClearanceDecisionCheck { CheckCode = "H222", DecisionCode = decisionCode }],
                         },
                     ],
+                    Results =
+                    [
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Level = 1,
+                            RuleName = "DecisionResultTestRuleName",
+                            Mode = "Active",
+                        },
+                    ],
                 },
                 Finalisation = new TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation()
                 {

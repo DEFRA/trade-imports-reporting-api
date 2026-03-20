@@ -67,6 +67,10 @@ public static class CustomsDeclarationExtensions
 
                     foreach (var decision in decisions)
                     {
+                        var decisionResult = customsDeclarationEvent.ClearanceDecision?.Results?.SingleOrDefault(
+                            result => result.ItemNumber == commodity.ItemNumber
+                        );
+
                         yield return new CustomsDeclarationItem
                         {
                             Number = commodity.ItemNumber.GetValueOrDefault(),
@@ -79,6 +83,9 @@ public static class CustomsDeclarationExtensions
                             DecisionReasons = decision.DecisionReasons,
                             QuantityOrWeight = commodity.SupplementaryUnits ?? commodity.NetMass,
                             CheckCode = decision.CheckCode,
+                            Mode = decisionResult?.Mode,
+                            MatchLevel = decisionResult?.Level,
+                            RuleName = decisionResult?.RuleName,
                         };
                     }
                 }

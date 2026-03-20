@@ -615,6 +615,32 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await query.ToListAsync(cancellationToken: cancellationToken);
     }
 
+    public async Task<MatchesSummaryByLevel> GetMatchesSummaryByLevel(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        var levelCountsQuery = dbContext
+                    .CustomsDeclarations.AsQueryable()
+                    .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+                    .SelectMany(item => item.Items)
+                    .GroupBy(item => item.MatchLevel ?? 0)
+                    .Select(grouping => new { Level = grouping.Key, Count = grouping.Count() })
+                    .ToListAsync(cancellationToken: cancellationToken);
+
+        var resultsDictionary = (await levelCountsQuery).ToDictionary(item => item.Level, item => item.Count);
+
+        var totalCount = resultsDictionary.Values.Sum();
+        resultsDictionary.TryGetValue(1, out var level1Count);
+        resultsDictionary.TryGetValue(2, out var level2Count);
+        resultsDictionary.TryGetValue(3, out var level3Count);
+
+        return new MatchesSummaryByLevel(totalCount, level1Count, level2Count, level3Count);
+    }
+
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
         DateTime from,
         DateTime to,

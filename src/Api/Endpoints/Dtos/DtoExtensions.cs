@@ -3,7 +3,6 @@ using System.Text;
 using CsvHelper;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
-using static Defra.TradeImportsReportingApi.Api.Endpoints.Dtos.MatchResponse;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
@@ -14,6 +13,9 @@ public static class DtoExtensions
 
     public static MatchesSummaryResponse ToResponse(this MatchesSummary summary) =>
         new(summary.Match, summary.NoMatch, summary.Total);
+
+    public static MatchesSummaryByLevelResponse ToResponse(this MatchesSummaryByLevel summaryByLevel) =>
+        new(summaryByLevel.Level1, summaryByLevel.Level2, summaryByLevel.Level3, summaryByLevel.Total);
 
     public static ClearanceRequestsSummaryResponse ToResponse(this ClearanceRequestsSummary summary) =>
         new(summary.Unique, summary.Total);
