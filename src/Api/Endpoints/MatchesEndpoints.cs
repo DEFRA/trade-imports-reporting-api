@@ -92,6 +92,7 @@ public static class MatchesEndpoints
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="match">true or false</param>
+    /// <param name="useV2"></param>
     /// <param name="reportRepository"></param>
     /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
@@ -101,6 +102,7 @@ public static class MatchesEndpoints
         [FromQuery] DateTime from,
         [FromQuery] DateTime to,
         [FromQuery] bool match,
+        [FromHeader] bool? useV2,
         [FromServices] IReportRepository reportRepository,
         HttpContext httpContext,
         CancellationToken cancellationToken
@@ -112,10 +114,19 @@ public static class MatchesEndpoints
             return Results.ValidationProblem(errors);
         }
 
-        var matchesData = await reportRepository.GetMatches(from, to, match, cancellationToken);
+        if (useV2.GetValueOrDefault())
+        {
+            var v2Data = await reportRepository.GetMatchesV2(from, to, match, cancellationToken);
+
+            return Request.IsCsvRequired(httpContext)
+                ? Request.CsvResult(v2Data.ToCsvResponse())
+                : Results.Ok(v2Data.ToResponse());
+        }
+
+        var v1Data = await reportRepository.GetMatches(from, to, match, cancellationToken);
 
         return Request.IsCsvRequired(httpContext)
-            ? Request.CsvResult(matchesData.ToCsvResponse())
-            : Results.Ok(matchesData.ToResponse());
+            ? Request.CsvResult(v1Data.ToCsvResponse())
+            : Results.Ok(v1Data.ToResponse());
     }
 }

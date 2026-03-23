@@ -2,6 +2,7 @@ using System.Net;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -39,27 +40,39 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         const bool match = true;
         MockReportRepository
-            .GetMatches(from, to, match, Arg.Any<CancellationToken>())
+            .GetMatchesV2(from, to, match, Arg.Any<CancellationToken>())
             .Returns(
-                new List<Decision>
-                {
-                    new()
+                [
+                    new MatchResponseV2()
                     {
-                        Id = "id1",
-                        MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 10, 5, DateTimeKind.Utc),
+                        Number = 1,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
                         Mrn = "mrn1",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
                     },
-                    new()
+                    new MatchResponseV2()
                     {
-                        Id = "id2",
-                        MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 15, 5, DateTimeKind.Utc),
+                        Number = 2,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
                     },
-                }
+                ]
             );
 
+        client.DefaultRequestHeaders.Add("UseV2", "true");
         var response = await client.GetAsync(
             Testing.Endpoints.Matches.Data(
                 EndpointQuery
@@ -85,25 +98,85 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         const bool match = true;
         MockReportRepository
+            .GetMatchesV2(from, to, match, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new MatchResponseV2()
+                    {
+                        Number = 1,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
+                        Mrn = "mrn1",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
+                    },
+                    new MatchResponseV2()
+                    {
+                        Number = 2,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
+                        Mrn = "mrn2",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
+                    },
+                ]
+            );
+
+        client.DefaultRequestHeaders.Add("Accept", "text/csv");
+        client.DefaultRequestHeaders.Add("UseV2", "true");
+        var response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.Match(match))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await Verify(await response.Content.ReadAsStringAsync()).UseParameters(mrn1).DontScrubDateTimes();
+    }
+
+    [Theory]
+    [InlineData("mrn1")]
+    [InlineData("mrn'1")]
+    [InlineData("mrn\"1")]
+    public async Task Get_WhenAuthorized_AndRequestingCsvV1_ShouldBeOk(string mrn1)
+    {
+        var client = CreateClient();
+        var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
+        var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
+        const bool match = true;
+        MockReportRepository
             .GetMatches(from, to, match, Arg.Any<CancellationToken>())
             .Returns(
-                new List<Decision>
-                {
-                    new()
+                [
+                    new Decision()
                     {
                         Id = "id1",
                         MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 10, 5, DateTimeKind.Utc),
-                        Mrn = mrn1,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
+                        Mrn = "mrn1",
+                        Match = true,
                     },
-                    new()
+                    new Decision()
                     {
-                        Id = "id2",
+                        Id = "id1",
                         MrnCreated = default,
-                        Timestamp = new DateTime(2025, 9, 15, 15, 15, 5, DateTimeKind.Utc),
+                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
+                        Match = true,
                     },
-                }
+                ]
             );
 
         client.DefaultRequestHeaders.Add("Accept", "text/csv");

@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.0.4",
   "info": {
     "title": "Trade Imports Reporting API",
@@ -185,6 +185,13 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "useV2",
+            "in": "header",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -389,6 +396,13 @@
             "name": "match",
             "in": "query",
             "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "useV2",
+            "in": "header",
             "schema": {
               "type": "boolean"
             }

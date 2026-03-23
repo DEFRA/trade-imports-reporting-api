@@ -2,6 +2,7 @@ using System.Net;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -38,26 +39,39 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
+            .GetReleasesV2(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new Finalisation
+                    new MatchResponseV2()
                     {
-                        Id = "id1",
+                        Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
                         Mrn = "mrn1",
-                        ReleaseType = ReleaseType.Automatic,
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
                     },
-                    new Finalisation
+                    new MatchResponseV2()
                     {
-                        Id = "id2",
+                        Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
                         Mrn = "mrn2",
-                        ReleaseType = ReleaseType.Automatic,
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
                     },
                 ]
             );
 
+        client.DefaultRequestHeaders.Add("UseV2", "true");
         var response = await client.GetAsync(
             Testing.Endpoints.Releases.Data(
                 EndpointQuery
@@ -82,6 +96,64 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
+            .GetReleasesV2(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
+            .Returns(
+                [
+                    new MatchResponseV2()
+                    {
+                        Number = 1,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
+                        Mrn = "mrn1",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority1",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode1",
+                        Decision = "X00",
+                        Description = "description1",
+                    },
+                    new MatchResponseV2()
+                    {
+                        Number = 2,
+                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
+                        Mrn = "mrn2",
+                        ChedReference = "chedReference1",
+                        CheckCode = "H222",
+                        Authority = "authority2",
+                        Match = "Yes",
+                        CommodityCode = "commodityCode2",
+                        Decision = "X00",
+                        Description = "description2",
+                    },
+                ]
+            );
+
+        client.DefaultRequestHeaders.Add("Accept", "text/csv");
+        client.DefaultRequestHeaders.Add("UseV2", "true");
+        var response = await client.GetAsync(
+            Testing.Endpoints.Releases.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(from))
+                    .Where(EndpointFilter.To(to))
+                    .Where(EndpointFilter.ReleaseType(ReleaseType.Automatic))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await Verify(await response.Content.ReadAsStringAsync()).UseParameters(mrn1).DontScrubDateTimes();
+    }
+
+    [Theory]
+    [InlineData("mrn1")]
+    [InlineData("mrn'1")]
+    [InlineData("mrn\"1")]
+    public async Task Get_WhenAuthorized_AndRequestingCsvV1_ShouldBeOk(string mrn1)
+    {
+        var client = CreateClient();
+        var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
+        var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
+        MockReportRepository
             .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
@@ -89,7 +161,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                     {
                         Id = "id1",
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
-                        Mrn = mrn1,
+                        Mrn = "mrn1",
                         ReleaseType = ReleaseType.Automatic,
                     },
                     new Finalisation
