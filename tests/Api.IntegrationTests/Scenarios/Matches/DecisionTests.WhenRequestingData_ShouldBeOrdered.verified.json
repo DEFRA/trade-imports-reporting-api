@@ -12,7 +12,8 @@
       "authority": "PHA",
       "checkCode": "H222",
       "decision": "X00",
-      "decisionReasons": null
+      "decisionReasons": null,
+      "level": 1
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -26,7 +27,8 @@
       "authority": "PHA",
       "checkCode": "H222",
       "decision": "C03",
-      "decisionReasons": null
+      "decisionReasons": null,
+      "level": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -40,7 +42,8 @@
       "authority": "PHA",
       "checkCode": "H224",
       "decision": "X00",
-      "decisionReasons": "No match decision Reason"
+      "decisionReasons": "No match decision Reason",
+      "level": null
     }
   ]
 }

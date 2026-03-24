@@ -54,6 +54,7 @@ public interface IReportRepository
         DateTime from,
         DateTime to,
         bool match,
+        int? matchLevel,
         CancellationToken cancellationToken
     );
 

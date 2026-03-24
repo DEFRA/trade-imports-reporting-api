@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.0.4",
   "info": {
     "title": "Trade Imports Reporting API",
@@ -703,6 +703,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "matchLevel",
+            "in": "query",
+            "description": "the level to match on",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -712,6 +721,72 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MatchResponseDatumResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/summary/levels": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches summary counts by level",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "MatchesSummaryByLevel",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-10T11:08:48Z"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "ISO 8609 UTC only",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-09-11T11:08:48Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchesSummaryByLevelResponse"
                 }
               }
             }
@@ -1594,6 +1669,28 @@
             "items": {
               "$ref": "#/components/schemas/MatchResponse"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MatchesSummaryByLevelResponse": {
+        "type": "object",
+        "properties": {
+          "level1": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "level2": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "level3": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

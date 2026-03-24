@@ -12,7 +12,8 @@
       "authority": "PHA",
       "checkCode": "H222",
       "decision": "C02",
-      "decisionReasons": null
+      "decisionReasons": null,
+      "level": 1
     }
   ]
 }

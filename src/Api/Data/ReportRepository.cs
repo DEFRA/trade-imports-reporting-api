@@ -331,6 +331,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         Decision = item.Decision,
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
+                        Level = item.MatchLevel,
                     }
             )
             .OrderByDescending(x => x.Timestamp)
@@ -581,6 +582,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         DateTime from,
         DateTime to,
         bool match,
+        int? matchLevel,
         CancellationToken cancellationToken
     )
     {
@@ -591,6 +593,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
             .Where(x => x.Match == match)
             .Where(x => x.ReleaseType == null || x.ReleaseType == "Automatic" || x.ReleaseType == "Unknown")
+            .Where(x => matchLevel == null || x.Items.Any(item => item.MatchLevel == matchLevel))
             .SelectMany(
                 cd => cd.Items,
                 (cd, item) =>
@@ -608,6 +611,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         Decision = item.Decision,
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
+                        Level = item.MatchLevel,
                     }
             )
             .OrderByDescending(x => x.Timestamp);
@@ -624,12 +628,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         GuardUtc(from, to);
 
         var levelCountsQuery = dbContext
-                    .CustomsDeclarations.AsQueryable()
-                    .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
-                    .SelectMany(item => item.Items)
-                    .GroupBy(item => item.MatchLevel ?? 0)
-                    .Select(grouping => new { Level = grouping.Key, Count = grouping.Count() })
-                    .ToListAsync(cancellationToken: cancellationToken);
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .SelectMany(item => item.Items)
+            .GroupBy(item => item.MatchLevel ?? 0)
+            .Select(grouping => new { Level = grouping.Key, Count = grouping.Count() })
+            .ToListAsync(cancellationToken: cancellationToken);
 
         var resultsDictionary = (await levelCountsQuery).ToDictionary(item => item.Level, item => item.Count);
 

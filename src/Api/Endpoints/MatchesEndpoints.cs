@@ -130,6 +130,7 @@ public static class MatchesEndpoints
     /// <param name="reportRepository"></param>
     /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="matchLevel">the level to match on</param>
     /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> MatchesData(
@@ -139,10 +140,11 @@ public static class MatchesEndpoints
         [FromHeader] bool? useV2,
         [FromServices] IReportRepository reportRepository,
         HttpContext httpContext,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        [FromQuery] int? matchLevel = null
     )
     {
-        var errors = Request.Validate(from, to);
+        var errors = Request.Validate(from, to, match: match, matchLevel: matchLevel);
         if (errors.Count > 0)
         {
             return Results.ValidationProblem(errors);
@@ -150,7 +152,7 @@ public static class MatchesEndpoints
 
         if (useV2.GetValueOrDefault())
         {
-            var v2Data = await reportRepository.GetMatchesV2(from, to, match, cancellationToken);
+            var v2Data = await reportRepository.GetMatchesV2(from, to, match, matchLevel, cancellationToken);
 
             return Request.IsCsvRequired(httpContext)
                 ? Request.CsvResult(v2Data.ToCsvResponse())
