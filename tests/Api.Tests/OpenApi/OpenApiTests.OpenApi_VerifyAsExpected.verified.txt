@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.4",
   "info": {
     "title": "Trade Imports Reporting API",
@@ -185,13 +185,6 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
-            "schema": {
-              "type": "boolean"
             }
           }
         ],
@@ -396,13 +389,6 @@
             "name": "match",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
             "schema": {
               "type": "boolean"
             }
@@ -1790,7 +1776,12 @@
       "MatchResponse": {
         "required": [
           "timestamp",
-          "reference"
+          "mrn",
+          "itemNumber",
+          "chedReference",
+          "match",
+          "authority",
+          "checkCode"
         ],
         "type": "object",
         "properties": {
@@ -1798,8 +1789,45 @@
             "type": "string",
             "format": "date-time"
           },
-          "reference": {
+          "mrn": {
             "type": "string"
+          },
+          "itemNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "commodityCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantityOrWeight": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "format": "double",
+            "nullable": true
+          },
+          "chedReference": {
+            "type": "string"
+          },
+          "match": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "checkCode": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "nullable": true
+          },
+          "decisionReasons": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -1864,7 +1892,12 @@
       "ReleasesResponse": {
         "required": [
           "timestamp",
-          "reference"
+          "mrn",
+          "itemNumber",
+          "chedReference",
+          "match",
+          "authority",
+          "checkCode"
         ],
         "type": "object",
         "properties": {
@@ -1872,8 +1905,45 @@
             "type": "string",
             "format": "date-time"
           },
-          "reference": {
+          "mrn": {
             "type": "string"
+          },
+          "itemNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "commodityCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantityOrWeight": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "format": "double",
+            "nullable": true
+          },
+          "chedReference": {
+            "type": "string"
+          },
+          "match": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "checkCode": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "nullable": true
+          },
+          "decisionReasons": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

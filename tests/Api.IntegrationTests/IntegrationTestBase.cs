@@ -19,7 +19,7 @@ public abstract class IntegrationTestBase
             // See compose.yml for username, password and scope configuration
             Convert.ToBase64String("IntegrationTests:integration-tests-pwd"u8.ToArray())
         );
-        httpClient.DefaultRequestHeaders.Add("UseV2", "true");
+
         return httpClient;
     }
 
