@@ -3,6 +3,7 @@ using System.Text;
 using CsvHelper;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using static Defra.TradeImportsReportingApi.Api.Endpoints.Dtos.MatchResponse;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
