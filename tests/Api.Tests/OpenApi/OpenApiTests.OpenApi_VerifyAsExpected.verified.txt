@@ -12,808 +12,10 @@
   },
   "servers": [
     {
-      "url": "https://localhost"
+      "url": "http://localhost/"
     }
   ],
   "paths": {
-    "/admin/dlq/resource-events/redrive": {
-      "post": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Initiates redrive of messages from the dead letter queue",
-        "description": "Redrives all messages on the resource events dead letter queue",
-        "operationId": "RedriveResourceEvents",
-        "responses": {
-          "202": {
-            "description": "Accepted"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "Method Not Allowed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/dlq/resource-events/remove-message": {
-      "post": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Initiates removal of message from the dead letter queue",
-        "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
-        "operationId": "RemoveResourceEventMessage",
-        "parameters": [
-          {
-            "name": "messageId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "Method Not Allowed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/dlq/resource-events/drain": {
-      "post": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Initiates drain of all messages from the dead letter queue",
-        "description": "Drains all messages on the resource events dead letter queue",
-        "operationId": "DrainResourceEvents",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "Method Not Allowed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/dlq/activity-events/redrive": {
-      "post": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Initiates redrive of messages from the activity events dead letter queue",
-        "description": "Redrives all messages on the activity events dead letter queue",
-        "operationId": "RedriveActivityEvents",
-        "responses": {
-          "202": {
-            "description": "Accepted"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "Method Not Allowed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/dlq/activity-events/remove-message": {
-      "post": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Initiates removal of message from the activity events dead letter queue",
-        "description": "Attempts to find and remove a message on the activity events dead letter queue by message ID",
-        "operationId": "RemoveActivityEventMessage",
-        "parameters": [
-          {
-            "name": "messageId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "Method Not Allowed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/admin/dlq/activity-events/drain": {
-      "post": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Initiates drain of all messages from the dead letter queue",
-        "description": "Drains all messages on the activity events dead letter queue",
-        "operationId": "DrainActivityEvents",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "Method Not Allowed",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/clearance-requests/summary": {
-      "get": {
-        "tags": [
-          "Clearance Requests"
-        ],
-        "summary": "Get clearance requests summary",
-        "description": "Searchable period is the last 122 days",
-        "operationId": "ClearanceRequestsSummary",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/clearance-requests/intervals": {
-      "get": {
-        "tags": [
-          "Clearance Requests"
-        ],
-        "summary": "Get clearance requests by interval",
-        "description": "Searchable period is the last 122 days",
-        "operationId": "ClearanceRequestsIntervals",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          },
-          {
-            "name": "intervals",
-            "in": "query",
-            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
-            "required": true,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/matches/summary": {
-      "get": {
-        "tags": [
-          "Decisions"
-        ],
-        "summary": "Get matches summary",
-        "description": "Searchable period is the last 122 days",
-        "operationId": "MatchesSummary",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/matches/intervals": {
-      "get": {
-        "tags": [
-          "Decisions"
-        ],
-        "summary": "Get matches by interval",
-        "description": "Searchable period is the last 122 days",
-        "operationId": "MatchesIntervals",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          },
-          {
-            "name": "intervals",
-            "in": "query",
-            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
-            "required": true,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/matches/data": {
-      "get": {
-        "tags": [
-          "Decisions"
-        ],
-        "summary": "Get matches data",
-        "description": "Searchable period is the last 122 days",
-        "operationId": "MatchesData",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          },
-          {
-            "name": "match",
-            "in": "query",
-            "description": "true or false",
-            "required": true,
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
-            "description": "",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "matchLevel",
-            "in": "query",
-            "description": "the level to match on",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchResponseDatumResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/matches/summary/levels": {
-      "get": {
-        "tags": [
-          "Decisions"
-        ],
-        "summary": "Get matches summary counts by level",
-        "description": "Searchable period is the last 122 days",
-        "operationId": "MatchesSummaryByLevel",
-        "parameters": [
-          {
-            "name": "from",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
-          },
-          {
-            "name": "to",
-            "in": "query",
-            "description": "ISO 8609 UTC only",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchesSummaryByLevelResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/releases/summary": {
       "get": {
         "tags": [
@@ -826,24 +28,20 @@
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           }
         ],
         "responses": {
@@ -892,29 +90,24 @@
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           },
           {
             "name": "intervals",
             "in": "query",
-            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
             "required": true,
             "schema": {
               "type": "array",
@@ -931,7 +124,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
+                  "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfReleasesSummaryResponse"
                 }
               }
             }
@@ -971,29 +164,24 @@
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           },
           {
             "name": "releaseType",
             "in": "query",
-            "description": "\"Automatic\" or \"Manual\" or \"Cancelled\"",
             "required": true,
             "schema": {
               "type": "string"
@@ -1002,7 +190,6 @@
           {
             "name": "useV2",
             "in": "header",
-            "description": "",
             "schema": {
               "type": "boolean"
             }
@@ -1014,7 +201,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReleasesResponseDatumResponse"
+                  "$ref": "#/components/schemas/DatumResponseOfReleasesResponse"
                 }
               }
             }
@@ -1042,36 +229,32 @@
         }
       }
     },
-    "/summary": {
+    "/matches/summary": {
       "get": {
         "tags": [
-          "General"
+          "Decisions"
         ],
-        "summary": "Get summary",
+        "summary": "Get matches summary",
         "description": "Searchable period is the last 122 days",
-        "operationId": "Summary",
+        "operationId": "MatchesSummary",
         "parameters": [
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           }
         ],
         "responses": {
@@ -1080,7 +263,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SummaryResponse"
+                  "$ref": "#/components/schemas/MatchesSummaryResponse"
                 }
               }
             }
@@ -1108,41 +291,36 @@
         }
       }
     },
-    "/intervals": {
+    "/matches/intervals": {
       "get": {
         "tags": [
-          "General"
+          "Decisions"
         ],
-        "summary": "Get by interval",
+        "summary": "Get matches by interval",
         "description": "Searchable period is the last 122 days",
-        "operationId": "Intervals",
+        "operationId": "MatchesIntervals",
         "parameters": [
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           },
           {
             "name": "intervals",
             "in": "query",
-            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
             "required": true,
             "schema": {
               "type": "array",
@@ -1159,7 +337,290 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IntervalsResponse"
+                  "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfMatchesSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/data": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches data",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "MatchesData",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "match",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "useV2",
+            "in": "header",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "matchLevel",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatumResponseOfMatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/summary/levels": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches summary counts by level",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "MatchesSummaryByLevel",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchesSummaryByLevelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clearance-requests/summary": {
+      "get": {
+        "tags": [
+          "Clearance Requests"
+        ],
+        "summary": "Get clearance requests summary",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "ClearanceRequestsSummary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/clearance-requests/intervals": {
+      "get": {
+        "tags": [
+          "Clearance Requests"
+        ],
+        "summary": "Get clearance requests by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "ClearanceRequestsIntervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfClearanceRequestsSummaryResponse"
                 }
               }
             }
@@ -1199,24 +660,20 @@
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           }
         ],
         "responses": {
@@ -1265,29 +722,24 @@
           {
             "name": "from",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-10T11:08:48Z"
+            }
           },
           {
             "name": "to",
             "in": "query",
-            "description": "ISO 8609 UTC only",
             "required": true,
             "schema": {
               "type": "string",
               "format": "date-time"
-            },
-            "example": "2025-09-11T11:08:48Z"
+            }
           },
           {
             "name": "intervals",
             "in": "query",
-            "description": "ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&intervals=X",
             "required": true,
             "schema": {
               "type": "array",
@@ -1304,7 +756,143 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
+                  "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfNotificationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/summary": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "Get summary",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "Summary",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intervals": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "Get by interval",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "Intervals",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "intervals",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntervalsResponse"
                 }
               }
             }
@@ -1495,173 +1083,471 @@
           }
         }
       }
+    },
+    "/admin/dlq/resource-events/redrive": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates redrive of messages from the dead letter queue",
+        "description": "Redrives all messages on the resource events dead letter queue",
+        "operationId": "Redrive",
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/resource-events/remove-message": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates removal of message from the dead letter queue",
+        "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
+        "operationId": "RemoveMessage",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/resource-events/drain": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates drain of all messages from the dead letter queue",
+        "description": "Drains all messages on the resource events dead letter queue",
+        "operationId": "Drain",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/resource-events/count": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets the count of messages on the resource events dead letter queue",
+        "description": "Gets the count of messages on the resource events dead letter queue",
+        "operationId": "Count",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/redrive": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates redrive of messages from the dead letter queue",
+        "description": "Redrives all messages on the resource events dead letter queue",
+        "operationId": "Redrive_activity-events",
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/remove-message": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates removal of message from the dead letter queue",
+        "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
+        "operationId": "RemoveMessage_activity-events",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/drain": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates drain of all messages from the dead letter queue",
+        "description": "Drains all messages on the resource events dead letter queue",
+        "operationId": "Drain_activity-events",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/activity-events/count": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets the count of messages on the resource events dead letter queue",
+        "description": "Gets the count of messages on the resource events dead letter queue",
+        "operationId": "Count_activity-events",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
       "ClearanceRequestsSummaryResponse": {
+        "required": [
+          "unique",
+          "total"
+        ],
         "type": "object",
         "properties": {
           "unique": {
-            "type": "integer",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32"
           },
           "total": {
-            "type": "integer",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32"
           }
-        },
-        "additionalProperties": false
+        }
       },
-      "ClearanceRequestsSummaryResponseIntervalResponse": {
-        "type": "object",
-        "properties": {
-          "interval": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "summary": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse": {
-        "type": "object",
-        "properties": {
-          "intervals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponse"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "IntervalsResponse": {
-        "type": "object",
-        "properties": {
-          "releases": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponseIntervalsResponse"
-              }
-            ]
-          },
-          "matches": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponseIntervalsResponse"
-              }
-            ]
-          },
-          "clearanceRequests": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponseIntervalResponseIntervalsResponse"
-              }
-            ]
-          },
-          "notifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponseIntervalsResponse"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "LastCreatedResponse": {
-        "type": "object",
-        "properties": {
-          "decision": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastMessageResponse"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LastMessageResponse": {
-        "type": "object",
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reference": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LastReceivedResponse": {
-        "type": "object",
-        "properties": {
-          "finalisation": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastMessageResponse"
-              }
-            ],
-            "nullable": true
-          },
-          "clearanceRequest": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastMessageResponse"
-              }
-            ],
-            "nullable": true
-          },
-          "preNotification": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastMessageResponse"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LastSentResponse": {
-        "type": "object",
-        "properties": {
-          "decision": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastMessageResponse"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "MatchResponse": {
-        "type": "object",
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reference": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "MatchResponseDatumResponse": {
+      "DatumResponseOfMatchResponse": {
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
           "data": {
@@ -1670,50 +1556,27 @@
               "$ref": "#/components/schemas/MatchResponse"
             }
           }
-        },
-        "additionalProperties": false
+        }
       },
-      "MatchesSummaryByLevelResponse": {
+      "DatumResponseOfReleasesResponse": {
+        "required": [
+          "data"
+        ],
         "type": "object",
         "properties": {
-          "level1": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "level2": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "level3": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReleasesResponse"
+            }
           }
-        },
-        "additionalProperties": false
+        }
       },
-      "MatchesSummaryResponse": {
-        "type": "object",
-        "properties": {
-          "match": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "noMatch": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "MatchesSummaryResponseIntervalResponse": {
+      "IntervalResponseOfClearanceRequestsSummaryResponse": {
+        "required": [
+          "interval",
+          "summary"
+        ],
         "type": "object",
         "properties": {
           "interval": {
@@ -1721,55 +1584,45 @@
             "format": "date-time"
           },
           "summary": {
-            "allOf": [
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
+              }
+            ]
+          }
+        }
+      },
+      "IntervalResponseOfMatchesSummaryResponse": {
+        "required": [
+          "interval",
+          "summary"
+        ],
+        "type": "object",
+        "properties": {
+          "interval": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "summary": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/MatchesSummaryResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
-        },
-        "additionalProperties": false
+        }
       },
-      "MatchesSummaryResponseIntervalResponseIntervalsResponse": {
-        "type": "object",
-        "properties": {
-          "intervals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MatchesSummaryResponseIntervalResponse"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "NotificationsSummaryResponse": {
-        "type": "object",
-        "properties": {
-          "chedA": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "chedP": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "chedPp": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "chedD": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "NotificationsSummaryResponseIntervalResponse": {
+      "IntervalResponseOfNotificationsSummaryResponse": {
+        "required": [
+          "interval",
+          "summary"
+        ],
         "type": "object",
         "properties": {
           "interval": {
@@ -1777,27 +1630,307 @@
             "format": "date-time"
           },
           "summary": {
-            "allOf": [
+            "oneOf": [
+              {
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/NotificationsSummaryResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
-        },
-        "additionalProperties": false
+        }
       },
-      "NotificationsSummaryResponseIntervalResponseIntervalsResponse": {
+      "IntervalResponseOfReleasesSummaryResponse": {
+        "required": [
+          "interval",
+          "summary"
+        ],
+        "type": "object",
+        "properties": {
+          "interval": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "summary": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/ReleasesSummaryResponse"
+              }
+            ]
+          }
+        }
+      },
+      "IntervalsResponse": {
+        "required": [
+          "releases",
+          "matches",
+          "clearanceRequests",
+          "notifications"
+        ],
+        "type": "object",
+        "properties": {
+          "releases": {
+            "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfReleasesSummaryResponse"
+          },
+          "matches": {
+            "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfMatchesSummaryResponse"
+          },
+          "clearanceRequests": {
+            "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfClearanceRequestsSummaryResponse"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/IntervalsResponseOfIntervalResponseOfNotificationsSummaryResponse"
+          }
+        }
+      },
+      "IntervalsResponseOfIntervalResponseOfClearanceRequestsSummaryResponse": {
+        "required": [
+          "intervals"
+        ],
         "type": "object",
         "properties": {
           "intervals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/NotificationsSummaryResponseIntervalResponse"
+              "$ref": "#/components/schemas/IntervalResponseOfClearanceRequestsSummaryResponse"
             }
           }
-        },
-        "additionalProperties": false
+        }
+      },
+      "IntervalsResponseOfIntervalResponseOfMatchesSummaryResponse": {
+        "required": [
+          "intervals"
+        ],
+        "type": "object",
+        "properties": {
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalResponseOfMatchesSummaryResponse"
+            }
+          }
+        }
+      },
+      "IntervalsResponseOfIntervalResponseOfNotificationsSummaryResponse": {
+        "required": [
+          "intervals"
+        ],
+        "type": "object",
+        "properties": {
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalResponseOfNotificationsSummaryResponse"
+            }
+          }
+        }
+      },
+      "IntervalsResponseOfIntervalResponseOfReleasesSummaryResponse": {
+        "required": [
+          "intervals"
+        ],
+        "type": "object",
+        "properties": {
+          "intervals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntervalResponseOfReleasesSummaryResponse"
+            }
+          }
+        }
+      },
+      "LastCreatedResponse": {
+        "required": [
+          "decision"
+        ],
+        "type": "object",
+        "properties": {
+          "decision": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ]
+          }
+        }
+      },
+      "LastMessageResponse": {
+        "required": [
+          "timestamp",
+          "reference"
+        ],
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reference": {
+            "type": "string"
+          }
+        }
+      },
+      "LastReceivedResponse": {
+        "required": [
+          "finalisation",
+          "clearanceRequest",
+          "preNotification"
+        ],
+        "type": "object",
+        "properties": {
+          "finalisation": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ]
+          },
+          "clearanceRequest": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ]
+          },
+          "preNotification": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ]
+          }
+        }
+      },
+      "LastSentResponse": {
+        "required": [
+          "decision"
+        ],
+        "type": "object",
+        "properties": {
+          "decision": {
+            "oneOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ]
+          }
+        }
+      },
+      "MatchesSummaryByLevelResponse": {
+        "required": [
+          "level1",
+          "level2",
+          "level3",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "level1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          }
+        }
+      },
+      "MatchesSummaryResponse": {
+        "required": [
+          "match",
+          "noMatch",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "match": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "noMatch": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          }
+        }
+      },
+      "MatchResponse": {
+        "required": [
+          "timestamp",
+          "reference"
+        ],
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reference": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationsSummaryResponse": {
+        "required": [
+          "chedA",
+          "chedP",
+          "chedPp",
+          "chedD",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "chedA": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "chedP": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "chedPp": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "chedD": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          }
+        }
       },
       "ProblemDetails": {
         "type": "object",
@@ -1811,7 +1944,7 @@
             "nullable": true
           },
           "status": {
-            "type": "integer",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32",
             "nullable": true
           },
@@ -1823,10 +1956,13 @@
             "type": "string",
             "nullable": true
           }
-        },
-        "additionalProperties": { }
+        }
       },
       "ReleasesResponse": {
+        "required": [
+          "timestamp",
+          "reference"
+        ],
         "type": "object",
         "properties": {
           "timestamp": {
@@ -1836,142 +1972,95 @@
           "reference": {
             "type": "string"
           }
-        },
-        "additionalProperties": false
-      },
-      "ReleasesResponseDatumResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReleasesResponse"
-            }
-          }
-        },
-        "additionalProperties": false
+        }
       },
       "ReleasesSummaryResponse": {
+        "required": [
+          "automatic",
+          "manual",
+          "total"
+        ],
         "type": "object",
         "properties": {
           "automatic": {
-            "type": "integer",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32"
           },
           "manual": {
-            "type": "integer",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32"
           },
           "total": {
-            "type": "integer",
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32"
           }
-        },
-        "additionalProperties": false
-      },
-      "ReleasesSummaryResponseIntervalResponse": {
-        "type": "object",
-        "properties": {
-          "interval": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "summary": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReleasesSummaryResponse"
-              }
-            ],
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ReleasesSummaryResponseIntervalResponseIntervalsResponse": {
-        "type": "object",
-        "properties": {
-          "intervals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReleasesSummaryResponseIntervalResponse"
-            }
-          }
-        },
-        "additionalProperties": false
+        }
       },
       "StatusResponse": {
+        "required": [
+          "received",
+          "sent",
+          "created"
+        ],
         "type": "object",
         "properties": {
           "received": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastReceivedResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/LastReceivedResponse"
           },
           "sent": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastSentResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/LastSentResponse"
           },
           "created": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LastCreatedResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/LastCreatedResponse"
           }
-        },
-        "additionalProperties": false
+        }
       },
       "SummaryResponse": {
+        "required": [
+          "releases",
+          "matches",
+          "clearanceRequests",
+          "notifications"
+        ],
         "type": "object",
         "properties": {
           "releases": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReleasesSummaryResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/ReleasesSummaryResponse"
           },
           "matches": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MatchesSummaryResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/MatchesSummaryResponse"
           },
           "clearanceRequests": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
           },
           "notifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NotificationsSummaryResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/NotificationsSummaryResponse"
           }
-        },
-        "additionalProperties": false
-      }
-    },
-    "securitySchemes": {
-      "Basic": {
-        "type": "http",
-        "description": "RFC8725 Compliant JWT",
-        "scheme": "Basic"
+        }
       }
     }
   },
-  "security": [
+  "tags": [
     {
-      "Basic": [ ]
+      "name": "Finalisations"
+    },
+    {
+      "name": "Decisions"
+    },
+    {
+      "name": "Clearance Requests"
+    },
+    {
+      "name": "Notifications"
+    },
+    {
+      "name": "General"
+    },
+    {
+      "name": "Status Information"
+    },
+    {
+      "name": "Admin"
     }
   ]
 }
