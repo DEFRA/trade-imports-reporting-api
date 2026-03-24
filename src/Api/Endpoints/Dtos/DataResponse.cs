@@ -40,7 +40,7 @@ public abstract class DataResponse
 
     [JsonPropertyName("decisionReasons")]
     public string? DecisionReasons { get; init; }
-    
+
     public sealed class DataResponseMap : ClassMap<DataResponse>
     {
         public DataResponseMap()
