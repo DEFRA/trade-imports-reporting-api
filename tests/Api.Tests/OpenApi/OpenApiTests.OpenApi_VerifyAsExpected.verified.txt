@@ -375,6 +375,29 @@
         "operationId": "MatchesData",
         "parameters": [
           {
+            "name": "match",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "matchLevel",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "useV2",
+            "in": "header",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "from",
             "in": "query",
             "required": true,
@@ -390,29 +413,6 @@
             "schema": {
               "type": "string",
               "format": "date-time"
-            }
-          },
-          {
-            "name": "match",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "matchLevel",
-            "in": "query",
-            "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "format": "int32"
             }
           }
         ],

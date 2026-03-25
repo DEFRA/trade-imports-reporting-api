@@ -70,6 +70,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddHealth(builder.Configuration);
     builder.Services.AddOpenApi(builder.Configuration);
     builder.Services.AddReportingApiConfiguration(builder.Configuration);
+    builder.Services.AddValidation();
 
     builder.Services.AddHttpProxyClient();
 

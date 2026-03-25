@@ -3,7 +3,7 @@
   "title": "One or more validation errors occurred.",
   "status": 400,
   "errors": {
-    "matchLevel": [
+    "MatchLevel": [
       "matchLevel must be 1 or 2 or 3 if specified"
     ]
   },

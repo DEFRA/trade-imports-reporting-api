@@ -6,11 +6,13 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class MatchesEndpoints
 {
+    private const string DecisionsTag = "Decisions";
+
     public static void MapMatchesEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("matches/summary", MatchesSummary)
             .WithName("MatchesSummary")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches summary")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<MatchesSummaryResponse>()
@@ -20,7 +22,7 @@ public static class MatchesEndpoints
 
         app.MapGet("matches/intervals", MatchesIntervals)
             .WithName("MatchesIntervals")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches by interval")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<IntervalsResponse<IntervalResponse<MatchesSummaryResponse>>>()
@@ -30,7 +32,7 @@ public static class MatchesEndpoints
 
         app.MapGet("matches/data", MatchesData)
             .WithName("MatchesData")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches data")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<DatumResponse<MatchResponse>>()
@@ -40,7 +42,7 @@ public static class MatchesEndpoints
 
         app.MapGet("matches/summary/levels", MatchesSummaryByLevel)
             .WithName("MatchesSummaryByLevel")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches summary counts by level")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<MatchesSummaryByLevelResponse>()
@@ -123,43 +125,40 @@ public static class MatchesEndpoints
         return Results.Ok(matchesIntervals.ToResponse());
     }
 
-    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="match">true or false</param>
-    /// <param name="useV2"></param>
+    /// <param name="matchRequest">The <see cref="MatchRequest"/> object</param>
     /// <param name="reportRepository"></param>
     /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
-    /// <param name="matchLevel">the level to match on</param>
     /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> MatchesData(
-        [FromQuery] DateTime from,
-        [FromQuery] DateTime to,
-        [FromQuery] bool match,
-        [FromHeader] bool? useV2,
+        [AsParameters] MatchRequest matchRequest,
         [FromServices] IReportRepository reportRepository,
         HttpContext httpContext,
-        CancellationToken cancellationToken,
-        [FromQuery] int? matchLevel = null
+        CancellationToken cancellationToken
     )
     {
-        var errors = Request.Validate(from, to, match: match, matchLevel: matchLevel);
-        if (errors.Count > 0)
+        if (matchRequest.UseV2.GetValueOrDefault())
         {
-            return Results.ValidationProblem(errors);
-        }
-
-        if (useV2.GetValueOrDefault())
-        {
-            var v2Data = await reportRepository.GetMatchesV2(from, to, match, matchLevel, cancellationToken);
+            var v2Data = await reportRepository.GetMatchesV2(
+                matchRequest.From,
+                matchRequest.To,
+                matchRequest.Match,
+                matchRequest.MatchLevel,
+                cancellationToken
+            );
 
             return Request.IsCsvRequired(httpContext)
                 ? Request.CsvResult(v2Data.ToCsvResponse())
                 : Results.Ok(v2Data.ToResponse());
         }
 
-        var v1Data = await reportRepository.GetMatches(from, to, match, cancellationToken);
+        var v1Data = await reportRepository.GetMatches(
+            matchRequest.From,
+            matchRequest.To,
+            matchRequest.Match,
+            cancellationToken
+        );
 
         return Request.IsCsvRequired(httpContext)
             ? Request.CsvResult(v1Data.ToCsvResponse())

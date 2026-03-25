@@ -1,5 +1,4 @@
 using System.Text;
-using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints;
@@ -11,9 +10,7 @@ public static class Request
         DateTime to,
         string? unit = null,
         string? releaseType = null,
-        DateTime[]? intervals = null,
-        bool? match = null,
-        int? matchLevel = null
+        DateTime[]? intervals = null
     )
     {
         var errors = new Dictionary<string, string[]>();
@@ -61,19 +58,6 @@ public static class Request
         if (intervals is not null && intervals.Any(interval => interval.Kind != DateTimeKind.Utc))
         {
             errors.Add("intervals", ["date(s) must be UTC"]);
-        }
-
-        if (matchLevel is not null)
-        {
-            if (match is false)
-            {
-                errors.Add("matchLevel", ["matchLevel must not be set if match is false"]);
-            }
-
-            if (matchLevel is not (1 or 2 or 3))
-            {
-                errors.Add("matchLevel", ["matchLevel must be 1 or 2 or 3 if specified"]);
-            }
         }
 
         return errors;
