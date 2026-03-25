@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Defra.TradeImportsReportingApi.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos

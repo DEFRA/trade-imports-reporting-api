@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Defra.TradeImportsReportingApi.Api.Endpoints
+namespace Defra.TradeImportsReportingApi.Api.Extensions
 {
     public static class ModelExtensions
     {
