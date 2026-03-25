@@ -11,6 +11,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
     private const string TimestampIdx = "TimestampIdx";
     private const string MatchIdx = "MatchIdx";
     private const string LatestMrnIdx = "LatestMrnIdx";
+    private const string CreateMatchReleaseTypeIdx = "CreatedMatchReleaseTypeIdx";
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -18,6 +19,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
         await CreateDecisionIndexes(cancellationToken);
         await CreateRequestIndexes(cancellationToken);
         await CreateNotificationIndexes(cancellationToken);
+        await CreateCustomDeclarationsIndexes(cancellationToken);
     }
 
     private async Task CreateFinalisationIndexes(CancellationToken cancellationToken)
@@ -39,6 +41,18 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 .IndexKeys.Ascending(x => x.Timestamp)
                 .Ascending(x => x.ReleaseType)
                 .Ascending(x => x.Mrn),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task CreateCustomDeclarationsIndexes(CancellationToken cancellationToken)
+    {
+        await CreateIndex(
+            CreateMatchReleaseTypeIdx,
+            Builders<CustomsDeclaration>
+                .IndexKeys.Ascending(x => x.MrnCreated)
+                .Ascending(x => x.Match)
+                .Ascending(x => x.ReleaseType),
             cancellationToken: cancellationToken
         );
     }

@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 // ReSharper disable InconsistentNaming
 
@@ -299,6 +301,42 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
     }
 
+    public async Task<IReadOnlyList<MatchResponseV2>> GetReleasesV2(
+        DateTime from,
+        DateTime to,
+        string releaseType,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        return await dbContext
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .Where(x => x.ReleaseType == releaseType)
+            .SelectMany(
+                match => match.Items,
+                (cd, item) =>
+                    new MatchResponseV2()
+                    {
+                        Mrn = cd.Id,
+                        Timestamp = cd.Timestamp,
+                        ChedReference = item.ChedReference,
+                        Authority = item.Authority,
+                        Number = item.Number,
+                        CommodityCode = item.CommodityCode,
+                        Match = item.Match == true ? "Yes" : "No",
+                        Description = item.Description,
+                        QuantityOrWeight = item.QuantityOrWeight,
+                        Decision = item.Decision,
+                        DecisionReasons = item.DecisionReasons![0],
+                        CheckCode = item.CheckCode,
+                    }
+            )
+            .OrderByDescending(x => x.Timestamp)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken)
     {
         GuardUtc(from, to);
@@ -537,6 +575,44 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         );
 
         return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
+    }
+
+    public async Task<IReadOnlyList<MatchResponseV2>> GetMatchesV2(
+        DateTime from,
+        DateTime to,
+        bool match,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        var query = dbContext
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .Where(x => x.Match == match)
+            .Where(x => x.ReleaseType == null || x.ReleaseType == "Automatic" || x.ReleaseType == "Unknown")
+            .SelectMany(
+                cd => cd.Items,
+                (cd, item) =>
+                    new MatchResponseV2()
+                    {
+                        Mrn = cd.Id,
+                        Timestamp = cd.Timestamp,
+                        ChedReference = item.ChedReference,
+                        Authority = item.Authority,
+                        Number = item.Number,
+                        CommodityCode = item.CommodityCode,
+                        Match = item.Match == true ? "Yes" : "No",
+                        Description = item.Description,
+                        QuantityOrWeight = item.QuantityOrWeight,
+                        Decision = item.Decision,
+                        DecisionReasons = item.DecisionReasons![0],
+                        CheckCode = item.CheckCode,
+                    }
+            )
+            .OrderByDescending(x => x.Timestamp);
+
+        return await query.ToListAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
