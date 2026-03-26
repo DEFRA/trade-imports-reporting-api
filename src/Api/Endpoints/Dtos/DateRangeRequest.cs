@@ -27,7 +27,7 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos
                 validationResults.Add(
                     new ValidationResult(
                         $"{nameof(From).ToCamelCase()} cannot be greater than {nameof(To).ToCamelCase()}",
-                        [nameof(From).ToCamelCase()]
+                        [nameof(From)]
                     )
                 );
             }
@@ -41,12 +41,12 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos
 
             if (From.Kind != DateTimeKind.Utc)
             {
-                validationResults.Add(new ValidationResult("date must be UTC", [nameof(From).ToCamelCase()]));
+                validationResults.Add(new ValidationResult("date must be UTC", [nameof(From)]));
             }
 
             if (To.Kind != DateTimeKind.Utc)
             {
-                validationResults.Add(new ValidationResult("date must be UTC", [nameof(To).ToCamelCase()]));
+                validationResults.Add(new ValidationResult("date must be UTC", [nameof(To)]));
             }
 
             return validationResults;
