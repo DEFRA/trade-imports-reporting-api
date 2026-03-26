@@ -143,7 +143,7 @@ public static class MatchesEndpoints
             var v2Data = await reportRepository.GetMatchesV2(
                 matchRequest.From,
                 matchRequest.To,
-                matchRequest.Match,
+                matchRequest.Match.GetValueOrDefault(),
                 matchRequest.MatchLevel,
                 cancellationToken
             );
@@ -156,7 +156,7 @@ public static class MatchesEndpoints
         var v1Data = await reportRepository.GetMatches(
             matchRequest.From,
             matchRequest.To,
-            matchRequest.Match,
+            matchRequest.Match.GetValueOrDefault(),
             cancellationToken
         );
 

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +9,9 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos
     {
         /// <summary>Whether to return items that have been matched or not matched</summary>
         /// <example>true</example>
-        [Required]
+        [Required(ErrorMessage = "match field is required")]
         [FromQuery(Name = "match")]
-        public bool Match { get; set; }
+        public bool? Match { get; set; }
 
         /// <summary>The match level to filter on (1, 2 or 3)</summary>
         /// <example>1</example>
@@ -28,12 +29,12 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos
         {
             var validationResult = base.Validate(validationContext).ToList();
 
-            if (MatchLevel is not null && !Match)
+            if (MatchLevel is not null && Match == false)
             {
                 validationResult.Add(
                     new ValidationResult(
                         $"{nameof(MatchLevel).ToCamelCase()} must not be set if {nameof(Match).ToCamelCase()} is false",
-                        [nameof(MatchLevel).ToCamelCase()]
+                        [nameof(MatchLevel)]
                     )
                 );
             }
