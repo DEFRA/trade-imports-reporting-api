@@ -630,6 +630,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         var levelCountsQuery = dbContext
             .CustomsDeclarations.AsQueryable()
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .Where(x => x.Match == true)
             .SelectMany(item => item.Items)
             .GroupBy(item => item.MatchLevel ?? 0)
             .Select(grouping => new { Level = grouping.Key, Count = grouping.Count() })

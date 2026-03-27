@@ -1,0 +1,19 @@
+﻿{
+  "data": [
+    {
+      "timestamp": "2025-09-03T16:08:00Z",
+      "mrn": "Guid_1",
+      "itemNumber": 1,
+      "commodityCode": "1234856",
+      "description": "This is goods description",
+      "quantityOrWeight": 4,
+      "chedReference": "GBCHD2024.5343259",
+      "match": "Yes",
+      "authority": "PHA",
+      "checkCode": "H222",
+      "decision": "C03",
+      "decisionReasons": null,
+      "level": 1
+    }
+  ]
+}

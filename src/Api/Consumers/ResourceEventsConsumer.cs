@@ -57,6 +57,20 @@ public class ResourceEventsConsumer(
         if (customsDeclaration.Resource is null)
             throw new InvalidOperationException("Resource is null");
 
+        var invalidClearanceInternalCodes =
+            customsDeclaration
+                .Resource.ClearanceDecision?.Results?.Where(result => result.InternalDecisionCodeIsUnknown())
+                .Select(result => result.InternalDecisionCode!)
+                .ToArray() ?? [];
+
+        if (invalidClearanceInternalCodes.Any())
+        {
+            logger.LogWarning(
+                "Invalid internal clarance decision codes identified : {0}",
+                string.Join(",", invalidClearanceInternalCodes)
+            );
+        }
+
         var entity = customsDeclaration.Resource.ToCustomsDeclaration();
         var filter = Builders<CustomsDeclaration>.Filter.Eq(x => x.Id, entity.Id);
         await dbContext.CustomsDeclarations.ReplaceOneAsync(

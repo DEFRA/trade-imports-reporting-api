@@ -8,7 +8,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 {
     [Theory]
     [InlineData(DecisionCode.NoMatch)]
-    [InlineData(DecisionCode.Match)]
+    [InlineData("C03")]
     public async Task WhenSingleDecision_ShouldBeSingleCount(string decisionCode)
     {
         var mrnCreated = new DateTime(2025, 9, 3, 16, 8, 0, DateTimeKind.Utc);
@@ -96,7 +96,7 @@ public class DecisionTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqs
 
         await SendDecision(mrnCreated, mrnCreated.AddSeconds(20), mrn, wait: false);
         // Different timestamp and change from NoMatch to Match
-        await SendDecision(mrnCreated, expectedTimestamp, mrn, decisionCode: DecisionCode.Match, wait: false);
+        await SendDecision(mrnCreated, expectedTimestamp, mrn, decisionCode: "C02", wait: false);
         await WaitForDecisionMrn(mrn, count: 2);
 
         var from = mrnCreated.AddHours(-1);

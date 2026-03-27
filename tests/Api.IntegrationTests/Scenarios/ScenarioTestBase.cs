@@ -338,6 +338,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             Level = 1,
                             RuleName = "DecisionResultTestRuleName",
                             Mode = "Active",
+                            DecisionCode = decisionCode,
                         },
                     ],
                 },

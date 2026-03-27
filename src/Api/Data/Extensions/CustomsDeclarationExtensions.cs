@@ -1,5 +1,6 @@
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Extensions;
 
 namespace Defra.TradeImportsReportingApi.Api.Data.Extensions;
 
@@ -40,12 +41,6 @@ public static class CustomsDeclarationExtensions
             var documents = commodity.Documents ?? [];
             foreach (var document in documents)
             {
-                var match =
-                    customsDeclarationEvent.ClearanceDecision != null
-                    && customsDeclarationEvent
-                        .ClearanceDecision.Items.Where(x => x.ItemNumber == commodity.ItemNumber)
-                        .All(x => x.Checks.All(y => y.DecisionCode is not DecisionCode.NoMatch));
-
                 if (commodity.Checks == null)
                     yield break;
 
@@ -76,7 +71,7 @@ public static class CustomsDeclarationExtensions
                             Number = commodity.ItemNumber.GetValueOrDefault(),
                             CommodityCode = commodity.TaricCommodityCode!,
                             Description = commodity.GoodsDescription,
-                            Match = match,
+                            Match = decisionResult?.DecisionIsAMatch() ?? false,
                             ChedReference = document.DocumentReference!.Value,
                             Authority = check.DepartmentCode!,
                             Decision = decision.DecisionCode,
