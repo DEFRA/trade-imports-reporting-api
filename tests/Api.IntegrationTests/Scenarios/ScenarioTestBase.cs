@@ -421,6 +421,15 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             ],
                         },
                     ],
+                    Results =
+                    [
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Mode = "Active",
+                            DecisionCode = "X00",
+                        },
+                    ],
                 },
                 Finalisation = new Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation
                 {
