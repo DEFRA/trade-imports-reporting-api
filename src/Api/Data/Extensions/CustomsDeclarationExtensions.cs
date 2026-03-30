@@ -25,9 +25,7 @@ public static class CustomsDeclarationExtensions
                 _ => ReleaseType.Unknown,
             },
             Items = customsDeclarationEvent.ToCustomsDeclarationItem().ToArray(),
-            Match = customsDeclarationEvent.ClearanceDecision?.Items.All(x =>
-                x.Checks.All(y => y.DecisionCode is not DecisionCode.NoMatch)
-            ),
+            Match = customsDeclarationEvent.ClearanceDecision?.Results?.All(x => x.DecisionIsAMatch()) ?? false,
         };
     }
 
