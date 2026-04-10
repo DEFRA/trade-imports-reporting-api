@@ -266,42 +266,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyIntervals(intervals, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
-    public async Task<IReadOnlyList<Finalisation>> GetReleases(
-        DateTime from,
-        DateTime to,
-        string releaseType,
-        CancellationToken cancellationToken
-    )
-    {
-        GuardUtc(from, to);
-
-        var pipeline = new[]
-        {
-            // Do not restrict release type as final match in pipeline will do this
-            ReleasesMatch(from, to, restrictReleaseType: false),
-            new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", $"${Fields.Finalisation.Mrn}" },
-                    { "latest", new BsonDocument("$first", "$$ROOT") },
-                }
-            ),
-            new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
-            new BsonDocument("$match", new BsonDocument(Fields.Finalisation.ReleaseType, releaseType)),
-            new BsonDocument("$sort", new BsonDocument(Fields.Finalisation.Timestamp, -1)),
-        };
-
-        var aggregateTask = dbContext.Finalisations.AggregateAsync<Finalisation>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
-    }
-
-    public async Task<IReadOnlyList<MatchResponseV2>> GetReleasesV2(
+    public async Task<IReadOnlyList<ReleasesResponse>> GetReleases(
         DateTime from,
         DateTime to,
         string releaseType,
@@ -317,7 +282,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .SelectMany(
                 match => match.Items,
                 (cd, item) =>
-                    new MatchResponseV2()
+                    new ReleasesResponse()
                     {
                         Mrn = cd.Id,
                         Timestamp = cd.Timestamp,
@@ -528,56 +493,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyIntervals(intervals, results, x => new MatchesBucket(x, MatchesSummary.Empty));
     }
 
-    public async Task<IReadOnlyList<Decision>> GetMatches(
-        DateTime from,
-        DateTime to,
-        bool match,
-        CancellationToken cancellationToken
-    )
-    {
-        GuardUtc(from, to);
-
-        var pipeline = new[]
-        {
-            MatchesMatch(from, to),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { Fields.Decision.Mrn, 1 },
-                    { Fields.Decision.Timestamp, 1 },
-                    { Fields.Decision.Match, 1 },
-                    { Fields.Decision.MrnCreated, 1 },
-                }
-            ),
-            LookupFinalisation(),
-            SetFinalisation(),
-            FilterOutManualReleasesAndCancelled(),
-            UnSetFinalisation(),
-            new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", $"${Fields.Decision.Mrn}" },
-                    { "latest", new BsonDocument("$first", "$$ROOT") },
-                }
-            ),
-            new BsonDocument("$replaceRoot", new BsonDocument("newRoot", "$latest")),
-            new BsonDocument("$match", new BsonDocument(Fields.Decision.Match, match)),
-            new BsonDocument("$sort", new BsonDocument(Fields.Decision.Timestamp, -1)),
-        };
-
-        var aggregateTask = dbContext.Decisions.AggregateAsync<Decision>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
-
-        return await (await aggregateTask).ToListAsync(cancellationToken) ?? [];
-    }
-
-    public async Task<IReadOnlyList<MatchResponseV2>> GetMatchesV2(
+    public async Task<IReadOnlyList<MatchResponse>> GetMatches(
         DateTime from,
         DateTime to,
         bool match,
@@ -594,7 +510,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .SelectMany(
                 cd => cd.Items,
                 (cd, item) =>
-                    new MatchResponseV2()
+                    new MatchResponse()
                     {
                         Mrn = cd.Id,
                         Timestamp = cd.Timestamp,

@@ -1,9 +1,6 @@
 using System.Globalization;
-using System.Text;
 using CsvHelper;
 using Defra.TradeImportsReportingApi.Api.Data;
-using Defra.TradeImportsReportingApi.Api.Data.Entities;
-using static Defra.TradeImportsReportingApi.Api.Endpoints.Dtos.MatchResponse;
 
 namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 
@@ -55,16 +52,10 @@ public static class DtoExtensions
                 .ToList()
         );
 
-    public static DatumResponse<MatchResponseV2> ToResponse(this IReadOnlyList<MatchResponseV2> data)
+    public static DatumResponse<DataResponse> ToResponse(this IReadOnlyList<DataResponse> data)
     {
-        return new DatumResponse<MatchResponseV2>(data);
+        return new DatumResponse<DataResponse>(data);
     }
-
-    public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<Decision> matches) =>
-        new(matches.Select(x => new MatchResponse(x.Timestamp, x.Mrn)).ToList());
-
-    public static DatumResponse<ReleasesResponse> ToResponse(this IReadOnlyList<Finalisation> finalisations) =>
-        new(finalisations.Select(x => new ReleasesResponse(x.Timestamp, x.Mrn)).ToList());
 
     public static LastReceivedResponse ToResponse(this LastReceivedSummary lastReceived) =>
         new(
@@ -93,46 +84,14 @@ public static class DtoExtensions
                 : null
         );
 
-    public static string ToCsvResponse(this IReadOnlyList<MatchResponseV2> data)
+    public static string ToCsvResponse(this IReadOnlyList<DataResponse> data)
     {
         using var writer = new StringWriter();
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-        csv.Context.RegisterClassMap<MatchResponseV2.MatchResponseMap>();
+        csv.Context.RegisterClassMap<DataResponse.DataResponseMap>();
         csv.WriteRecords(data);
 
         return writer.ToString();
-    }
-
-    public static string ToCsvResponse(this IReadOnlyList<Finalisation> finalisations)
-    {
-        var csv = new StringBuilder();
-
-        foreach (var finalisation in finalisations)
-        {
-            csv.AppendLine($"{finalisation.Timestamp:O},{EscapeCsv(finalisation.Mrn)}");
-        }
-
-        return csv.ToString();
-    }
-
-    public static string ToCsvResponse(this IReadOnlyList<Decision> matches)
-    {
-        var csv = new StringBuilder();
-
-        foreach (var decision in matches)
-        {
-            csv.AppendLine($"{decision.Timestamp:O},{EscapeCsv(decision.Mrn)}");
-        }
-
-        return csv.ToString();
-    }
-
-    private static string EscapeCsv(string input)
-    {
-        var needsQuotes = input.Contains(',') || input.Contains('"') || input.Contains('\n') || input.Contains('\r');
-        var escaped = input.Replace("\"", "\"\"");
-
-        return needsQuotes ? $"\"{escaped}\"" : escaped;
     }
 }

@@ -39,10 +39,10 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleasesV2(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
+            .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new MatchResponseV2()
+                    new ReleasesResponse()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
@@ -55,7 +55,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                         Decision = "X00",
                         Description = "description1",
                     },
-                    new MatchResponseV2()
+                    new ReleasesResponse()
                     {
                         Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
@@ -96,10 +96,10 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         MockReportRepository
-            .GetReleasesV2(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
+            .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new MatchResponseV2()
+                    new ReleasesResponse()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
@@ -112,7 +112,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                         Decision = "X00",
                         Description = "description1",
                     },
-                    new MatchResponseV2()
+                    new ReleasesResponse()
                     {
                         Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
@@ -130,51 +130,6 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
 
         client.DefaultRequestHeaders.Add("Accept", "text/csv");
         client.DefaultRequestHeaders.Add("UseV2", "true");
-        var response = await client.GetAsync(
-            Testing.Endpoints.Releases.Data(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.ReleaseType(ReleaseType.Automatic))
-            )
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        await Verify(await response.Content.ReadAsStringAsync()).UseParameters(mrn1).DontScrubDateTimes();
-    }
-
-    [Theory]
-    [InlineData("mrn1")]
-    [InlineData("mrn'1")]
-    [InlineData("mrn\"1")]
-    public async Task Get_WhenAuthorized_AndRequestingCsvV1_ShouldBeOk(string mrn1)
-    {
-        var client = CreateClient();
-        var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
-        var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
-        MockReportRepository
-            .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
-            .Returns(
-                [
-                    new Finalisation
-                    {
-                        Id = "id1",
-                        Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
-                        Mrn = "mrn1",
-                        ReleaseType = ReleaseType.Automatic,
-                    },
-                    new Finalisation
-                    {
-                        Id = "id2",
-                        Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
-                        Mrn = "mrn2",
-                        ReleaseType = ReleaseType.Automatic,
-                    },
-                ]
-            );
-
-        client.DefaultRequestHeaders.Add("Accept", "text/csv");
         var response = await client.GetAsync(
             Testing.Endpoints.Releases.Data(
                 EndpointQuery
