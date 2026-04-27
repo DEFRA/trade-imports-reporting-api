@@ -54,57 +54,86 @@ public static class CustomsDeclarationExtensions
         var commodities = customsDeclarationEvent.ClearanceRequest?.Commodities ?? [];
         foreach (var commodity in commodities)
         {
-            var documents = commodity.Documents ?? [];
-            foreach (var document in documents)
+            foreach (var customsDeclarationItem1 in ProcessCommodity(customsDeclarationEvent, commodity))
+                yield return customsDeclarationItem1;
+        }
+    }
+
+    private static IEnumerable<CustomsDeclarationItem> ProcessCommodity(
+        CustomsDeclarationEvent customsDeclarationEvent,
+        Commodity commodity
+    )
+    {
+        var documents = commodity.Documents ?? [];
+        foreach (var document in documents)
+        {
+            if (commodity.Checks == null)
+                yield break;
+
+            var checks = commodity
+                .Checks.Where(x => new CheckCode() { Value = x.CheckCode! }.IsValidDocumentCode(document.DocumentCode))
+                .ToArray();
+
+            foreach (var check in checks)
             {
-                if (commodity.Checks == null)
-                    yield break;
+                var decisions =
+                    customsDeclarationEvent
+                        .ClearanceDecision?.Items.Where(x => x.ItemNumber == commodity.ItemNumber)
+                        .SelectMany(x => x.Checks)
+                        .Where(x => x.CheckCode == check.CheckCode)
+                        .Select(x => x)
+                        .ToArray() ?? [];
 
-                var checks = commodity
-                    .Checks.Where(x =>
-                        new CheckCode() { Value = x.CheckCode! }.IsValidDocumentCode(document.DocumentCode)
-                    )
-                    .ToArray();
-
-                foreach (var check in checks)
+                foreach (var decision in decisions)
                 {
-                    var decisions =
-                        customsDeclarationEvent
-                            .ClearanceDecision?.Items.Where(x => x.ItemNumber == commodity.ItemNumber)
-                            .SelectMany(x => x.Checks)
-                            .Where(x => x.CheckCode == check.CheckCode)
-                            .Select(x => x)
-                            .ToArray() ?? [];
-
-                    foreach (var decision in decisions)
+                    foreach (
+                        var customsDeclarationItem in BuildCustomsDeclarationItem(
+                            customsDeclarationEvent,
+                            commodity,
+                            check,
+                            document,
+                            decision
+                        )
+                    )
                     {
-                        var decisionResults =
-                            customsDeclarationEvent.ClearanceDecision?.Results?.Where(result =>
-                                result.ItemNumber == commodity.ItemNumber && result.CheckCode == check.CheckCode
-                            ) ?? [];
-
-                        foreach (var decisionResult in decisionResults)
-                        {
-                            yield return new CustomsDeclarationItem
-                            {
-                                Number = commodity.ItemNumber.GetValueOrDefault(),
-                                CommodityCode = commodity.TaricCommodityCode!,
-                                Description = commodity.GoodsDescription,
-                                Match = decisionResult?.DecisionIsAMatch() ?? false,
-                                ChedReference = document.DocumentReference!.Value,
-                                Authority = check.DepartmentCode!,
-                                Decision = decisionResult?.DecisionCode,
-                                DecisionReasons = decision.DecisionReasons,
-                                QuantityOrWeight = commodity.SupplementaryUnits ?? commodity.NetMass,
-                                CheckCode = decision.CheckCode,
-                                Mode = decisionResult?.Mode,
-                                MatchLevel = decisionResult?.Level,
-                                RuleName = decisionResult?.RuleName,
-                            };
-                        }
+                        yield return customsDeclarationItem;
                     }
                 }
             }
+        }
+    }
+
+    private static IEnumerable<CustomsDeclarationItem> BuildCustomsDeclarationItem(
+        CustomsDeclarationEvent customsDeclarationEvent,
+        Commodity commodity,
+        CommodityCheck check,
+        ImportDocument document,
+        ClearanceDecisionCheck decision
+    )
+    {
+        var decisionResults =
+            customsDeclarationEvent.ClearanceDecision?.Results?.Where(result =>
+                result.ItemNumber == commodity.ItemNumber && result.CheckCode == check.CheckCode
+            ) ?? [];
+
+        foreach (var decisionResult in decisionResults)
+        {
+            yield return new CustomsDeclarationItem
+            {
+                Number = commodity.ItemNumber.GetValueOrDefault(),
+                CommodityCode = commodity.TaricCommodityCode!,
+                Description = commodity.GoodsDescription,
+                Match = decisionResult?.DecisionIsAMatch() ?? false,
+                ChedReference = document.DocumentReference!.Value,
+                Authority = check.DepartmentCode!,
+                Decision = decisionResult?.DecisionCode,
+                DecisionReasons = decision.DecisionReasons,
+                QuantityOrWeight = commodity.SupplementaryUnits ?? commodity.NetMass,
+                CheckCode = decision.CheckCode,
+                Mode = decisionResult?.Mode,
+                MatchLevel = decisionResult?.Level,
+                RuleName = decisionResult?.RuleName,
+            };
         }
     }
 }
