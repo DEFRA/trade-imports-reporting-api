@@ -1,6 +1,8 @@
+using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Extensions;
+using CustomsDeclaration = Defra.TradeImportsReportingApi.Api.Data.Entities.CustomsDeclaration;
 
 namespace Defra.TradeImportsReportingApi.Api.Data.Extensions;
 
@@ -11,7 +13,7 @@ public static class CustomsDeclarationExtensions
 
     public static CustomsDeclaration ToCustomsDeclaration(this CustomsDeclarationEvent customsDeclarationEvent)
     {
-        return new CustomsDeclaration
+        var cd = new CustomsDeclaration
         {
             Id = customsDeclarationEvent.Id,
             MrnCreated = customsDeclarationEvent.ClearanceRequest?.MessageSentAt ?? DateTime.MinValue,
@@ -26,7 +28,23 @@ public static class CustomsDeclarationExtensions
             },
             Items = customsDeclarationEvent.ToCustomsDeclarationItem().ToArray(),
             Match = customsDeclarationEvent.ClearanceDecision?.Results?.All(x => x.DecisionIsAMatch()) ?? false,
+            MatchLevel1 =
+                customsDeclarationEvent
+                    .ClearanceDecision?.Results?.Where(x => x.Level == 1)
+                    .All(x => x.DecisionIsAMatch()) ?? false,
         };
+
+        if (cd.MatchLevel1 == true)
+        {
+            cd.MatchLevel2 = customsDeclarationEvent.ClearanceDecision?.Results?.All(x => x.Level != 2) ?? false;
+        }
+
+        if (cd.MatchLevel2 == true)
+        {
+            cd.MatchLevel3 = customsDeclarationEvent.ClearanceDecision?.Results?.All(x => x.Level != 3) ?? false;
+        }
+
+        return cd;
     }
 
     private static IEnumerable<CustomsDeclarationItem> ToCustomsDeclarationItem(
@@ -60,26 +78,30 @@ public static class CustomsDeclarationExtensions
 
                     foreach (var decision in decisions)
                     {
-                        var decisionResult = customsDeclarationEvent.ClearanceDecision?.Results?.SingleOrDefault(
-                            result => result.ItemNumber == commodity.ItemNumber
-                        );
+                        var decisionResults =
+                            customsDeclarationEvent.ClearanceDecision?.Results?.Where(result =>
+                                result.ItemNumber == commodity.ItemNumber
+                            ) ?? [];
 
-                        yield return new CustomsDeclarationItem
+                        foreach (var decisionResult in decisionResults)
                         {
-                            Number = commodity.ItemNumber.GetValueOrDefault(),
-                            CommodityCode = commodity.TaricCommodityCode!,
-                            Description = commodity.GoodsDescription,
-                            Match = decisionResult?.DecisionIsAMatch() ?? false,
-                            ChedReference = document.DocumentReference!.Value,
-                            Authority = check.DepartmentCode!,
-                            Decision = decision.DecisionCode,
-                            DecisionReasons = decision.DecisionReasons,
-                            QuantityOrWeight = commodity.SupplementaryUnits ?? commodity.NetMass,
-                            CheckCode = decision.CheckCode,
-                            Mode = decisionResult?.Mode,
-                            MatchLevel = decisionResult?.Level,
-                            RuleName = decisionResult?.RuleName,
-                        };
+                            yield return new CustomsDeclarationItem
+                            {
+                                Number = commodity.ItemNumber.GetValueOrDefault(),
+                                CommodityCode = commodity.TaricCommodityCode!,
+                                Description = commodity.GoodsDescription,
+                                Match = decisionResult?.DecisionIsAMatch() ?? false,
+                                ChedReference = document.DocumentReference!.Value,
+                                Authority = check.DepartmentCode!,
+                                Decision = decisionResult?.DecisionCode,
+                                DecisionReasons = decision.DecisionReasons,
+                                QuantityOrWeight = commodity.SupplementaryUnits ?? commodity.NetMass,
+                                CheckCode = decisionResult?.CheckCode!,
+                                Mode = decisionResult?.Mode,
+                                MatchLevel = decisionResult?.Level,
+                                RuleName = decisionResult?.RuleName,
+                            };
+                        }
                     }
                 }
             }

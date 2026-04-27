@@ -612,6 +612,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
                         Level = item.MatchLevel,
+                        Mode = item.Mode,
                     }
             )
             .OrderByDescending(x => x.Timestamp);
@@ -627,22 +628,23 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        var levelCountsQuery = dbContext
+        var result = await dbContext
             .CustomsDeclarations.AsQueryable()
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
-            .Where(x => x.Match == true)
-            .SelectMany(item => item.Items)
-            .GroupBy(item => item.MatchLevel ?? 0)
-            .Select(grouping => new { Level = grouping.Key, Count = grouping.Count() })
-            .ToListAsync(cancellationToken: cancellationToken);
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Level1Count = g.Count(x => x.MatchLevel1 == true),
+                Level2Count = g.Count(x => x.MatchLevel2 == true),
+                Level3Count = g.Count(x => x.MatchLevel3 == true),
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var resultsDictionary = (await levelCountsQuery).ToDictionary(item => item.Level, item => item.Count);
+        var level1Count = result?.Level1Count ?? 0;
+        var level2Count = result?.Level2Count ?? 0;
+        var level3Count = result?.Level3Count ?? 0;
 
-        var totalCount = resultsDictionary.Values.Sum();
-        resultsDictionary.TryGetValue(1, out var level1Count);
-        resultsDictionary.TryGetValue(2, out var level2Count);
-        resultsDictionary.TryGetValue(3, out var level3Count);
-
+        var totalCount = level1Count + level2Count + level3Count;
         return new MatchesSummaryByLevel(totalCount, level1Count, level2Count, level3Count);
     }
 
