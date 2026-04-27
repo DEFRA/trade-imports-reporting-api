@@ -80,7 +80,7 @@ public static class CustomsDeclarationExtensions
                     {
                         var decisionResults =
                             customsDeclarationEvent.ClearanceDecision?.Results?.Where(result =>
-                                result.ItemNumber == commodity.ItemNumber
+                                result.ItemNumber == commodity.ItemNumber && result.CheckCode == check.CheckCode
                             ) ?? [];
 
                         foreach (var decisionResult in decisionResults)
@@ -96,7 +96,7 @@ public static class CustomsDeclarationExtensions
                                 Decision = decisionResult?.DecisionCode,
                                 DecisionReasons = decision.DecisionReasons,
                                 QuantityOrWeight = commodity.SupplementaryUnits ?? commodity.NetMass,
-                                CheckCode = decisionResult?.CheckCode!,
+                                CheckCode = decision.CheckCode,
                                 Mode = decisionResult?.Mode,
                                 MatchLevel = decisionResult?.Level,
                                 RuleName = decisionResult?.RuleName,

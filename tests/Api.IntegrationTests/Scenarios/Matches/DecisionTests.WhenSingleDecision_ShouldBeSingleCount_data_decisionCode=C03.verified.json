@@ -13,7 +13,8 @@
       "checkCode": "H222",
       "decision": "C03",
       "decisionReasons": null,
-      "level": 1
+      "level": 1,
+      "mode": "Active"
     }
   ]
 }
