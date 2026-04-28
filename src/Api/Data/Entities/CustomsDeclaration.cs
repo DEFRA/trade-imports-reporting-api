@@ -9,6 +9,9 @@ public class CustomsDeclaration
     public required DateTime MrnCreated { get; init; }
     public required DateTime Timestamp { get; init; }
     public bool? Match { get; set; }
+    public bool? MatchLevel1 { get; set; }
+    public bool? MatchLevel2 { get; set; }
+    public bool? MatchLevel3 { get; set; }
     public string? ReleaseType { get; set; }
     public CustomsDeclarationItem[] Items { get; set; } = [];
 }

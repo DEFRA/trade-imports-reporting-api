@@ -13,7 +13,8 @@
       "checkCode": "H222",
       "decision": "X00",
       "decisionReasons": null,
-      "level": null
+      "level": null,
+      "mode": null
     },
     {
       "timestamp": "2025-09-15T16:41:05Z",
@@ -28,7 +29,8 @@
       "checkCode": "H222",
       "decision": "X00",
       "decisionReasons": null,
-      "level": null
+      "level": null,
+      "mode": null
     }
   ]
 }

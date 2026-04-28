@@ -49,6 +49,9 @@ public class MatchResponseV2
     [JsonPropertyName("level")]
     public int? Level { get; init; }
 
+    [JsonPropertyName("mode")]
+    public string? Mode { get; init; }
+
     public sealed class MatchResponseMap : ClassMap<MatchResponseV2>
     {
         public MatchResponseMap()
@@ -65,7 +68,8 @@ public class MatchResponseV2
             Map(m => m.Authority);
             Map(m => m.Decision);
             Map(m => m.DecisionReasons).Name("Decision reason");
-            Map(m => m.Level).Name("Level");
+            Map(m => m.Level);
+            Map(m => m.Mode);
         }
     }
 }

@@ -8,12 +8,13 @@
       "description": "This is goods description",
       "quantityOrWeight": 4,
       "chedReference": "GBCHD2024.5343259",
-      "match": "No",
+      "match": "Yes",
       "authority": "PHA",
       "checkCode": "H222",
       "decision": "C03",
       "decisionReasons": null,
-      "level": null
+      "level": 1,
+      "mode": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -28,7 +29,8 @@
       "checkCode": "H224",
       "decision": "X00",
       "decisionReasons": "No match decision Reason",
-      "level": null
+      "level": 1,
+      "mode": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -38,12 +40,13 @@
       "description": "This is goods description",
       "quantityOrWeight": 4,
       "chedReference": "GBCHD2024.5343259",
-      "match": "No",
+      "match": "Yes",
       "authority": "PHA",
       "checkCode": "H222",
       "decision": "C03",
       "decisionReasons": null,
-      "level": null
+      "level": 1,
+      "mode": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -58,7 +61,8 @@
       "checkCode": "H224",
       "decision": "X00",
       "decisionReasons": "No match decision Reason",
-      "level": null
+      "level": 1,
+      "mode": null
     }
   ]
 }

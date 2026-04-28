@@ -339,6 +339,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             RuleName = "DecisionResultTestRuleName",
                             Mode = "Active",
                             DecisionCode = decisionCode,
+                            CheckCode = "H222"
                         },
                     ],
                 },
@@ -427,7 +428,17 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                         {
                             ItemNumber = 1,
                             Mode = "Active",
+                            DecisionCode = "C03",
+                            CheckCode = "H222",
+                            Level = 1,
+                        },
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Mode = "Active",
                             DecisionCode = "X00",
+                            CheckCode = "H224",
+                            Level = 1,
                         },
                     ],
                 },
