@@ -66,7 +66,7 @@ public class ResourceEventsConsumer(
         if (invalidClearanceInternalCodes.Length > 0)
         {
             logger.LogWarning(
-                "Invalid internal clarance decision codes identified : {InvalidDecisionCodes}",
+                "Invalid internal clearance decision codes identified : {InvalidDecisionCodes}",
                 string.Join(",", invalidClearanceInternalCodes)
             );
         }
