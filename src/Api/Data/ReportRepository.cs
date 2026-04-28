@@ -628,24 +628,18 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        var result = await dbContext
+        var query = dbContext
             .CustomsDeclarations.AsQueryable()
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
             .GroupBy(_ => 1)
-            .Select(g => new
-            {
-                Level1Count = g.Count(x => x.MatchLevel1 == true),
-                Level2Count = g.Count(x => x.MatchLevel2 == true),
-                Level3Count = g.Count(x => x.MatchLevel3 == true),
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+            .Select(g => new MatchesSummaryByLevel(
+                g.Count(),
+                g.Count(x => x.MatchLevel1 == true),
+                g.Count(x => x.MatchLevel2 == true),
+                g.Count(x => x.MatchLevel3 == true)
+            ));
 
-        var level1Count = result?.Level1Count ?? 0;
-        var level2Count = result?.Level2Count ?? 0;
-        var level3Count = result?.Level3Count ?? 0;
-
-        var totalCount = level1Count + level2Count + level3Count;
-        return new MatchesSummaryByLevel(totalCount, level1Count, level2Count, level3Count);
+        return await query.FirstOrDefaultAsync(cancellationToken) ?? MatchesSummaryByLevel.Empty;
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(
