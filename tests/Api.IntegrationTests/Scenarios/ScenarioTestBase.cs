@@ -330,6 +330,18 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             Checks = [new ClearanceDecisionCheck { CheckCode = "H222", DecisionCode = decisionCode }],
                         },
                     ],
+                    Results =
+                    [
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Level = 1,
+                            RuleName = "DecisionResultTestRuleName",
+                            Mode = "Active",
+                            DecisionCode = decisionCode,
+                            CheckCode = "H222"
+                        },
+                    ],
                 },
                 Finalisation = new TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation()
                 {
@@ -408,6 +420,25 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                                     DecisionReasons = ["No match decision Reason"],
                                 },
                             ],
+                        },
+                    ],
+                    Results =
+                    [
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Mode = "Active",
+                            DecisionCode = "C03",
+                            CheckCode = "H222",
+                            Level = 1,
+                        },
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Mode = "Active",
+                            DecisionCode = "X00",
+                            CheckCode = "H224",
+                            Level = 1,
                         },
                     ],
                 },

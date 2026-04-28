@@ -12,6 +12,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
     private const string MatchIdx = "MatchIdx";
     private const string LatestMrnIdx = "LatestMrnIdx";
     private const string CreateMatchReleaseTypeIdx = "CreatedMatchReleaseTypeIdx";
+    private const string CreateMatchLevel1dx = "CreatedMatchLevel1Idx";
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -53,6 +54,12 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 .IndexKeys.Ascending(x => x.MrnCreated)
                 .Ascending(x => x.Match)
                 .Ascending(x => x.ReleaseType),
+            cancellationToken: cancellationToken
+        );
+
+        await CreateIndex(
+            CreateMatchLevel1dx,
+            Builders<CustomsDeclaration>.IndexKeys.Ascending(x => x.MrnCreated).Ascending(x => x.MatchLevel1),
             cancellationToken: cancellationToken
         );
     }

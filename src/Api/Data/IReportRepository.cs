@@ -30,6 +30,12 @@ public interface IReportRepository
 
     Task<MatchesSummary> GetMatchesSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 
+    Task<MatchesSummaryByLevel> GetMatchesSummaryByLevel(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    );
+
     Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
         DateTime from,
         DateTime to,
@@ -48,6 +54,7 @@ public interface IReportRepository
         DateTime from,
         DateTime to,
         bool match,
+        int? matchLevel,
         CancellationToken cancellationToken
     );
 

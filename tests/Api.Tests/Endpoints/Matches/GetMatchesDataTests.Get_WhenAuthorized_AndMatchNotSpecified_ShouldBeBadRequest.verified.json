@@ -1,7 +1,11 @@
 ﻿{
   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-  "title": "Bad Request",
+  "title": "One or more validation errors occurred.",
   "status": 400,
-  "detail": "Required parameter \"bool match\" was not provided from query string.",
+  "errors": {
+    "match": [
+      "match field is required"
+    ]
+  },
   "traceId": "{Scrubbed}"
 }

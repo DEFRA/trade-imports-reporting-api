@@ -375,6 +375,29 @@
         "operationId": "MatchesData",
         "parameters": [
           {
+            "name": "match",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "matchLevel",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "useV2",
+            "in": "header",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "from",
             "in": "query",
             "required": true,
@@ -391,21 +414,6 @@
               "type": "string",
               "format": "date-time"
             }
-          },
-          {
-            "name": "match",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
-            "schema": {
-              "type": "boolean"
-            }
           }
         ],
         "responses": {
@@ -415,6 +423,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DatumResponseOfMatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/matches/summary/levels": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches summary counts by level",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "MatchesSummaryByLevel",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchesSummaryByLevelResponse"
                 }
               }
             }
@@ -1762,6 +1832,33 @@
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
             ]
+          }
+        }
+      },
+      "MatchesSummaryByLevelResponse": {
+        "required": [
+          "level1",
+          "level2",
+          "level3",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "level1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
           }
         }
       },

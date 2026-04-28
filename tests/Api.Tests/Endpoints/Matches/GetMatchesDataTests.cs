@@ -40,7 +40,7 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
         const bool match = true;
         MockReportRepository
-            .GetMatchesV2(from, to, match, Arg.Any<CancellationToken>())
+            .GetMatchesV2(from, to, match, null, Arg.Any<CancellationToken>())
             .Returns(
                 [
                     new MatchResponseV2()
@@ -88,24 +88,28 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
     }
 
     [Theory]
-    [InlineData("mrn1")]
-    [InlineData("mrn'1")]
-    [InlineData("mrn\"1")]
-    public async Task Get_WhenAuthorized_AndRequestingCsv_ShouldBeOk(string mrn1)
+    [InlineData("mrn", true, null)]
+    [InlineData("mrn'1", true, null)]
+    [InlineData("mrn\"1", true, null)]
+    [InlineData("mrn", true, 1)]
+    [InlineData("mrn", true, 2)]
+    [InlineData("mrn", true, 3)]
+    [InlineData("mrn", false, null)]
+    public async Task Get_WhenAuthorized_AndRequestingCsv_ShouldBeOk(string mrn, bool match, int? matchLevel)
     {
         var client = CreateClient();
         var from = new DateTime(2025, 9, 3, 15, 0, 0, DateTimeKind.Utc);
         var to = new DateTime(2025, 9, 3, 16, 0, 0, DateTimeKind.Utc);
-        const bool match = true;
+
         MockReportRepository
-            .GetMatchesV2(from, to, match, Arg.Any<CancellationToken>())
+            .GetMatchesV2(from, to, match, matchLevel, Arg.Any<CancellationToken>())
             .Returns(
                 [
                     new MatchResponseV2()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
-                        Mrn = "mrn1",
+                        Mrn = "mrn",
                         ChedReference = "chedReference1",
                         CheckCode = "H222",
                         Authority = "authority1",
@@ -113,6 +117,7 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
                         CommodityCode = "commodityCode1",
                         Decision = "X00",
                         Description = "description1",
+                        Level = null,
                     },
                     new MatchResponseV2()
                     {
@@ -126,24 +131,31 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
                         CommodityCode = "commodityCode2",
                         Decision = "X00",
                         Description = "description2",
+                        Level = null,
                     },
                 ]
             );
 
         client.DefaultRequestHeaders.Add("Accept", "text/csv");
         client.DefaultRequestHeaders.Add("UseV2", "true");
-        var response = await client.GetAsync(
-            Testing.Endpoints.Matches.Data(
-                EndpointQuery
-                    .New.Where(EndpointFilter.From(from))
-                    .Where(EndpointFilter.To(to))
-                    .Where(EndpointFilter.Match(match))
-            )
-        );
+
+        var endpointQuery = EndpointQuery
+            .New.Where(EndpointFilter.From(from))
+            .Where(EndpointFilter.To(to))
+            .Where(EndpointFilter.Match(match));
+
+        if (matchLevel != null)
+        {
+            endpointQuery = endpointQuery.Where(EndpointFilter.MatchLevel(matchLevel.Value));
+        }
+
+        var response = await client.GetAsync(Testing.Endpoints.Matches.Data(endpointQuery));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await Verify(await response.Content.ReadAsStringAsync()).UseParameters(mrn1).DontScrubDateTimes();
+        await Verify(await response.Content.ReadAsStringAsync())
+            .UseParameters(mrn, match, matchLevel)
+            .DontScrubDateTimes();
     }
 
     [Theory]
@@ -250,6 +262,54 @@ public class GetMatchesDataTests(ApiWebApplicationFactory factory, ITestOutputHe
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().ScrubMember("traceId");
+    }
+
+    [Fact]
+    public async Task Get_WhenAuthorized_AndMatchAndMatchLevelIncompatible_ShouldBeBadRequest()
+    {
+        var client = CreateClient();
+
+        var now = DateTime.UtcNow;
+        var response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Match(false))
+                    .Where(EndpointFilter.MatchLevel(1))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await VerifyJson(await response.Content.ReadAsStringAsync()).UseStrictJson().ScrubMember("traceId");
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(4)]
+    public async Task Get_WhenAuthorized_AndAndMatchLevelOutOfRange_ShouldBeBadRequest(int matchLevel)
+    {
+        var client = CreateClient();
+
+        var now = DateTime.UtcNow;
+        var response = await client.GetAsync(
+            Testing.Endpoints.Matches.Data(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(now))
+                    .Where(EndpointFilter.To(now.AddDays(1)))
+                    .Where(EndpointFilter.Match(true))
+                    .Where(EndpointFilter.MatchLevel(matchLevel))
+            )
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        await VerifyJson(await response.Content.ReadAsStringAsync())
+            .UseParameters(matchLevel)
+            .UseStrictJson()
+            .ScrubMember("traceId");
     }
 
     [Fact]

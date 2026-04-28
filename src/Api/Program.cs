@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Defra.TradeImports.SQS.Endpoints.Endpoints;
 using Defra.TradeImportsReportingApi.Api.Authentication;
 using Defra.TradeImportsReportingApi.Api.Configuration;
@@ -14,7 +15,6 @@ using Defra.TradeImportsReportingApi.Api.Utils.Logging;
 using Elastic.CommonSchema.Serilog;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi;
 using Serilog;
 using Log = Serilog.Log;
 
@@ -70,6 +70,14 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddHealth(builder.Configuration);
     builder.Services.AddOpenApi(builder.Configuration);
     builder.Services.AddReportingApiConfiguration(builder.Configuration);
+    builder.Services.AddValidation();
+
+    // Configure JSON serializer to use camelCase
+    builder.Services.ConfigureHttpJsonOptions(options =>
+    {
+        options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    });
 
     builder.Services.AddHttpProxyClient();
 
