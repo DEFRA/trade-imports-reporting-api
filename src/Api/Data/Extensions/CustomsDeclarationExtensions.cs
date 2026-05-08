@@ -113,7 +113,10 @@ public static class CustomsDeclarationExtensions
     {
         var decisionResults =
             customsDeclarationEvent.ClearanceDecision?.Results?.Where(result =>
-                result.ItemNumber == commodity.ItemNumber && result.CheckCode == check.CheckCode
+                result.ItemNumber == commodity.ItemNumber
+                && result.CheckCode == check.CheckCode
+                && result.DocumentReference == document.DocumentReference?.Value
+                && result.DocumentCode == document.DocumentCode
             ) ?? [];
 
         foreach (var decisionResult in decisionResults)
@@ -133,6 +136,7 @@ public static class CustomsDeclarationExtensions
                 Mode = decisionResult?.Mode,
                 MatchLevel = decisionResult?.Level,
                 RuleName = decisionResult?.RuleName,
+                InternalDecisionCode = decisionResult?.InternalDecisionCode,
             };
         }
     }

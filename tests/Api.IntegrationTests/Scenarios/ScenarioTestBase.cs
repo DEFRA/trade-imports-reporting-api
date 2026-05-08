@@ -4,6 +4,7 @@ using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsDataApi.Domain.Ipaffs;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
@@ -339,7 +340,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             RuleName = "DecisionResultTestRuleName",
                             Mode = "Active",
                             DecisionCode = decisionCode,
-                            CheckCode = "H222"
+                            CheckCode = "H222",
+                            DocumentCode = "N853",
+                            DocumentReference = "GBCHD2024.5343259",
                         },
                     ],
                 },
@@ -431,6 +434,8 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             DecisionCode = "C03",
                             CheckCode = "H222",
                             Level = 1,
+                            DocumentCode = "N853",
+                            DocumentReference = "GBCHD2024.5343259",
                         },
                         new ClearanceDecisionResult
                         {
@@ -439,6 +444,8 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             DecisionCode = "X00",
                             CheckCode = "H224",
                             Level = 1,
+                            DocumentCode = "N853",
+                            DocumentReference = "GBCHD2024.5343259",
                         },
                     ],
                 },
