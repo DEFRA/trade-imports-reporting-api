@@ -6,11 +6,13 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints;
 
 public static class MatchesEndpoints
 {
+    private const string DecisionsTag = "Decisions";
+
     public static void MapMatchesEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("matches/summary", MatchesSummary)
             .WithName("MatchesSummary")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches summary")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<MatchesSummaryResponse>()
@@ -20,7 +22,7 @@ public static class MatchesEndpoints
 
         app.MapGet("matches/intervals", MatchesIntervals)
             .WithName("MatchesIntervals")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches by interval")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<IntervalsResponse<IntervalResponse<MatchesSummaryResponse>>>()
@@ -30,10 +32,20 @@ public static class MatchesEndpoints
 
         app.MapGet("matches/data", MatchesData)
             .WithName("MatchesData")
-            .WithTags("Decisions")
+            .WithTags(DecisionsTag)
             .WithSummary("Get matches data")
             .WithDescription(Descriptions.SearchablePeriod)
             .Produces<DatumResponse<MatchResponse>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
+        app.MapGet("matches/summary/levels", MatchesSummaryByLevel)
+            .WithName("MatchesSummaryByLevel")
+            .WithTags(DecisionsTag)
+            .WithSummary("Get matches summary counts by level")
+            .WithDescription(Descriptions.SearchablePeriod)
+            .Produces<MatchesSummaryByLevelResponse>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -65,6 +77,30 @@ public static class MatchesEndpoints
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> MatchesSummaryByLevel(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = Request.Validate(from, to);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var matchesSummaryByLevel = await reportRepository.GetMatchesSummaryByLevel(from, to, cancellationToken);
+
+        return Results.Ok(matchesSummaryByLevel.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="intervals">ISO 8609 UTC only, sequential list of values. Note values should be specified as ?intervals=X&amp;intervals=X</param>
     /// <param name="reportRepository"></param>
     /// <param name="cancellationToken"></param>
@@ -89,41 +125,40 @@ public static class MatchesEndpoints
         return Results.Ok(matchesIntervals.ToResponse());
     }
 
-    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
-    /// <param name="match">true or false</param>
-    /// <param name="useV2"></param>
+    /// <param name="matchRequest">The <see cref="MatchRequest"/> object</param>
     /// <param name="reportRepository"></param>
     /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet]
     private static async Task<IResult> MatchesData(
-        [FromQuery] DateTime from,
-        [FromQuery] DateTime to,
-        [FromQuery] bool match,
-        [FromHeader] bool? useV2,
+        [AsParameters] MatchRequest matchRequest,
         [FromServices] IReportRepository reportRepository,
         HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
-        var errors = Request.Validate(from, to);
-        if (errors.Count > 0)
+        if (matchRequest.UseV2.GetValueOrDefault())
         {
-            return Results.ValidationProblem(errors);
-        }
-
-        if (useV2.GetValueOrDefault())
-        {
-            var v2Data = await reportRepository.GetMatchesV2(from, to, match, cancellationToken);
+            var v2Data = await reportRepository.GetMatchesV2(
+                matchRequest.From,
+                matchRequest.To,
+                matchRequest.Match.GetValueOrDefault(),
+                matchRequest.MatchLevel,
+                cancellationToken
+            );
 
             return Request.IsCsvRequired(httpContext)
                 ? Request.CsvResult(v2Data.ToCsvResponse())
                 : Results.Ok(v2Data.ToResponse());
         }
 
-        var v1Data = await reportRepository.GetMatches(from, to, match, cancellationToken);
+        var v1Data = await reportRepository.GetMatches(
+            matchRequest.From,
+            matchRequest.To,
+            matchRequest.Match.GetValueOrDefault(),
+            cancellationToken
+        );
 
         return Request.IsCsvRequired(httpContext)
             ? Request.CsvResult(v1Data.ToCsvResponse())

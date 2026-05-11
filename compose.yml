@@ -3,6 +3,7 @@ services:
     build:
       args:
         DEFRA_NUGET_PAT: ${DEFRA_NUGET_PAT}
+        WIREMOCK_IMAGE: ${WIREMOCK_IMAGE}
     image: trade-imports-reporting-api:latest
     depends_on:
       localstack:
@@ -41,7 +42,7 @@ services:
   wiremock:
     environment:
       TZ: Europe/London
-    image: sheyenrath/wiremock.net:latest
+    image: ${WIREMOCK_IMAGE:-sheyenrath/wiremock.net}:latest
     ports:
       - "9090:80"
 

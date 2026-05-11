@@ -4,6 +4,7 @@ using Defra.TradeImportsDataApi.Domain.CustomsDeclaration;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsDataApi.Domain.Ipaffs;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
@@ -330,6 +331,20 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                             Checks = [new ClearanceDecisionCheck { CheckCode = "H222", DecisionCode = decisionCode }],
                         },
                     ],
+                    Results =
+                    [
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Level = 1,
+                            RuleName = "DecisionResultTestRuleName",
+                            Mode = "Active",
+                            DecisionCode = decisionCode,
+                            CheckCode = "H222",
+                            DocumentCode = "N853",
+                            DocumentReference = "GBCHD2024.5343259",
+                        },
+                    ],
                 },
                 Finalisation = new TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation()
                 {
@@ -408,6 +423,29 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                                     DecisionReasons = ["No match decision Reason"],
                                 },
                             ],
+                        },
+                    ],
+                    Results =
+                    [
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Mode = "Active",
+                            DecisionCode = "C03",
+                            CheckCode = "H222",
+                            Level = 1,
+                            DocumentCode = "N853",
+                            DocumentReference = "GBCHD2024.5343259",
+                        },
+                        new ClearanceDecisionResult
+                        {
+                            ItemNumber = 1,
+                            Mode = "Active",
+                            DecisionCode = "X00",
+                            CheckCode = "H224",
+                            Level = 1,
+                            DocumentCode = "N853",
+                            DocumentReference = "GBCHD2024.5343259",
                         },
                     ],
                 },

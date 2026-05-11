@@ -331,6 +331,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         Decision = item.Decision,
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
+                        Level = item.MatchLevel,
                     }
             )
             .OrderByDescending(x => x.Timestamp)
@@ -581,6 +582,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         DateTime from,
         DateTime to,
         bool match,
+        int? matchLevel,
         CancellationToken cancellationToken
     )
     {
@@ -591,6 +593,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
             .Where(x => x.Match == match)
             .Where(x => x.ReleaseType == null || x.ReleaseType == "Automatic" || x.ReleaseType == "Unknown")
+            .Where(x => matchLevel == null || x.Items.Any(item => item.MatchLevel == matchLevel))
             .SelectMany(
                 cd => cd.Items,
                 (cd, item) =>
@@ -608,11 +611,35 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         Decision = item.Decision,
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
+                        Level = item.MatchLevel,
+                        Mode = item.Mode,
                     }
             )
             .OrderByDescending(x => x.Timestamp);
 
         return await query.ToListAsync(cancellationToken: cancellationToken);
+    }
+
+    public async Task<MatchesSummaryByLevel> GetMatchesSummaryByLevel(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        var query = dbContext
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .GroupBy(_ => 1)
+            .Select(g => new MatchesSummaryByLevel(
+                g.Count(),
+                g.Count(x => x.MatchLevel1 == true),
+                g.Count(x => x.MatchLevel2 == true),
+                g.Count(x => x.MatchLevel3 == true)
+            ));
+
+        return await query.FirstOrDefaultAsync(cancellationToken) ?? MatchesSummaryByLevel.Empty;
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(

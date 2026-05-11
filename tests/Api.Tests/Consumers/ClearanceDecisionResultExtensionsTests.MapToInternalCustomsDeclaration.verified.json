@@ -1,0 +1,80 @@
+﻿{
+  "Id": "newest",
+  "MrnCreated": "DateTime_1",
+  "Match": false,
+  "MatchLevel1": false,
+  "ReleaseType": "Unknown",
+  "Items": [
+    {
+      "Number": 1,
+      "CommodityCode": "1601009105",
+      "Description": "1A -24GBBGBKCDMS342002",
+      "QuantityOrWeight": 175.0,
+      "ChedReference": "GBCHD2026.1342002",
+      "Match": true,
+      "Authority": "AHVLA",
+      "CheckCode": "H221",
+      "Decision": "H01",
+      "DecisionReasons": [
+        "A Customs Declaration has been submitted however no matching CVEDA(s) have been submitted to Animal Health for CVEDA number(s) GBCHD2026.2342002."
+      ],
+      "Mode": "Active",
+      "MatchLevel": 1,
+      "RuleName": "InspectionRequiredDecisionRule"
+    },
+    {
+      "Number": 1,
+      "CommodityCode": "1601009105",
+      "Description": "1A -24GBBGBKCDMS342002",
+      "QuantityOrWeight": 175.0,
+      "ChedReference": "GBCHD2026.1342002",
+      "Match": false,
+      "Authority": "AHVLA",
+      "CheckCode": "H221",
+      "Decision": "X00",
+      "InternalDecisionCode": "E20",
+      "DecisionReasons": [
+        "A Customs Declaration has been submitted however no matching CVEDA(s) have been submitted to Animal Health for CVEDA number(s) GBCHD2026.2342002."
+      ],
+      "Mode": "Passive",
+      "MatchLevel": 2,
+      "RuleName": "CommodityCodeDecisionRule"
+    },
+    {
+      "Number": 1,
+      "CommodityCode": "1601009105",
+      "Description": "1A -24GBBGBKCDMS342002",
+      "QuantityOrWeight": 175.0,
+      "ChedReference": "GBCHD2026.2342002",
+      "Match": false,
+      "Authority": "AHVLA",
+      "CheckCode": "H221",
+      "Decision": "X00",
+      "InternalDecisionCode": "E70",
+      "DecisionReasons": [
+        "A Customs Declaration has been submitted however no matching CVEDA(s) have been submitted to Animal Health for CVEDA number(s) GBCHD2026.2342002."
+      ],
+      "Mode": "Active",
+      "MatchLevel": 1,
+      "RuleName": "UnlinkedNotificationDecisionRule"
+    },
+    {
+      "Number": 2,
+      "CommodityCode": "1601009105",
+      "Description": "2A -24GBBGBKCDMS342002",
+      "QuantityOrWeight": 175.0,
+      "ChedReference": "GBCHD2026.3342002",
+      "Match": false,
+      "Authority": "AHVLA",
+      "CheckCode": "H221",
+      "Decision": "X00",
+      "InternalDecisionCode": "E70",
+      "DecisionReasons": [
+        "A Customs Declaration has been submitted however no matching CVEDA(s) have been submitted to Animal Health for CVEDA number(s) GBCHD2026.3342002."
+      ],
+      "Mode": "Active",
+      "MatchLevel": 1,
+      "RuleName": "UnlinkedNotificationDecisionRule"
+    }
+  ]
+}

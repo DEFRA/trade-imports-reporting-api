@@ -11,8 +11,10 @@
       "match": "Yes",
       "authority": "PHA",
       "checkCode": "H222",
-      "decision": "C02",
-      "decisionReasons": null
+      "decision": "C03",
+      "decisionReasons": null,
+      "level": 1,
+      "mode": "Active"
     }
   ]
 }

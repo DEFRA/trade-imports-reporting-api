@@ -1,3 +1,3 @@
-﻿Last updated,MRN,Item number,Commodity code,Check code,Description,Quantity/Weight,CHED reference,Match,Authority,Decision,Decision reason
-09/15/2025 16:31:05,mrn1,1,commodityCode1,H222,description1,,chedReference1,Yes,authority1,X00,
-09/15/2025 16:41:05,mrn2,2,commodityCode2,H222,description2,,chedReference1,Yes,authority2,X00,
+﻿Last updated,MRN,Item number,Commodity code,Check code,Description,Quantity/Weight,CHED reference,Match,Authority,Decision,Decision reason,Level,Mode
+09/15/2025 16:31:05,mrn1,1,commodityCode1,H222,description1,,chedReference1,Yes,authority1,X00,,,
+09/15/2025 16:41:05,mrn2,2,commodityCode2,H222,description2,,chedReference1,Yes,authority2,X00,,,
