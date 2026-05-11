@@ -42,6 +42,8 @@
     <PackageReference Include="AWSSDK.Core" Version="4.0.6.1" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.37" />
     <PackageReference Include="AWSSDK.SQS" Version="4.0.2.28" />
+    <!-- Override vulnerable transitive dependency SharpCompress -->
+    <PackageReference Include="SharpCompress" Version="0.48.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="SonarAnalyzer.CSharp" Version="10.21.0.135717" />
