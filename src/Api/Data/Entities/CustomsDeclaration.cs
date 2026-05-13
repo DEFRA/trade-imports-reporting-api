@@ -14,6 +14,8 @@ public class CustomsDeclaration
     public bool? MatchLevel3 { get; set; }
     public string? ReleaseType { get; set; }
     public CustomsDeclarationItem[] Items { get; set; } = [];
+    public string? DeclarantId { get; set; }
+    public string? DispatchCountryCode { get; set; }
 }
 
 public class CustomsDeclarationItem

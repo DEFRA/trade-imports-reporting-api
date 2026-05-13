@@ -332,6 +332,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         DecisionReasons = item.DecisionReasons![0],
                         CheckCode = item.CheckCode,
                         Level = item.MatchLevel,
+                        DeclarantId = cd.DeclarantId,
+                        DispatchCountryCode = cd.DispatchCountryCode,
                     }
             )
             .OrderByDescending(x => x.Timestamp)
@@ -613,6 +615,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                         CheckCode = item.CheckCode,
                         Level = item.MatchLevel,
                         Mode = item.Mode,
+                        DeclarantId = cd.DeclarantId,
+                        DispatchCountryCode = cd.DispatchCountryCode,
                     }
             )
             .OrderByDescending(x => x.Timestamp);

@@ -14,7 +14,9 @@
       "decision": "X00",
       "decisionReasons": null,
       "level": null,
-      "mode": null
+      "mode": null,
+      "declarantId": null,
+      "dispatchCountryCode": null
     },
     {
       "timestamp": "2025-09-15T16:41:05Z",
@@ -30,7 +32,9 @@
       "decision": "X00",
       "decisionReasons": null,
       "level": null,
-      "mode": null
+      "mode": null,
+      "declarantId": null,
+      "dispatchCountryCode": null
     }
   ]
 }

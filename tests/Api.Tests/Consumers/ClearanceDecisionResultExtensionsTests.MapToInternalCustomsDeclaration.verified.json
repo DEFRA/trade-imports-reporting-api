@@ -76,5 +76,7 @@
       "MatchLevel": 1,
       "RuleName": "UnlinkedNotificationDecisionRule"
     }
-  ]
+  ],
+  "DeclarantId": "GB269573944000",
+  "DispatchCountryCode": "IT"
 }

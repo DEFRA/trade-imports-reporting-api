@@ -14,7 +14,9 @@
       "decision": "C03",
       "decisionReasons": null,
       "level": 1,
-      "mode": null
+      "mode": null,
+      "declarantId": null,
+      "dispatchCountryCode": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -30,7 +32,9 @@
       "decision": "X00",
       "decisionReasons": "No match decision Reason",
       "level": 1,
-      "mode": null
+      "mode": null,
+      "declarantId": null,
+      "dispatchCountryCode": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -46,7 +50,9 @@
       "decision": "C03",
       "decisionReasons": null,
       "level": 1,
-      "mode": null
+      "mode": null,
+      "declarantId": null,
+      "dispatchCountryCode": null
     },
     {
       "timestamp": "0001-01-01T00:00:00Z",
@@ -62,7 +68,9 @@
       "decision": "X00",
       "decisionReasons": "No match decision Reason",
       "level": 1,
-      "mode": null
+      "mode": null,
+      "declarantId": null,
+      "dispatchCountryCode": null
     }
   ]
 }
