@@ -32,6 +32,8 @@ public static class CustomsDeclarationExtensions
                 customsDeclarationEvent
                     .ClearanceDecision?.Results?.Where(x => x.Level == 1)
                     .All(x => x.DecisionIsAMatch()) ?? false,
+            DeclarantId = customsDeclarationEvent.ClearanceRequest?.DeclarantId,
+            DispatchCountryCode = customsDeclarationEvent.ClearanceRequest?.DispatchCountryCode,
         };
 
         if (cd.MatchLevel1 == true)

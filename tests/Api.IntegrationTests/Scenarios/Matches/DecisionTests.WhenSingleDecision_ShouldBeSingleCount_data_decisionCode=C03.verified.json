@@ -14,7 +14,9 @@
       "decision": "C03",
       "decisionReasons": null,
       "level": 1,
-      "mode": "Active"
+      "mode": "Active",
+      "declarantId": null,
+      "dispatchCountryCode": null
     }
   ]
 }

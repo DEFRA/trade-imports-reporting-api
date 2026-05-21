@@ -52,6 +52,12 @@ public class MatchResponseV2
     [JsonPropertyName("mode")]
     public string? Mode { get; init; }
 
+    [JsonPropertyName("declarantId")]
+    public string? DeclarantId { get; init; }
+
+    [JsonPropertyName("dispatchCountryCode")]
+    public string? DispatchCountryCode { get; init; }
+
     public sealed class MatchResponseMap : ClassMap<MatchResponseV2>
     {
         public MatchResponseMap()
@@ -70,6 +76,8 @@ public class MatchResponseV2
             Map(m => m.DecisionReasons).Name("Decision reason");
             Map(m => m.Level);
             Map(m => m.Mode);
+            Map(m => m.DispatchCountryCode).Name("Dispatch country code");
+            Map(m => m.DeclarantId).Name("Declarant Id");
         }
     }
 }
