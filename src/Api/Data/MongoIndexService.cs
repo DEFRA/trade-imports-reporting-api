@@ -30,11 +30,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
             Builders<Finalisation>.IndexKeys.Ascending(x => x.Mrn).Descending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
-        await CreateIndex(
-            TimestampIdx,
-            Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp),
-            cancellationToken: cancellationToken
-        );
+
         await CreateIndex(
             MatchIdx,
             Builders<Finalisation>
@@ -42,6 +38,12 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 .IndexKeys.Ascending(x => x.Timestamp)
                 .Ascending(x => x.ReleaseType)
                 .Ascending(x => x.Mrn),
+            cancellationToken: cancellationToken
+        );
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<Finalisation>.IndexKeys.Ascending(x => x.Timestamp),
+            expireAfter: TimeSpan.FromDays(180),
             cancellationToken: cancellationToken
         );
     }
@@ -62,6 +64,12 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
             Builders<CustomsDeclaration>.IndexKeys.Ascending(x => x.MrnCreated).Ascending(x => x.MatchLevel1),
             cancellationToken: cancellationToken
         );
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<CustomsDeclaration>.IndexKeys.Ascending(x => x.Timestamp),
+            expireAfter: TimeSpan.FromDays(180),
+            cancellationToken: cancellationToken
+        );
     }
 
     private async Task CreateDecisionIndexes(CancellationToken cancellationToken)
@@ -69,11 +77,6 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
         await CreateIndex(
             "MrnCreatedIdx",
             Builders<Decision>.IndexKeys.Ascending(x => x.MrnCreated),
-            cancellationToken: cancellationToken
-        );
-        await CreateIndex(
-            TimestampIdx,
-            Builders<Decision>.IndexKeys.Ascending(x => x.Timestamp),
             cancellationToken: cancellationToken
         );
         await CreateIndex(
@@ -86,21 +89,28 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 .Ascending(x => x.Match),
             cancellationToken: cancellationToken
         );
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<Decision>.IndexKeys.Ascending(x => x.Timestamp),
+            expireAfter: TimeSpan.FromDays(180),
+            cancellationToken: cancellationToken
+        );
     }
 
     private async Task CreateRequestIndexes(CancellationToken cancellationToken)
     {
-        await CreateIndex(
-            TimestampIdx,
-            Builders<Request>.IndexKeys.Ascending(x => x.Timestamp),
-            cancellationToken: cancellationToken
-        );
         await CreateIndex(
             MatchIdx,
             Builders<Request>
                 // Order of fields important - don't change without reason
                 .IndexKeys.Ascending(x => x.Timestamp)
                 .Ascending(x => x.Mrn),
+            cancellationToken: cancellationToken
+        );
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<Request>.IndexKeys.Ascending(x => x.Timestamp),
+            expireAfter: TimeSpan.FromDays(180),
             cancellationToken: cancellationToken
         );
     }
@@ -113,11 +123,6 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
             cancellationToken: cancellationToken
         );
         await CreateIndex(
-            TimestampIdx,
-            Builders<Notification>.IndexKeys.Ascending(x => x.Timestamp),
-            cancellationToken: cancellationToken
-        );
-        await CreateIndex(
             MatchIdx,
             Builders<Notification>
                 // Order of fields important - don't change without reason
@@ -125,6 +130,12 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 .Ascending(x => x.ReferenceNumber)
                 .Descending(x => x.Timestamp)
                 .Ascending(x => x.NotificationType),
+            cancellationToken: cancellationToken
+        );
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<Notification>.IndexKeys.Ascending(x => x.Timestamp),
+            expireAfter: TimeSpan.FromDays(180),
             cancellationToken: cancellationToken
         );
     }
@@ -219,6 +230,69 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
                 name,
                 collection.CollectionNamespace.CollectionName
             );
+        }
+    }
+
+    protected async Task CreateTtlIndex<T>(
+        string name,
+        IndexKeysDefinition<T> keys,
+        TimeSpan? expireAfter = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var collectionName = typeof(T).Name;
+
+        try
+        {
+            var collection = database.GetCollection<T>(collectionName);
+            var requestedKeys = keys.Render(
+                new RenderArgs<T>(collection.DocumentSerializer, collection.Settings.SerializerRegistry)
+            );
+
+            using (var cursor = await collection.Indexes.ListAsync(cancellationToken))
+            {
+                var existingIndexes = await cursor.ToListAsync(cancellationToken);
+                var existingByName = existingIndexes.FirstOrDefault(i => i.TryGetValue("name", out var n) && n == name);
+
+                if (existingByName is not null)
+                {
+                    var existingKeys = existingByName.GetValue("key", new BsonDocument()).AsBsonDocument;
+                    var hasTtl =
+                        existingByName.TryGetValue("expireAfterSeconds", out var u) && u.IsInt32 && u.AsInt32 > 0;
+
+                    if (!existingKeys.Equals(requestedKeys) || !hasTtl)
+                    {
+                        logger.LogInformation(
+                            "Updating index {Name} on {Collection}: keys/options differ. Dropping and recreating.",
+                            name,
+                            collectionName
+                        );
+
+                        await DropIndex(name, collection, cancellationToken);
+                    }
+                    else
+                    {
+                        // Index already exists and is correct
+                        return;
+                    }
+                }
+            }
+
+            var indexModel = new CreateIndexModel<T>(
+                keys,
+                new CreateIndexOptions
+                {
+                    Name = name,
+                    Background = true,
+                    ExpireAfter = expireAfter ?? TimeSpan.Zero,
+                }
+            );
+
+            await collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to Create index {Name} on {Collection}", name, collectionName);
         }
     }
 }
