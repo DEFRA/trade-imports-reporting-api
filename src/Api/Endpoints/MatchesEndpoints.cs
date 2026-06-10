@@ -49,6 +49,16 @@ public static class MatchesEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
+
+        app.MapGet("matches/summary/levels-by-region", MatchesSummaryByLevelByRegion)
+            .WithName("MatchesSummaryByLevelByRegion")
+            .WithTags(DecisionsTag)
+            .WithSummary("Get matches summary counts by level by group")
+            .WithDescription(Descriptions.SearchablePeriod)
+            .Produces<DeclarationSummary>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
@@ -97,6 +107,34 @@ public static class MatchesEndpoints
         var matchesSummaryByLevel = await reportRepository.GetMatchesSummaryByLevel(from, to, cancellationToken);
 
         return Results.Ok(matchesSummaryByLevel.ToResponse());
+    }
+
+    /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
+    /// <param name="reportRepository"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet]
+    private static async Task<IResult> MatchesSummaryByLevelByRegion(
+        [FromQuery] DateTime from,
+        [FromQuery] DateTime to,
+        [FromServices] IReportRepository reportRepository,
+        CancellationToken cancellationToken
+    )
+    {
+        var errors = Request.Validate(from, to);
+        if (errors.Count > 0)
+        {
+            return Results.ValidationProblem(errors);
+        }
+
+        var matchesSummaryByLevel = await reportRepository.GetMatchesSummaryByLevelByRegion(
+            from,
+            to,
+            cancellationToken
+        );
+
+        return Results.Ok(matchesSummaryByLevel);
     }
 
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
