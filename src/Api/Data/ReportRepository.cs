@@ -665,8 +665,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var result = new DeclarationSummary(
             Total: declarations.Count,
-            Eu: BuildRegionSummary(eu),
-            Row: BuildRegionSummary(row)
+            Eu: eu.ToRegionSummary(),
+            Row: row.ToRegionSummary()
         );
 
         return result;
@@ -1336,35 +1336,6 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                     { "sortBy", new BsonDocument(sortByField, -1) },
                     { "output", new BsonDocument(returnField, $"${returnField}") },
                 }
-            )
-        );
-    }
-
-    static RegionSummary BuildRegionSummary(IEnumerable<CustomsDeclaration> declarations)
-    {
-        var items = declarations.ToList();
-
-        var matches = items
-            .Where(x => x.MatchLevel1 == true || x.MatchLevel2 == true || x.MatchLevel3 == true)
-            .ToList();
-
-        var noMatches = items
-            .Where(x => x.MatchLevel1 != true && x.MatchLevel2 != true && x.MatchLevel3 != true)
-            .ToList();
-
-        return new RegionSummary(
-            Total: items.Count,
-            Match: new MatchesSummaryByLevel(
-                Total: matches.Count,
-                Level1: matches.Count(x => x.MatchLevel1 == true),
-                Level2: matches.Count(x => x.MatchLevel2 == true),
-                Level3: matches.Count(x => x.MatchLevel3 == true)
-            ),
-            NoMatch: new MatchesSummaryByLevel(
-                Total: noMatches.Count,
-                Level1: noMatches.Count(x => x.MatchLevel1 == true),
-                Level2: noMatches.Count(x => x.MatchLevel2 == true),
-                Level3: noMatches.Count(x => x.MatchLevel3 == true)
             )
         );
     }
