@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
+using Defra.TradeImportsReportingApi.Api.Utils;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
@@ -644,6 +645,31 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             ));
 
         return await query.FirstOrDefaultAsync(cancellationToken) ?? MatchesSummaryByLevel.Empty;
+    }
+
+    public async Task<DeclarationSummary> GetMatchesSummaryByLevelByRegion(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        var declarations = await dbContext
+            .CustomsDeclarations.AsQueryable()
+            .Where(x => x.MrnCreated >= from && x.MrnCreated < to)
+            .ToListAsync(cancellationToken);
+
+        var eu = declarations.Where(x => Region.IsEu(x.DispatchCountryCode)).ToList();
+        var row = declarations.Where(x => !Region.IsEu(x.DispatchCountryCode)).ToList();
+
+        var result = new DeclarationSummary(
+            Total: declarations.Count,
+            Eu: eu.ToRegionSummary(),
+            Row: row.ToRegionSummary()
+        );
+
+        return result;
     }
 
     public async Task<ClearanceRequestsSummary> GetClearanceRequestsSummary(

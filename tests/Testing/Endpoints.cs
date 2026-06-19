@@ -30,6 +30,9 @@ public static class Endpoints
 
         public static string SummaryByLevel(EndpointQuery? query = null) => $"{Root}/summary/levels{query}";
 
+        public static string SummaryByLevelByRegion(EndpointQuery? query = null) =>
+            $"{Root}/summary/levels-by-region{query}";
+
         public static string Intervals(EndpointQuery? query = null) => $"{Root}/intervals{query}";
 
         public static string Data(EndpointQuery? query = null) => $"{Root}/data{query}";

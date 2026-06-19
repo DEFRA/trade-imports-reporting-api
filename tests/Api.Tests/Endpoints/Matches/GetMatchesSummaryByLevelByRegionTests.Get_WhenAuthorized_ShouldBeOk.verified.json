@@ -1,0 +1,33 @@
+﻿{
+  "total": 100,
+  "eu": {
+    "total": 80,
+    "match": {
+      "total": 60,
+      "level1": 55,
+      "level2": 50,
+      "level3": 45
+    },
+    "noMatch": {
+      "total": 60,
+      "level1": 55,
+      "level2": 50,
+      "level3": 45
+    }
+  },
+  "row": {
+    "total": 100,
+    "match": {
+      "total": 60,
+      "level1": 55,
+      "level2": 50,
+      "level3": 45
+    },
+    "noMatch": {
+      "total": 60,
+      "level1": 55,
+      "level2": 50,
+      "level3": 45
+    }
+  }
+}
