@@ -1666,14 +1666,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1689,14 +1688,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/MatchesSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1712,14 +1710,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/NotificationsSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1735,14 +1732,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/ReleasesSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1832,14 +1828,13 @@
         "type": "object",
         "properties": {
           "decision": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1868,34 +1863,31 @@
         "type": "object",
         "properties": {
           "finalisation": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           },
           "clearanceRequest": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           },
           "preNotification": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1906,14 +1898,13 @@
         "type": "object",
         "properties": {
           "decision": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
