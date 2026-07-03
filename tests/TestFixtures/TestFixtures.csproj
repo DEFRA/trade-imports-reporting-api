@@ -11,7 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.1" />
-    <PackageReference Include="SharpCompress" Version="0.48.0" />
+    <PackageReference Include="SharpCompress" Version="0.49.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="SonarAnalyzer.CSharp" Version="10.21.0.135717" />
