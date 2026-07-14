@@ -1,0 +1,15 @@
+﻿{
+  Total: 4,
+  Match: {
+    Total: 3,
+    Level1: 3,
+    Level2: 2,
+    Level3: 1
+  },
+  NoMatch: {
+    Total: 3,
+    Level1: 1,
+    Level2: 2,
+    Level3: 3
+  }
+}

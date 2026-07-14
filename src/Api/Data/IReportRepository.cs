@@ -36,6 +36,12 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
+    Task<DeclarationSummary> GetMatchesSummaryByLevelByRegion(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    );
+
     Task<IReadOnlyList<MatchesBucket>> GetMatchesIntervals(
         DateTime from,
         DateTime to,
