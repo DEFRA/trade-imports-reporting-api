@@ -512,6 +512,68 @@
         }
       }
     },
+    "/matches/summary/levels-by-region": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get matches summary counts by level by group",
+        "description": "Searchable period is the last 122 days",
+        "operationId": "MatchesSummaryByLevelByRegion",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclarationSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/clearance-requests/summary": {
       "get": {
         "tags": [
@@ -1572,6 +1634,26 @@
           }
         }
       },
+      "DeclarationSummary": {
+        "required": [
+          "total",
+          "eu",
+          "row"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "eu": {
+            "$ref": "#/components/schemas/RegionSummary"
+          },
+          "row": {
+            "$ref": "#/components/schemas/RegionSummary"
+          }
+        }
+      },
       "IntervalResponseOfClearanceRequestsSummaryResponse": {
         "required": [
           "interval",
@@ -1584,14 +1666,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1607,14 +1688,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/MatchesSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1630,14 +1710,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/NotificationsSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1653,14 +1732,13 @@
             "format": "date-time"
           },
           "summary": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/ReleasesSummaryResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1750,14 +1828,13 @@
         "type": "object",
         "properties": {
           "decision": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1786,34 +1863,31 @@
         "type": "object",
         "properties": {
           "finalisation": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           },
           "clearanceRequest": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           },
           "preNotification": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
           }
         }
       },
@@ -1824,14 +1898,40 @@
         "type": "object",
         "properties": {
           "decision": {
+            "type": "object",
             "oneOf": [
-              {
-                "nullable": true
-              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ]
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "MatchesSummaryByLevel": {
+        "required": [
+          "total",
+          "level1",
+          "level2",
+          "level3"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level1": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level2": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "level3": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
           }
         }
       },
@@ -1955,6 +2055,26 @@
           "instance": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "RegionSummary": {
+        "required": [
+          "total",
+          "match",
+          "noMatch"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "match": {
+            "$ref": "#/components/schemas/MatchesSummaryByLevel"
+          },
+          "noMatch": {
+            "$ref": "#/components/schemas/MatchesSummaryByLevel"
           }
         }
       },
