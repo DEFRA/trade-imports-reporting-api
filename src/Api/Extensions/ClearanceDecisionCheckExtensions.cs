@@ -56,6 +56,7 @@ namespace Defra.TradeImportsReportingApi.Api.Extensions
             matchCode
                 is "E74"
                     or "E80"
+                    or "E81"
                     or "E84"
                     or "E85"
                     or "E86"
