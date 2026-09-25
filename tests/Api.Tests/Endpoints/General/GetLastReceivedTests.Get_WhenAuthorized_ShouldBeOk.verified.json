@@ -10,5 +10,9 @@
   "preNotification": {
     "timestamp": "2025-09-08T18:00:00Z",
     "reference": "ched"
+  },
+  "tracesChed": {
+    "timestamp": "2025-09-08T19:00:00Z",
+    "reference": "traces"
   }
 }

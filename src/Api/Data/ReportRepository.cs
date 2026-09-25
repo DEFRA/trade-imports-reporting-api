@@ -984,6 +984,67 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return results.FirstOrDefault() ?? NotificationsSummary.Empty;
     }
 
+    public async Task<NotificationsSummary> GetTracesChedsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        const string chedA = nameof(chedA);
+        const string chedP = nameof(chedP);
+        const string chedPP = nameof(chedPP);
+        const string chedD = nameof(chedD);
+        const string total = nameof(total);
+
+        var pipeline = new[]
+        {
+            NotificationsMatch(from, to),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", $"${Fields.Notification.ReferenceNumber}" },
+                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
+                }
+            ),
+            new BsonDocument(
+                "$group",
+                new BsonDocument
+                {
+                    { "_id", 1 },
+                    FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
+                    FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
+                    FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
+                    FieldSum(chedD, Fields.Notification.NotificationType, NotificationType.ChedD),
+                    { total, new BsonDocument("$sum", 1) },
+                }
+            ),
+            new BsonDocument(
+                "$project",
+                new BsonDocument
+                {
+                    { "_id", 0 },
+                    { chedA, 1 },
+                    { chedP, 1 },
+                    { chedPP, 1 },
+                    { chedD, 1 },
+                    { total, 1 },
+                }
+            ),
+        };
+
+        var aggregateTask = dbContext.TracesCheds.AggregateAsync<NotificationsSummary>(
+            pipeline,
+            cancellationToken: cancellationToken
+        );
+
+        var results = await (await aggregateTask).ToListAsync(cancellationToken);
+
+        return results.FirstOrDefault() ?? NotificationsSummary.Empty;
+    }
+
     public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
         DateTime from,
         DateTime to,
@@ -1153,13 +1214,20 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
             .FirstOrDefaultAsync(cancellationToken);
 
-        await Task.WhenAll(finalisationTask, requestTask, notificationTask);
+        var tracesChedTask = dbContext
+            .TracesCheds.Find(FilterDefinition<TracesChed>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        await Task.WhenAll(finalisationTask, requestTask, notificationTask, tracesChedTask);
 
         var latestFinalisation = await finalisationTask;
         var latestRequest = await requestTask;
         var latestNotification = await notificationTask;
+        var latestTracesChed = await tracesChedTask;
 
-        return new LastReceivedSummary(latestFinalisation, latestRequest, latestNotification);
+        return new LastReceivedSummary(latestFinalisation, latestRequest, latestNotification, latestTracesChed);
     }
 
     public async Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken)

@@ -1858,7 +1858,8 @@
         "required": [
           "finalisation",
           "clearanceRequest",
-          "preNotification"
+          "preNotification",
+          "tracesChed"
         ],
         "type": "object",
         "properties": {
@@ -1881,6 +1882,15 @@
             "nullable": true
           },
           "preNotification": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "tracesChed": {
             "type": "object",
             "oneOf": [
               {
@@ -2140,7 +2150,8 @@
           "releases",
           "matches",
           "clearanceRequests",
-          "notifications"
+          "notifications",
+          "tracesCheds"
         ],
         "type": "object",
         "properties": {
@@ -2154,6 +2165,9 @@
             "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
           },
           "notifications": {
+            "$ref": "#/components/schemas/NotificationsSummaryResponse"
+          },
+          "tracesCheds": {
             "$ref": "#/components/schemas/NotificationsSummaryResponse"
           }
         }

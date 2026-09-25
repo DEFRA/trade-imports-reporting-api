@@ -1,28 +1,28 @@
 ﻿{
   "releases": {
-    "automatic": 1,
+    "automatic": 0,
     "manual": 0,
-    "total": 1
+    "total": 0
   },
   "matches": {
     "match": 0,
-    "noMatch": 1,
-    "total": 1
+    "noMatch": 0,
+    "total": 0
   },
   "clearanceRequests": {
-    "unique": 1,
-    "total": 1
+    "unique": 0,
+    "total": 0
   },
   "notifications": {
-    "chedA": 1,
+    "chedA": 0,
     "chedP": 0,
     "chedPp": 0,
     "chedD": 0,
-    "total": 1
+    "total": 0
   },
   "tracesCheds": {
-    "chedA": 0,
-    "chedP": 1,
+    "chedA": 1,
+    "chedP": 0,
     "chedPp": 0,
     "chedD": 0,
     "total": 1

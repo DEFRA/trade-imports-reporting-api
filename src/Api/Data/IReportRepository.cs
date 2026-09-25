@@ -79,6 +79,8 @@ public interface IReportRepository
 
     Task<NotificationsSummary> GetNotificationsSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
 
+    Task<NotificationsSummary> GetTracesChedsSummary(DateTime from, DateTime to, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
         DateTime from,
         DateTime to,

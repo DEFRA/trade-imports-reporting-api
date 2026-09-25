@@ -46,6 +46,12 @@ public static class ServiceCollectionExtensions
             .AddValidateOptions<ResourceEventsConsumerOptions>(ResourceEventsConsumerOptions.SectionName)
             .Get();
 
+        var tracesChedsResourceEventsConsumerOptions = services
+            .AddValidateOptions<TracesChedsResourceEventsConsumerOptions>(
+                TracesChedsResourceEventsConsumerOptions.SectionName
+            )
+            .Get();
+
         var activityEventsConsumerOptions = services
             .AddValidateOptions<ActivityEventsConsumerOptions>(ActivityEventsConsumerOptions.SectionName)
             .Get();
@@ -56,6 +62,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(ConsumerMetricsInterceptor<>));
 
         services.AddTransient<ResourceEventsConsumer>();
+        services.AddTransient<TracesChedConsumer>();
         services.AddTransient<BtmsToCdsActivityConsumer>();
 
         services.AddSlimMessageBus(smb =>
@@ -119,6 +126,41 @@ public static class ServiceCollectionExtensions
                                 x.WithConsumer<BtmsToCdsActivityConsumer>()
                                     .Queue(activityEventsConsumerOptions.QueueName)
                                     .Instances(activityEventsConsumerOptions.ConsumersPerHost)
+                            );
+                    }
+                );
+            }
+
+            if (tracesChedsResourceEventsConsumerOptions.AutoStartConsumers)
+            {
+                smb.AddChildBus(
+                    "SQS_ResourceEvents_TracesCheds",
+                    mbb =>
+                    {
+                        mbb.WithProviderAmazonSQS(cfg =>
+                        {
+                            cfg.TopologyProvisioning.Enabled = false;
+                            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(
+                                cfg.SqsClientConfig,
+                                configuration
+                            );
+                        });
+
+                        mbb.RegisterSerializer<ToStringSerializer>(s =>
+                        {
+                            s.TryAddSingleton(_ => new ToStringSerializer());
+                            s.TryAddSingleton<IMessageSerializer<string>>(svp =>
+                                svp.GetRequiredService<ToStringSerializer>()
+                            );
+                        });
+
+                        mbb.WithSerializer<ToStringSerializer>();
+
+                        mbb.AutoStartConsumersEnabled(tracesChedsResourceEventsConsumerOptions.AutoStartConsumers)
+                            .Consume<string>(x =>
+                                x.WithConsumer<TracesChedConsumer>()
+                                    .Queue(tracesChedsResourceEventsConsumerOptions.QueueName)
+                                    .Instances(tracesChedsResourceEventsConsumerOptions.ConsumersPerHost)
                             );
                     }
                 );
