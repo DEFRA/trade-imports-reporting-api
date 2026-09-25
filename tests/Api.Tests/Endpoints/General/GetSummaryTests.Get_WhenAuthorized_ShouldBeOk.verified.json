@@ -19,5 +19,12 @@
     "chedPp": 30,
     "chedD": 40,
     "total": 100
+  },
+  "tracesCheds": {
+    "chedA": 1,
+    "chedP": 2,
+    "chedPp": 3,
+    "chedD": 4,
+    "total": 10
   }
 }

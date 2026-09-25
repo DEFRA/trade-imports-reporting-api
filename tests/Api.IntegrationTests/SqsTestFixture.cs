@@ -13,14 +13,17 @@ public class SqsTestFixture : IAsyncLifetime
 {
     private SqsQueueClient? _resourceEventsQueue;
     private SqsQueueClient? _activityEventsQueue;
+    private SqsQueueClient? _tracesChedsQueue;
 
     public SqsQueueClient ResourceEventsQueue => _resourceEventsQueue!;
     public SqsQueueClient ActivityEventsQueue => _activityEventsQueue!;
+    public SqsQueueClient TracesChedsQueue => _tracesChedsQueue!;
 
     public Task InitializeAsync()
     {
         _resourceEventsQueue = new SqsQueueClient("trade_imports_data_upserted_reporting_api");
         _activityEventsQueue = new SqsQueueClient("trade_imports_btms_activity_reporting_api");
+        _tracesChedsQueue = new SqsQueueClient("trade_imports_tracescheds_upserted_reporting_api");
 
         return Task.CompletedTask;
     }
@@ -28,6 +31,8 @@ public class SqsTestFixture : IAsyncLifetime
     public Task DisposeAsync()
     {
         _resourceEventsQueue?.Dispose();
+        _activityEventsQueue?.Dispose();
+        _tracesChedsQueue?.Dispose();
 
         return Task.CompletedTask;
     }
