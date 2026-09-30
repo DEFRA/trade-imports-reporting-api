@@ -92,20 +92,23 @@ public static class GeneralEndpoints
         var matchesTask = reportRepository.GetMatchesSummary(from, to, cancellationToken);
         var clearanceRequestsTask = reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
         var notificationsTask = reportRepository.GetNotificationsSummary(from, to, cancellationToken);
+        var tracesChedsTask = reportRepository.GetTracesChedsSummary(from, to, cancellationToken);
 
-        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask);
+        await Task.WhenAll(releasesTask, matchesTask, clearanceRequestsTask, notificationsTask, tracesChedsTask);
 
         var releases = await releasesTask;
         var matches = await matchesTask;
         var clearanceRequests = await clearanceRequestsTask;
         var notifications = await notificationsTask;
+        var tracesCheds = await tracesChedsTask;
 
         return Results.Ok(
             new SummaryResponse(
                 releases.ToResponse(),
                 matches.ToResponse(),
                 clearanceRequests.ToResponse(),
-                notifications.ToResponse()
+                notifications.ToResponse(),
+                tracesCheds.ToResponse()
             )
         );
     }

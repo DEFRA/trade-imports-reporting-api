@@ -48,6 +48,9 @@ public class GetSummaryTests(ApiWebApplicationFactory factory, ITestOutputHelper
         MockReportRepository
             .GetNotificationsSummary(from, to, Arg.Any<CancellationToken>())
             .Returns(new NotificationsSummary(10, 20, 30, 40, 100));
+        MockReportRepository
+            .GetTracesChedsSummary(from, to, Arg.Any<CancellationToken>())
+            .Returns(new NotificationsSummary(1, 2, 3, 4, 10));
 
         var response = await client.GetAsync(
             Testing.Endpoints.Summary.Get(

@@ -38,7 +38,8 @@ public class GetLastReceivedTests(ApiWebApplicationFactory factory, ITestOutputH
                 new LastReceivedSummary(
                     new LastReceived(new DateTime(2025, 9, 8, 16, 0, 0, DateTimeKind.Utc), "mrn1"),
                     new LastReceived(new DateTime(2025, 9, 8, 17, 0, 0, DateTimeKind.Utc), "mrn2"),
-                    new LastReceived(new DateTime(2025, 9, 8, 18, 0, 0, DateTimeKind.Utc), "ched")
+                    new LastReceived(new DateTime(2025, 9, 8, 18, 0, 0, DateTimeKind.Utc), "ched"),
+                    new LastReceived(new DateTime(2025, 9, 8, 19, 0, 0, DateTimeKind.Utc), "traces")
                 )
             );
 

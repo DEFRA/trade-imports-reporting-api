@@ -8,6 +8,7 @@ using Defra.TradeImportsReportingApi.Api.Utils;
 using Defra.TradeImportsReportingApi.Api.Utils.CorrelationId;
 using Defra.TradeImportsReportingApi.Api.Utils.Logging;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SlimMessageBus;
 using SlimMessageBus.Host;
 using SlimMessageBus.Host.AmazonSQS;
 using SlimMessageBus.Host.Interceptor;
@@ -46,6 +47,12 @@ public static class ServiceCollectionExtensions
             .AddValidateOptions<ResourceEventsConsumerOptions>(ResourceEventsConsumerOptions.SectionName)
             .Get();
 
+        var tracesChedsResourceEventsConsumerOptions = services
+            .AddValidateOptions<TracesChedsResourceEventsConsumerOptions>(
+                TracesChedsResourceEventsConsumerOptions.SectionName
+            )
+            .Get();
+
         var activityEventsConsumerOptions = services
             .AddValidateOptions<ActivityEventsConsumerOptions>(ActivityEventsConsumerOptions.SectionName)
             .Get();
@@ -56,44 +63,19 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(ConsumerMetricsInterceptor<>));
 
         services.AddTransient<ResourceEventsConsumer>();
+        services.AddTransient<TracesChedConsumer>();
         services.AddTransient<BtmsToCdsActivityConsumer>();
 
         services.AddSlimMessageBus(smb =>
         {
-            if (resourceEventsConsumerOptions.AutoStartConsumers)
-            {
-                smb.AddChildBus(
-                    "SQS_ResourceEvents",
-                    mbb =>
-                    {
-                        mbb.WithProviderAmazonSQS(cfg =>
-                        {
-                            cfg.TopologyProvisioning.Enabled = false;
-                            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(
-                                cfg.SqsClientConfig,
-                                configuration
-                            );
-                        });
-
-                        mbb.RegisterSerializer<ToStringSerializer>(s =>
-                        {
-                            s.TryAddSingleton(_ => new ToStringSerializer());
-                            s.TryAddSingleton<IMessageSerializer<string>>(svp =>
-                                svp.GetRequiredService<ToStringSerializer>()
-                            );
-                        });
-
-                        mbb.WithSerializer<ToStringSerializer>();
-
-                        mbb.AutoStartConsumersEnabled(resourceEventsConsumerOptions.AutoStartConsumers)
-                            .Consume<string>(x =>
-                                x.WithConsumer<ResourceEventsConsumer>()
-                                    .Queue(resourceEventsConsumerOptions.QueueName)
-                                    .Instances(resourceEventsConsumerOptions.ConsumersPerHost)
-                            );
-                    }
-                );
-            }
+            AddStringConsumerBus<ResourceEventsConsumer>(
+                smb,
+                "SQS_ResourceEvents",
+                resourceEventsConsumerOptions.AutoStartConsumers,
+                resourceEventsConsumerOptions.QueueName,
+                resourceEventsConsumerOptions.ConsumersPerHost,
+                configuration
+            );
 
             if (activityEventsConsumerOptions.AutoStartConsumers)
             {
@@ -101,20 +83,13 @@ public static class ServiceCollectionExtensions
                     "SQS_ActivityEvents",
                     mbb =>
                     {
-                        mbb.WithProviderAmazonSQS(cfg =>
-                        {
-                            cfg.TopologyProvisioning.Enabled = false;
-                            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(
-                                cfg.SqsClientConfig,
-                                configuration
-                            );
-                        });
+                        UseSqsProvider(mbb, configuration);
 
                         mbb.AddJsonSerializer();
 
                         mbb.WithSerializer<JsonMessageSerializer>();
 
-                        mbb.AutoStartConsumersEnabled(resourceEventsConsumerOptions.AutoStartConsumers)
+                        mbb.AutoStartConsumersEnabled(activityEventsConsumerOptions.AutoStartConsumers)
                             .Consume<BtmsActivityEvent<BtmsToCdsActivity>>(x =>
                                 x.WithConsumer<BtmsToCdsActivityConsumer>()
                                     .Queue(activityEventsConsumerOptions.QueueName)
@@ -123,8 +98,57 @@ public static class ServiceCollectionExtensions
                     }
                 );
             }
+
+            AddStringConsumerBus<TracesChedConsumer>(
+                smb,
+                "SQS_ResourceEvents_TracesCheds",
+                tracesChedsResourceEventsConsumerOptions.AutoStartConsumers,
+                tracesChedsResourceEventsConsumerOptions.QueueName,
+                tracesChedsResourceEventsConsumerOptions.ConsumersPerHost,
+                configuration
+            );
         });
 
         return services;
     }
+
+    private static void AddStringConsumerBus<TConsumer>(
+        MessageBusBuilder smb,
+        string busName,
+        bool autoStartConsumers,
+        string queueName,
+        int consumersPerHost,
+        IConfiguration configuration
+    )
+        where TConsumer : class, IConsumer<string>
+    {
+        if (!autoStartConsumers)
+            return;
+
+        smb.AddChildBus(
+            busName,
+            mbb =>
+            {
+                UseSqsProvider(mbb, configuration);
+
+                mbb.RegisterSerializer<ToStringSerializer>(s =>
+                {
+                    s.TryAddSingleton(_ => new ToStringSerializer());
+                    s.TryAddSingleton<IMessageSerializer<string>>(svp => svp.GetRequiredService<ToStringSerializer>());
+                });
+
+                mbb.WithSerializer<ToStringSerializer>();
+
+                mbb.AutoStartConsumersEnabled(autoStartConsumers)
+                    .Consume<string>(x => x.WithConsumer<TConsumer>().Queue(queueName).Instances(consumersPerHost));
+            }
+        );
+    }
+
+    private static void UseSqsProvider(MessageBusBuilder mbb, IConfiguration configuration) =>
+        mbb.WithProviderAmazonSQS(cfg =>
+        {
+            cfg.TopologyProvisioning.Enabled = false;
+            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(cfg.SqsClientConfig, configuration);
+        });
 }

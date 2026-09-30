@@ -30,6 +30,13 @@ public static class ServiceCollectionExtensions
                 sp => sp.GetRequiredService<IOptions<ActivityEventsConsumerOptions>>().Value.QueueName,
                 tags: [WebApplicationExtensions.Extended],
                 timeout: TimeSpan.FromSeconds(10)
+            )
+            .AddSqs(
+                configuration,
+                "Traces Cheds Resource events",
+                sp => sp.GetRequiredService<IOptions<TracesChedsResourceEventsConsumerOptions>>().Value.QueueName,
+                tags: [WebApplicationExtensions.Extended],
+                timeout: TimeSpan.FromSeconds(10)
             );
 
         return services;
