@@ -27,7 +27,8 @@ public class TracesChedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(s
         await SendTracesChed(s_issued, type: "CHEDP");
         await SendTracesChed(s_issued, type: "CHEDPP");
         await SendTracesChed(s_issued, type: "CHEDD");
-        await SendTracesChed(s_issued, lastUpdated: s_issued.AddHours(2), type: "CHEDD");
+        // Outside From and To
+        await SendTracesChed(s_issued.AddHours(2), lastUpdated: s_issued.AddHours(2).AddMinutes(1), type: "CHEDD");
 
         await VerifyJson(await GetSummary(), JsonVerifySettings);
     }

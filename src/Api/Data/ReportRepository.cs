@@ -75,6 +75,14 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             );
             public static readonly string NotificationType = Field(nameof(Entities.Notification.NotificationType));
         }
+
+        public static class TracesChed
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.TracesChed.Timestamp));
+            public static readonly string ReferenceNumber = Field(nameof(Entities.TracesChed.ReferenceNumber));
+            public static readonly string ChedCreated = Field(nameof(Entities.TracesChed.ChedCreated));
+            public static readonly string NotificationType = Field(nameof(Entities.TracesChed.NotificationType));
+        }
     }
 
     public async Task<ReleasesSummary> GetReleasesSummary(
@@ -1000,13 +1008,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         var pipeline = new[]
         {
-            NotificationsMatch(from, to),
+            TracesChedsMatch(from, to),
             new BsonDocument(
                 "$group",
                 new BsonDocument
                 {
-                    { "_id", $"${Fields.Notification.ReferenceNumber}" },
-                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
+                    { "_id", $"${Fields.TracesChed.ReferenceNumber}" },
+                    SortAndTakeLatest(Fields.TracesChed.Timestamp, Fields.TracesChed.NotificationType),
                 }
             ),
             new BsonDocument(
@@ -1014,10 +1022,10 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 new BsonDocument
                 {
                     { "_id", 1 },
-                    FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
-                    FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
-                    FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
-                    FieldSum(chedD, Fields.Notification.NotificationType, NotificationType.ChedD),
+                    FieldSum(chedA, Fields.TracesChed.NotificationType, NotificationType.ChedA),
+                    FieldSum(chedP, Fields.TracesChed.NotificationType, NotificationType.ChedP),
+                    FieldSum(chedPP, Fields.TracesChed.NotificationType, NotificationType.ChedPP),
+                    FieldSum(chedD, Fields.TracesChed.NotificationType, NotificationType.ChedD),
                     { total, new BsonDocument("$sum", 1) },
                 }
             ),
@@ -1375,6 +1383,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static BsonDocument NotificationsMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.Notification.NotificationCreated, from, to));
+
+    private static BsonDocument TracesChedsMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.TracesChed.ChedCreated, from, to));
 
     private static BsonDocument FromAndToMatch(string field, DateTime from, DateTime to) =>
         new(field, new BsonDocument { { "$gte", from }, { "$lt", to } });
