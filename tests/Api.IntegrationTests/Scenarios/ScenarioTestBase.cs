@@ -26,6 +26,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     public required IMongoCollection<Request> Requests { get; set; }
     public required IMongoCollection<Notification> Notifications { get; set; }
     public required IMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> BtmsToCdsActivities { get; set; }
+    public required IMongoCollection<ChedReservation> ChedReservations { get; set; }
     public required VerifySettings JsonVerifySettings { get; set; }
 
     public async Task InitializeAsync()
@@ -36,6 +37,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Notifications = GetMongoCollection<Notification>();
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
+        ChedReservations = GetMongoCollection<ChedReservation>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
@@ -45,6 +47,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
         );
         await CustomsDeclarations.DeleteManyAsync(FilterDefinition<CustomsDeclaration>.Empty);
+        await ChedReservations.DeleteManyAsync(FilterDefinition<ChedReservation>.Empty);
 
         JsonVerifySettings = new VerifySettings();
         JsonVerifySettings.UseStrictJson();
@@ -96,11 +99,11 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         var messageAttributes = new Dictionary<string, MessageAttributeValue>
         {
             {
-                "MessageType",
-                new MessageAttributeValue
+                "MessageType", new MessageAttributeValue
                 {
                     DataType = "String",
-                    StringValue = new AssemblyQualifiedNameMessageTypeResolver().ToName(typeof(BtmsActivityEvent<T>)),
+                    StringValue =
+                        new AssemblyQualifiedNameMessageTypeResolver().ToName(typeof(BtmsActivityEvent<T>)),
                 }
             },
             {
@@ -268,8 +271,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             ResourceEventResourceTypes.CustomsDeclaration,
             new CustomsDeclarationEvent
             {
-                Id = "test",
-                ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt },
+                Id = "test", ClearanceRequest = new ClearanceRequest { MessageSentAt = messageSentAt },
             },
             ResourceEventSubResourceTypes.ClearanceRequest
         );
@@ -328,7 +330,10 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                         new ClearanceDecisionItem
                         {
                             ItemNumber = 1,
-                            Checks = [new ClearanceDecisionCheck { CheckCode = "H222", DecisionCode = decisionCode }],
+                            Checks =
+                            [
+                                new ClearanceDecisionCheck { CheckCode = "H222", DecisionCode = decisionCode }
+                            ],
                         },
                     ],
                     Results =
@@ -348,10 +353,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                 },
                 Finalisation = new TradeImportsDataApi.Domain.CustomsDeclaration.Finalisation()
                 {
-                    MessageSentAt = mrnCreated,
-                    IsManualRelease = false,
-                    FinalState = "0",
-                    ExternalVersion = 1,
+                    MessageSentAt = mrnCreated, IsManualRelease = false, FinalState = "0", ExternalVersion = 1,
                 },
             },
             ResourceEventSubResourceTypes.ClearanceDecision
@@ -477,9 +479,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             OriginatingServiceName = "int-tests",
             Activity = new BtmsToCdsActivity()
             {
-                CorrelationId = "123",
-                ResponseStatusCode = 200,
-                ResponseTimestamp = sent,
+                CorrelationId = "123", ResponseStatusCode = 200, ResponseTimestamp = sent,
             },
         };
 
@@ -490,5 +490,95 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
 
         if (wait)
             await WaitForActivity(mrn);
+    }
+
+    protected async Task SendChedReservation(
+        DateTime timestamp,
+        string chedId,
+        string mrn,
+        string status = "Reserved",
+        bool wait = true
+    )
+    {
+        var resourceId = $"{chedId}_{mrn}";
+
+        var resourceEvent = CreateResourceEvent(
+                resourceId,
+                ResourceEventResourceTypes.ChedReservation,
+                new ChedReservationEvent
+                {
+                    Id = resourceId,
+                    Reservation = new Defra.TradeImportsDataApi.Domain.Traces.Reservation
+                    {
+                        ChedId = chedId,
+                        Mrn = mrn,
+                        Status = status,
+                        Timestamp = timestamp,
+                        Commodities = [],
+                    },
+                }
+            ) with
+            {
+                Timestamp = timestamp,
+            };
+
+        await sqsTestFixture.ChedReservationsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            CreateMessageAttributes(resourceEvent)
+        );
+
+        if (wait)
+            await WaitForChedReservation(resourceId);
+    }
+
+    protected async Task SendChedReservationDeleted(
+        DateTime timestamp,
+        string chedId,
+        string mrn
+    )
+    {
+        var resourceId = $"{chedId}_{mrn}";
+
+        var resourceEvent = new ResourceEvent<ChedReservationEvent>
+        {
+            ResourceId = resourceId,
+            ResourceType = ResourceEventResourceTypes.ChedReservation,
+            Operation = ResourceEventOperations.Deleted,
+            Timestamp = timestamp,
+        };
+
+        await sqsTestFixture.ChedReservationsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            CreateMessageAttributes(resourceEvent)
+        );
+    }
+
+    protected async Task WaitForChedReservation(string resourceId, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var reservations = await ChedReservations.FindAsync(
+                    Builders<ChedReservation>.Filter.Eq(x => x.ResourceId, resourceId)
+                );
+
+                return (await reservations.ToListAsync()).Count == count;
+            })
+        );
+    }
+
+    protected async Task WaitForChedReservationDeleted(string resourceId, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var reservations = await ChedReservations.FindAsync(
+                    Builders<ChedReservation>.Filter.Eq(x => x.ResourceId, resourceId)
+                    & Builders<ChedReservation>.Filter.Eq(x => x.Operation, ResourceEventOperations.Deleted)
+                );
+
+                return (await reservations.ToListAsync()).Count == count;
+            })
+        );
     }
 }

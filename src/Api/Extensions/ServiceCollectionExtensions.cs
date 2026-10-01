@@ -46,6 +46,12 @@ public static class ServiceCollectionExtensions
             .AddValidateOptions<ResourceEventsConsumerOptions>(ResourceEventsConsumerOptions.SectionName)
             .Get();
 
+        var chedReservationsResourceEventsConsumerOptions = services
+            .AddValidateOptions<ChedReservationsResourceEventsConsumerOptions>(
+                ChedReservationsResourceEventsConsumerOptions.SectionName
+            )
+            .Get();
+
         var activityEventsConsumerOptions = services
             .AddValidateOptions<ActivityEventsConsumerOptions>(ActivityEventsConsumerOptions.SectionName)
             .Get();
@@ -56,6 +62,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(ConsumerMetricsInterceptor<>));
 
         services.AddTransient<ResourceEventsConsumer>();
+        services.AddTransient<ChedReservationConsumer>();
         services.AddTransient<BtmsToCdsActivityConsumer>();
 
         services.AddSlimMessageBus(smb =>
@@ -119,6 +126,40 @@ public static class ServiceCollectionExtensions
                                 x.WithConsumer<BtmsToCdsActivityConsumer>()
                                     .Queue(activityEventsConsumerOptions.QueueName)
                                     .Instances(activityEventsConsumerOptions.ConsumersPerHost)
+                            );
+                    }
+                );
+            }
+
+            if (chedReservationsResourceEventsConsumerOptions.AutoStartConsumers)
+            {
+                smb.AddChildBus(
+                    "SQS_ResourceEvents_ChedReservations",
+                    mbb =>
+                    {
+                        mbb.WithProviderAmazonSQS(cfg =>
+                        {
+                            cfg.TopologyProvisioning.Enabled = false;
+                            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(
+                                cfg.SqsClientConfig,
+                                configuration
+                            );
+                        });
+
+                        mbb.RegisterSerializer<ToStringSerializer>(s =>
+                        {
+                            s.TryAddSingleton(_ => new ToStringSerializer());
+                            s.TryAddSingleton<IMessageSerializer<string>>(svp =>
+                                svp.GetRequiredService<ToStringSerializer>()
+                            );
+                        });
+
+                        mbb.WithSerializer<ToStringSerializer>();
+                        mbb.AutoStartConsumersEnabled(chedReservationsResourceEventsConsumerOptions.AutoStartConsumers)
+                            .Consume<string>(x =>
+                                x.WithConsumer<ChedReservationConsumer>()
+                                    .Queue(chedReservationsResourceEventsConsumerOptions.QueueName)
+                                    .Instances(chedReservationsResourceEventsConsumerOptions.ConsumersPerHost)
                             );
                     }
                 );

@@ -21,6 +21,17 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
         await CreateRequestIndexes(cancellationToken);
         await CreateNotificationIndexes(cancellationToken);
         await CreateCustomDeclarationsIndexes(cancellationToken);
+        await CreateChedReservationIndexes(cancellationToken);
+    }
+
+    private async Task CreateChedReservationIndexes(CancellationToken cancellationToken)
+    {
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<ChedReservation>.IndexKeys.Ascending(x => x.Timestamp),
+            expireAfter: TimeSpan.FromDays(180),
+            cancellationToken: cancellationToken
+        );
     }
 
     private async Task CreateFinalisationIndexes(CancellationToken cancellationToken)
@@ -191,12 +202,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
 
             var indexModel = new CreateIndexModel<T>(
                 keys,
-                new CreateIndexOptions
-                {
-                    Name = name,
-                    Background = true,
-                    Unique = unique,
-                }
+                new CreateIndexOptions { Name = name, Background = true, Unique = unique, }
             );
 
             await collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken);
@@ -280,12 +286,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
 
             var indexModel = new CreateIndexModel<T>(
                 keys,
-                new CreateIndexOptions
-                {
-                    Name = name,
-                    Background = true,
-                    ExpireAfter = expireAfter ?? TimeSpan.Zero,
-                }
+                new CreateIndexOptions { Name = name, Background = true, ExpireAfter = expireAfter ?? TimeSpan.Zero, }
             );
 
             await collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken);

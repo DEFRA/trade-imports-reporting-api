@@ -1858,7 +1858,8 @@
         "required": [
           "finalisation",
           "clearanceRequest",
-          "preNotification"
+          "preNotification",
+          "chedReservation"
         ],
         "type": "object",
         "properties": {
@@ -1881,6 +1882,15 @@
             "nullable": true
           },
           "preNotification": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "chedReservation": {
             "type": "object",
             "oneOf": [
               {
