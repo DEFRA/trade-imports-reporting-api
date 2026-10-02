@@ -3,6 +3,8 @@ QUEUES=(
 	"trade_imports_data_upserted_reporting_api-deadletter"
 	"trade_imports_btms_activity_reporting_api"
 	"trade_imports_btms_activity_reporting_api-deadletter"
+	"trade_imports_chedreservation_upserted_reporting_api"
+	"trade_imports_chedreservation_upserted_reporting_api-deadletter"
 )
 
 function is_ready() {

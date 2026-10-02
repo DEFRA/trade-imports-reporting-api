@@ -1585,6 +1585,226 @@
           }
         }
       }
+    },
+    "/admin/dlq/ched-reservations/redrive": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates redrive of messages from the dead letter queue",
+        "description": "Redrives all messages on the resource events dead letter queue",
+        "operationId": "Redrive_ched-reservations",
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/ched-reservations/remove-message": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates removal of message from the dead letter queue",
+        "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
+        "operationId": "RemoveMessage_ched-reservations",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/ched-reservations/drain": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates drain of all messages from the dead letter queue",
+        "description": "Drains all messages on the resource events dead letter queue",
+        "operationId": "Drain_ched-reservations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/ched-reservations/count": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets the count of messages on the resource events dead letter queue",
+        "description": "Gets the count of messages on the resource events dead letter queue",
+        "operationId": "Count_ched-reservations",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1858,7 +2078,8 @@
         "required": [
           "finalisation",
           "clearanceRequest",
-          "preNotification"
+          "preNotification",
+          "chedReservation"
         ],
         "type": "object",
         "properties": {
@@ -1881,6 +2102,15 @@
             "nullable": true
           },
           "preNotification": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "chedReservation": {
             "type": "object",
             "oneOf": [
               {

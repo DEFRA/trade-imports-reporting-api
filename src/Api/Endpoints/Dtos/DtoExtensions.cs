@@ -79,6 +79,12 @@ public static class DtoExtensions
                 : null,
             lastReceived.Notification is not null
                 ? new LastMessageResponse(lastReceived.Notification.Timestamp, lastReceived.Notification.Reference)
+                : null,
+            lastReceived.ChedReservation is not null
+                ? new LastMessageResponse(
+                    lastReceived.ChedReservation.Timestamp,
+                    lastReceived.ChedReservation.Reference
+                )
                 : null
         );
 
