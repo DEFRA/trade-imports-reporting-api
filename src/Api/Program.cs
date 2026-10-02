@@ -123,6 +123,17 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         nameSuffix: "activity-events",
         tags: "Admin"
     );
+    var chedReservationsOptions = app.Services.GetRequiredService<
+        IOptions<ChedReservationsResourceEventsConsumerOptions>
+    >();
+    app.MapDeadLetterQueueEndpoints(
+        chedReservationsOptions.Value.QueueName,
+        chedReservationsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/ched-reservations",
+        nameSuffix: "ched-reservations",
+        tags: "Admin"
+    );
     var tracesChedEventsOptions = app.Services.GetRequiredService<IOptions<TracesChedEventsConsumerOptions>>();
     app.MapDeadLetterQueueEndpoints(
         tracesChedEventsOptions.Value.QueueName,

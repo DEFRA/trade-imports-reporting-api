@@ -30,4 +30,7 @@ public class MongoDbContext(IMongoDatabase database) : IDbContext
 
     public IMongoCollection<TracesChed> TracesCheds { get; } =
         database.GetCollection<TracesChed>(typeof(TracesChed).DataEntityName());
+
+    public IMongoCollection<ChedReservation> ChedReservations { get; } =
+        database.GetCollection<ChedReservation>(typeof(ChedReservation).DataEntityName());
 }

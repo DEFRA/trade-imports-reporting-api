@@ -11,7 +11,8 @@
     "preNotification": {
       "timestamp": "2025-09-05T16:08:10Z",
       "reference": "Guid_3"
-    }
+    },
+    "chedReservation": null
   },
   "sent": {
     "decision": {
