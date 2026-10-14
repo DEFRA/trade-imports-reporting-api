@@ -7,21 +7,14 @@ using SlimMessageBus;
 namespace Defra.TradeImportsReportingApi.Api.Consumers;
 
 [ExcludeFromCodeCoverage]
-public class ChedReservationConsumer(
-    IConsumerContext context,
-    ILogger<ChedReservationConsumer> logger,
-    IDbContext dbContext
-) : IConsumer<string>
+public class ChedReservationConsumer(IConsumerContext context, IDbContext dbContext) : IConsumer<string>
 {
     public async Task OnHandle(string received, CancellationToken cancellationToken)
     {
         var resourceEvent = context.DeserializeResourceEvent<ChedReservationEvent>(received);
 
         if (resourceEvent.Operation is not ResourceEventOperations.Deleted && resourceEvent.Resource is null)
-        {
-            logger.LogError("Missing resource payload for {ResourceEventId}", resourceEvent.ResourceId);
-            return;
-        }
+            throw new InvalidOperationException("Resource is null");
 
         await dbContext.ChedReservations.InsertOneAsync(
             resourceEvent.ToChedReservation(),

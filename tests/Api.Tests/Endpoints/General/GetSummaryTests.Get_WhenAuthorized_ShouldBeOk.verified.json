@@ -31,7 +31,8 @@
     "unreserved": 1,
     "reserved": 2,
     "consumed": 3,
-    "deleted": 4,
+    "unsuccessful": 4,
+    "deleted": 5,
     "total": 10
   }
 }

@@ -29,6 +29,6 @@ public class TracesChedConsumer(IConsumerContext context, ILogger<TracesChedCons
             return;
         }
 
-        logger.LogInformation("Notification ignored {ImportNotificationType}", entityChed.NotificationType);
+        logger.LogInformation("Traces CHED ignored {NotificationType}", entityChed.NotificationType);
     }
 }

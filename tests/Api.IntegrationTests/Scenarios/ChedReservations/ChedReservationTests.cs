@@ -1,5 +1,6 @@
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
+using Defra.TradeImportsReportingApi.Testing;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios.ChedReservations;
@@ -49,6 +50,39 @@ public class ChedReservationTests(SqsTestFixture sqsTestFixture) : ScenarioTestB
         await WaitForChedReservation(resourceId, count: 2);
 
         await VerifyJson(await GetLastReceived(), JsonVerifySettings);
+    }
+
+    [Fact]
+    public async Task WhenReservationDeleted_DeletedShouldBeCountedInSummary()
+    {
+        var resourceId = "ched1_mrn1";
+
+        await SendChedReservation(s_timestamp, "ched1", "mrn1", wait: false);
+        await SendChedReservationDeleted(s_timestamp.AddSeconds(10), "ched1", "mrn1");
+        await WaitForChedReservation(resourceId, count: 2);
+
+        await VerifyJson(await GetSummary(), JsonVerifySettings);
+    }
+
+    [Fact]
+    public async Task WhenReservationUnsuccessful_UnsuccessfulShouldBeCountedInSummary()
+    {
+        await SendChedReservation(s_timestamp, "ched1", "mrn1", status: "Unsuccessful");
+
+        await VerifyJson(await GetSummary(), JsonVerifySettings);
+    }
+
+    private static async Task<string> GetSummary()
+    {
+        var response = await DefaultClient.GetAsync(
+            Testing.Endpoints.Summary.Get(
+                EndpointQuery
+                    .New.Where(EndpointFilter.From(s_timestamp.AddHours(-1)))
+                    .Where(EndpointFilter.To(s_timestamp.AddHours(1)))
+            )
+        );
+
+        return await response.Content.ReadAsStringAsync();
     }
 
     private static async Task<string> GetLastReceived()

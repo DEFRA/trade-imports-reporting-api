@@ -25,7 +25,14 @@ public static class DtoExtensions
         new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
 
     public static ChedReservationsSummaryResponse ToResponse(this ChedReservationsSummary summary) =>
-        new(summary.Unreserved, summary.Reserved, summary.Consumed, summary.Deleted, summary.Total);
+        new(
+            summary.Unreserved,
+            summary.Reserved,
+            summary.Consumed,
+            summary.Unsuccessful,
+            summary.Deleted,
+            summary.Total
+        );
 
     public static IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>> ToResponse(
         this IReadOnlyList<ReleasesBucket> buckets

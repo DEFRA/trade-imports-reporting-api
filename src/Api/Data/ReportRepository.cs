@@ -1007,6 +1007,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 ("unreserved", ReservationStatus.Unreserved),
                 ("reserved", ReservationStatus.Reserved),
                 ("consumed", ReservationStatus.Consumed),
+                ("unsuccessful", ReservationStatus.Unsuccessful),
                 ("deleted", BsonNull.Value),
             ],
             ChedReservationsSummary.Empty,
