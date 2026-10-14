@@ -9,6 +9,7 @@ using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
 using SlimMessageBus.Host;
+using Trade.Gateway.Api.Contract.Certificate;
 using Assert = Xunit.Assert;
 using BtmsToCdsActivity = Defra.TradeImportsDataApi.Domain.Events.BtmsToCdsActivity;
 using CommodityCheck = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.CommodityCheck;
@@ -38,17 +39,18 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Decisions = GetMongoCollection<Decision>();
         Requests = GetMongoCollection<Request>();
         Notifications = GetMongoCollection<Notification>();
+        TracesCheds = GetMongoCollection<TracesChed>();
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
         ImportPreNotifications =
             GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>();
-        TracesCheds = GetMongoCollection<TracesChed>();
         ChedReservations = GetMongoCollection<ChedReservation>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
         await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
         await Notifications.DeleteManyAsync(FilterDefinition<Notification>.Empty);
+        await TracesCheds.DeleteManyAsync(FilterDefinition<TracesChed>.Empty);
         await BtmsToCdsActivities.DeleteManyAsync(
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
         );
@@ -56,7 +58,6 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         await ImportPreNotifications.DeleteManyAsync(
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>.Empty
         );
-        await TracesCheds.DeleteManyAsync(FilterDefinition<TracesChed>.Empty);
         await ChedReservations.DeleteManyAsync(FilterDefinition<ChedReservation>.Empty);
 
         JsonVerifySettings = new VerifySettings();
@@ -220,6 +221,22 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         );
     }
 
+    protected async Task WaitForTracesChed(string ched, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var tracesCheds = await TracesCheds.FindAsync(
+                    Builders<TracesChed>.Filter.Eq(x => x.Id, ched)
+                );
+
+                return (await tracesCheds.ToListAsync()).Count == count;
+            })
+        );
+    }
+
+    protected Task WaitForTracesChedQueueEmpty() => sqsTestFixture.TracesChedEventsQueue.WaitForEmpty();
+
     protected async Task WaitForActivity(string mrn, int count = 1)
     {
         Assert.True(
@@ -279,6 +296,46 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
 
         if (wait)
             await WaitForNotificationChed(ched);
+    }
+
+    protected async Task SendTracesChed(
+        DateTime issued,
+        string? ched = null,
+        DateTime? lastUpdated = null,
+        string type = "CHEDA",
+        bool wait = true
+    )
+    {
+        ched ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            ched,
+            "TracesChed",
+            new TracesChedEvent
+            {
+                Id = ched,
+                Created = issued,
+                Updated = lastUpdated ?? issued,
+                Ched = new DefraUNVTDCHEDProfile
+                {
+                    LastUpdated = lastUpdated ?? issued,
+                    ExchangedDocument = new ExchangedDocument
+                    {
+                        Identifier = $"{type}.GB.2025.{ched}",
+                        IssueDateTime = issued,
+                    },
+                    SpecifiedConsignment = new Consignment(),
+                },
+            }
+        );
+
+        await sqsTestFixture.TracesChedEventsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            CreateMessageAttributes(resourceEvent)
+        );
+
+        if (wait)
+            await WaitForTracesChed(ched);
     }
 
     protected async Task SendClearanceRequest(DateTime messageSentAt, string? mrn = null, bool wait = true)
