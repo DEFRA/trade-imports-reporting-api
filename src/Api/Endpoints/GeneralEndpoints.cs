@@ -93,13 +93,15 @@ public static class GeneralEndpoints
         var clearanceRequestsTask = reportRepository.GetClearanceRequestsSummary(from, to, cancellationToken);
         var notificationsTask = reportRepository.GetNotificationsSummary(from, to, cancellationToken);
         var tracesChedsTask = reportRepository.GetTracesChedsSummary(from, to, cancellationToken);
+        var chedReservationsTask = reportRepository.GetChedReservationsSummary(from, to, cancellationToken);
 
         await Task.WhenAll(
             releasesTask,
             matchesTask,
             clearanceRequestsTask,
             notificationsTask,
-            tracesChedsTask
+            tracesChedsTask,
+            chedReservationsTask
         );
 
         var releases = await releasesTask;
@@ -107,6 +109,7 @@ public static class GeneralEndpoints
         var clearanceRequests = await clearanceRequestsTask;
         var notifications = await notificationsTask;
         var tracesCheds = await tracesChedsTask;
+        var chedReservations = await chedReservationsTask;
 
         return Results.Ok(
             new SummaryResponse(
@@ -114,7 +117,8 @@ public static class GeneralEndpoints
                 matches.ToResponse(),
                 clearanceRequests.ToResponse(),
                 notifications.ToResponse(),
-                tracesCheds.ToResponse()
+                tracesCheds.ToResponse(),
+                chedReservations.ToResponse()
             )
         );
     }

@@ -26,5 +26,12 @@
     "chedPp": 3,
     "chedD": 4,
     "total": 10
+  },
+  "chedReservations": {
+    "unreserved": 1,
+    "reserved": 2,
+    "consumed": 3,
+    "deleted": 4,
+    "total": 10
   }
 }

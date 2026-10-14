@@ -7,5 +7,6 @@ public record SummaryResponse(
     [property: JsonPropertyName("matches")] MatchesSummaryResponse Matches,
     [property: JsonPropertyName("clearanceRequests")] ClearanceRequestsSummaryResponse ClearanceRequests,
     [property: JsonPropertyName("notifications")] NotificationsSummaryResponse Notifications,
-    [property: JsonPropertyName("tracesCheds")] NotificationsSummaryResponse TracesCheds
+    [property: JsonPropertyName("tracesCheds")] NotificationsSummaryResponse TracesCheds,
+    [property: JsonPropertyName("chedReservations")] ChedReservationsSummaryResponse ChedReservations
 );
