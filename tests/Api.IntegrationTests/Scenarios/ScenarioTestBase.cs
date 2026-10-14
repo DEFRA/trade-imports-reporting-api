@@ -555,7 +555,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             await WaitForActivity(mrn);
     }
 
-    protected async Task SendChedReservation(DateTime timestamp, string chedId, string mrn)
+    protected async Task SendChedReservation(DateTime timestamp, string chedId, string mrn, bool wait = true)
     {
         var resourceId = $"{chedId}_{mrn}";
 
@@ -583,6 +583,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             JsonSerializer.Serialize(resourceEvent),
             CreateMessageAttributes(resourceEvent)
         );
+
+        if (wait)
+            await WaitForChedReservation(resourceId);
     }
 
     protected async Task SendChedReservationDeleted(DateTime timestamp, string chedId, string mrn)

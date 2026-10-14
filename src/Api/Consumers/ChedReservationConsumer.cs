@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsDataApi.Domain.Events;
 using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Extensions;
-using Defra.TradeImportsReportingApi.Api.Utils;
 using SlimMessageBus;
 
 namespace Defra.TradeImportsReportingApi.Api.Consumers;
@@ -16,7 +15,7 @@ public class ChedReservationConsumer(
 {
     public async Task OnHandle(string received, CancellationToken cancellationToken)
     {
-        var resourceEvent = DeserializeReceived(received);
+        var resourceEvent = context.DeserializeResourceEvent<ChedReservationEvent>(received);
 
         if (resourceEvent.Operation is not ResourceEventOperations.Deleted && resourceEvent.Resource is null)
         {
@@ -29,10 +28,4 @@ public class ChedReservationConsumer(
             cancellationToken: cancellationToken
         );
     }
-
-    private ResourceEvent<ChedReservationEvent> DeserializeReceived(string received) =>
-        MessageDeserializer.Deserialize<ResourceEvent<ChedReservationEvent>>(
-            received,
-            context.Headers.GetContentEncoding()
-        ) ?? throw new InvalidOperationException("Failed to deserialize message");
 }
