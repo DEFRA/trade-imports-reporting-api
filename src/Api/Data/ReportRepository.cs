@@ -75,7 +75,87 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             );
             public static readonly string NotificationType = Field(nameof(Entities.Notification.NotificationType));
         }
+
+        public static class TracesChed
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.TracesChed.Timestamp));
+            public static readonly string ReferenceNumber = Field(nameof(Entities.TracesChed.ReferenceNumber));
+            public static readonly string ChedCreated = Field(nameof(Entities.TracesChed.ChedCreated));
+            public static readonly string NotificationType = Field(nameof(Entities.TracesChed.NotificationType));
+        }
     }
+
+    public async Task<NotificationsSummary> GetTracesChedsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        return await GetLatestStatusSummary(
+            dbContext.TracesCheds,
+            TracesChedsMatch(from, to),
+            Fields.TracesChed.ReferenceNumber,
+            Fields.TracesChed.Timestamp,
+            Fields.TracesChed.NotificationType,
+            [
+                ("chedA", NotificationType.ChedA),
+                ("chedP", NotificationType.ChedP),
+                ("chedPP", NotificationType.ChedPP),
+                ("chedD", NotificationType.ChedD),
+            ],
+            NotificationsSummary.Empty,
+            cancellationToken
+        );
+    }
+
+    private static async Task<TSummary> GetLatestStatusSummary<TDocument, TSummary>(
+        IMongoCollection<TDocument> collection,
+        BsonDocument match,
+        string groupByIdField,
+        string timestampField,
+        string latestField,
+        (string Name, BsonValue Value)[] counted,
+        TSummary empty,
+        CancellationToken cancellationToken
+    )
+    {
+        const string total = nameof(total);
+
+        var countFields = new BsonDocument { { "_id", 1 } };
+        var projection = new BsonDocument { { "_id", 0 } };
+
+        foreach (var (name, value) in counted)
+        {
+            countFields.Add(FieldSum(name, latestField, value));
+            projection.Add(name, 1);
+        }
+
+        countFields.Add(total, new BsonDocument("$sum", 1));
+        projection.Add(total, 1);
+
+        var pipeline = new[]
+        {
+            match,
+            new BsonDocument(
+                "$group",
+                new BsonDocument { { "_id", $"${groupByIdField}" }, SortAndTakeLatest(timestampField, latestField) }
+            ),
+            new BsonDocument("$group", countFields),
+            new BsonDocument("$project", projection),
+        };
+
+        var results = await (
+            await collection.AggregateAsync<TSummary>(pipeline, cancellationToken: cancellationToken)
+        ).ToListAsync(cancellationToken);
+
+        return results.FirstOrDefault() ?? empty;
+    }
+
+    private static BsonDocument TracesChedsMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.TracesChed.ChedCreated, from, to));
+
 
     public async Task<ReleasesSummary> GetReleasesSummary(
         DateTime from,
