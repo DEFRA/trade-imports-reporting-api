@@ -31,6 +31,7 @@
     "unreserved": 0,
     "reserved": 1,
     "consumed": 0,
+    "unsuccessful": 0,
     "deleted": 0,
     "total": 1
   }

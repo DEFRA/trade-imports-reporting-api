@@ -2228,6 +2228,7 @@
           "unreserved",
           "reserved",
           "consumed",
+          "unsuccessful",
           "deleted",
           "total"
         ],
@@ -2242,6 +2243,10 @@
             "format": "int32"
           },
           "consumed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "unsuccessful": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "format": "int32"
           },

@@ -79,9 +79,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         public static class TracesChed
         {
-            public static readonly string Timestamp = Field(nameof(Entities.TracesChed.Timestamp));
-            public static readonly string ReferenceNumber = Field(nameof(Entities.TracesChed.ReferenceNumber));
-            public static readonly string ChedCreated = Field(nameof(Entities.TracesChed.ChedCreated));
+            public static readonly string Updated = Field(nameof(Entities.TracesChed.Updated));
+            public static readonly string Created = Field(nameof(Entities.TracesChed.Created));
+            public static readonly string Id = Field(nameof(Entities.TracesChed.Id));
             public static readonly string NotificationType = Field(nameof(Entities.TracesChed.NotificationType));
         }
 
@@ -975,8 +975,8 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await GetLatestStatusSummary(
             dbContext.TracesCheds,
             TracesChedsMatch(from, to),
-            Fields.TracesChed.ReferenceNumber,
-            Fields.TracesChed.Timestamp,
+            Fields.TracesChed.Id,
+            Fields.TracesChed.Updated,
             Fields.TracesChed.NotificationType,
             [
                 ("chedA", NotificationType.ChedA),
@@ -1007,6 +1007,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 ("unreserved", ReservationStatus.Unreserved),
                 ("reserved", ReservationStatus.Reserved),
                 ("consumed", ReservationStatus.Consumed),
+                ("unsuccessful", ReservationStatus.Unsuccessful),
                 ("deleted", BsonNull.Value),
             ],
             ChedReservationsSummary.Empty,
@@ -1402,7 +1403,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         new("$match", FromAndToMatch(Fields.Notification.NotificationCreated, from, to));
 
     private static BsonDocument TracesChedsMatch(DateTime from, DateTime to) =>
-        new("$match", FromAndToMatch(Fields.TracesChed.ChedCreated, from, to));
+        new("$match", FromAndToMatch(Fields.TracesChed.Created, from, to));
 
     private static BsonDocument ChedReservationsMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.ChedReservation.Timestamp, from, to));

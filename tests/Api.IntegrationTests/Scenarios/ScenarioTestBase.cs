@@ -571,7 +571,13 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             await WaitForActivity(mrn);
     }
 
-    protected async Task SendChedReservation(DateTime timestamp, string chedId, string mrn, bool wait = true)
+    protected async Task SendChedReservation(
+        DateTime timestamp,
+        string chedId,
+        string mrn,
+        bool wait = true,
+        string status = "Reserved"
+    )
     {
         var resourceId = $"{chedId}_{mrn}";
 
@@ -585,7 +591,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
                 {
                     ChedId = chedId,
                     Mrn = mrn,
-                    Status = "Reserved",
+                    Status = status,
                     Timestamp = timestamp,
                     Commodities = [],
                 },

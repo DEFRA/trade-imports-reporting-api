@@ -46,7 +46,7 @@ public class TracesChedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(s
 
         Assert.Equal(
             0,
-            await TracesCheds.CountDocumentsAsync(Builders<TracesChed>.Filter.Eq(x => x.ReferenceNumber, unknownChed))
+            await TracesCheds.CountDocumentsAsync(Builders<TracesChed>.Filter.Eq(x => x.Id, unknownChed))
         );
 
         await VerifyJson(await GetSummary(), JsonVerifySettings);
