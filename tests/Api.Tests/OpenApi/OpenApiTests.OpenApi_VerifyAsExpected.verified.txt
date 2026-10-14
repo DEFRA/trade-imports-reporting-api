@@ -2029,6 +2029,38 @@
   },
   "components": {
     "schemas": {
+      "ChedReservationsSummaryResponse": {
+        "required": [
+          "unreserved",
+          "reserved",
+          "consumed",
+          "deleted",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "unreserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "reserved": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "consumed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "deleted": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "format": "int32"
+          }
+        }
+      },
       "ClearanceRequestsSummaryResponse": {
         "required": [
           "unique",
@@ -2601,7 +2633,8 @@
           "matches",
           "clearanceRequests",
           "notifications",
-          "tracesCheds"
+          "tracesCheds",
+          "chedReservations"
         ],
         "type": "object",
         "properties": {
@@ -2619,6 +2652,9 @@
           },
           "tracesCheds": {
             "$ref": "#/components/schemas/NotificationsSummaryResponse"
+          },
+          "chedReservations": {
+            "$ref": "#/components/schemas/ChedReservationsSummaryResponse"
           }
         }
       }

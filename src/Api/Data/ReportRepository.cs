@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Defra.TradeImportsDataApi.Domain.Traces;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Api.Utils;
@@ -83,6 +84,13 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             public static readonly string ChedCreated = Field(nameof(Entities.TracesChed.ChedCreated));
             public static readonly string NotificationType = Field(nameof(Entities.TracesChed.NotificationType));
         }
+
+        public static class ChedReservation
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.ChedReservation.Timestamp));
+            public static readonly string ResourceId = Field(nameof(Entities.ChedReservation.ResourceId));
+            public static readonly string Status = Field(nameof(Entities.ChedReservation.Status));
+        }
     }
 
     public async Task<NotificationsSummary> GetTracesChedsSummary(
@@ -106,6 +114,31 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 ("chedD", NotificationType.ChedD),
             ],
             NotificationsSummary.Empty,
+            cancellationToken
+        );
+    }
+
+    public async Task<ChedReservationsSummary> GetChedReservationsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        return await GetLatestStatusSummary(
+            dbContext.ChedReservations,
+            ChedReservationsMatch(from, to),
+            Fields.ChedReservation.ResourceId,
+            Fields.ChedReservation.Timestamp,
+            Fields.ChedReservation.Status,
+            [
+                ("unreserved", ReservationStatus.Unreserved),
+                ("reserved", ReservationStatus.Reserved),
+                ("consumed", ReservationStatus.Consumed),
+                ("deleted", BsonNull.Value),
+            ],
+            ChedReservationsSummary.Empty,
             cancellationToken
         );
     }
@@ -155,6 +188,9 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static BsonDocument TracesChedsMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.TracesChed.ChedCreated, from, to));
+
+    private static BsonDocument ChedReservationsMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.ChedReservation.Timestamp, from, to));
 
 
     public async Task<ReleasesSummary> GetReleasesSummary(
