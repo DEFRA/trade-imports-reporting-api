@@ -1,4 +1,4 @@
-﻿{
+{
   "releases": {
     "automatic": 0,
     "manual": 0,
@@ -26,5 +26,13 @@
     "chedPp": 0,
     "chedD": 0,
     "total": 1
+  },
+  "chedReservations": {
+    "unreserved": 0,
+    "reserved": 0,
+    "consumed": 0,
+    "unsuccessful": 0,
+    "deleted": 0,
+    "total": 0
   }
 }
