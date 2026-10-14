@@ -13,8 +13,8 @@ public class ChedReservationTests(SqsTestFixture sqsTestFixture) : ScenarioTestB
     {
         var resourceId = "ched1_mrn1";
 
-        await SendChedReservation(s_timestamp, "ched1", "mrn1");
-        await SendChedReservation(s_timestamp.AddSeconds(10), "ched1", "mrn1");
+        await SendChedReservation(s_timestamp, "ched1", "mrn1", wait: false);
+        await SendChedReservation(s_timestamp.AddSeconds(10), "ched1", "mrn1", wait: false);
         await WaitForChedReservation(resourceId, count: 2);
 
         await VerifyJson(await GetLastReceived(), JsonVerifySettings);
@@ -25,7 +25,7 @@ public class ChedReservationTests(SqsTestFixture sqsTestFixture) : ScenarioTestB
     {
         var resourceId = "ched1_mrn1";
 
-        await SendChedReservation(s_timestamp, "ched1", "mrn1");
+        await SendChedReservation(s_timestamp, "ched1", "mrn1", wait: false);
         await SendChedReservationDeleted(s_timestamp.AddSeconds(10), "ched1", "mrn1");
         await WaitForChedReservation(resourceId, count: 2);
 
@@ -44,8 +44,8 @@ public class ChedReservationTests(SqsTestFixture sqsTestFixture) : ScenarioTestB
     {
         var resourceId = "ched1_mrn1";
 
-        await SendChedReservation(s_timestamp.AddSeconds(10), "ched1", "mrn1");
-        await SendChedReservation(s_timestamp, "ched1", "mrn1");
+        await SendChedReservation(s_timestamp.AddSeconds(10), "ched1", "mrn1", wait: false);
+        await SendChedReservation(s_timestamp, "ched1", "mrn1", wait: false);
         await WaitForChedReservation(resourceId, count: 2);
 
         await VerifyJson(await GetLastReceived(), JsonVerifySettings);
