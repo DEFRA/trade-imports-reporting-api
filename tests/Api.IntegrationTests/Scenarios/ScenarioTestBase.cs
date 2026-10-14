@@ -42,6 +42,8 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
         ChedReservations = GetMongoCollection<ChedReservation>();
 
+        await WaitForReportsToSettle();
+
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
         await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
@@ -60,6 +62,32 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
+
+    private async Task WaitForReportsToSettle()
+    {
+        var previous = -1L;
+
+        for (var i = 0; i < 40; i++)
+        {
+            var total =
+                await Finalisations.CountDocumentsAsync(FilterDefinition<Finalisation>.Empty)
+                + await Decisions.CountDocumentsAsync(FilterDefinition<Decision>.Empty)
+                + await Requests.CountDocumentsAsync(FilterDefinition<Request>.Empty)
+                + await Notifications.CountDocumentsAsync(FilterDefinition<Notification>.Empty)
+                + await TracesCheds.CountDocumentsAsync(FilterDefinition<TracesChed>.Empty)
+                + await ChedReservations.CountDocumentsAsync(FilterDefinition<ChedReservation>.Empty)
+                + await BtmsToCdsActivities.CountDocumentsAsync(
+                    FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
+                )
+                + await CustomsDeclarations.CountDocumentsAsync(FilterDefinition<CustomsDeclaration>.Empty);
+
+            if (total == previous)
+                return;
+
+            previous = total;
+            await Task.Delay(250);
+        }
+    }
 
     protected static Dictionary<string, MessageAttributeValue> CreateMessageAttributes<T>(
         ResourceEvent<T> resourceEvent

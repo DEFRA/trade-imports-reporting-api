@@ -29,6 +29,8 @@ aws --endpoint-url="$AWS_ENDPOINT_URL" sqs set-queue-attributes --queue-url "$AW
 
 for queue in "${QUEUES[@]}"; do
 
+  aws --endpoint-url="$AWS_ENDPOINT_URL" sqs set-queue-attributes --queue-url "$AWS_ENDPOINT_URL/000000000000/$queue" --attributes '{"VisibilityTimeout": "5"}'
+
   queue_properties=$(aws --endpoint-url="$AWS_ENDPOINT_URL" sqs get-queue-attributes --queue-url "$AWS_ENDPOINT_URL/000000000000/$queue" --attribute-names All)
 
   echo "Queue $queue Properties: $queue_properties" # NOSONAR
