@@ -132,6 +132,15 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         nameSuffix: "ched-reservations",
         tags: "Admin"
     );
+    var tracesChedsOptions = app.Services.GetRequiredService<IOptions<TracesChedsResourceEventsConsumerOptions>>();
+    app.MapDeadLetterQueueEndpoints(
+        tracesChedsOptions.Value.QueueName,
+        tracesChedsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/traces-cheds",
+        nameSuffix: "traces-cheds",
+        tags: "Admin"
+    );
     app.UseOpenApi();
 
     app.UseExceptionHandler(

@@ -11,5 +11,6 @@ public interface IDbContext
     IMongoCollection<Notification> Notifications { get; }
     IMongoCollection<BtmsToCdsActivity> BtmsToCdsActivities { get; }
     IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; }
+    IMongoCollection<TracesChed> TracesCheds { get; }
     IMongoCollection<ChedReservation> ChedReservations { get; }
 }

@@ -47,6 +47,12 @@ public static class ServiceCollectionExtensions
             .AddValidateOptions<ResourceEventsConsumerOptions>(ResourceEventsConsumerOptions.SectionName)
             .Get();
 
+        var tracesChedsResourceEventsConsumerOptions = services
+            .AddValidateOptions<TracesChedsResourceEventsConsumerOptions>(
+                TracesChedsResourceEventsConsumerOptions.SectionName
+            )
+            .Get();
+
         var chedReservationsResourceEventsConsumerOptions = services
             .AddValidateOptions<ChedReservationsResourceEventsConsumerOptions>(
                 ChedReservationsResourceEventsConsumerOptions.SectionName
@@ -63,6 +69,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(ConsumerMetricsInterceptor<>));
 
         services.AddTransient<ResourceEventsConsumer>();
+        services.AddTransient<TracesChedConsumer>();
         services.AddTransient<ChedReservationConsumer>();
         services.AddTransient<BtmsToCdsActivityConsumer>();
 
@@ -97,6 +104,15 @@ public static class ServiceCollectionExtensions
                     }
                 );
             }
+
+            AddStringConsumerBus<TracesChedConsumer>(
+                smb,
+                "SQS_ResourceEvents_TracesCheds",
+                tracesChedsResourceEventsConsumerOptions.AutoStartConsumers,
+                tracesChedsResourceEventsConsumerOptions.QueueName,
+                tracesChedsResourceEventsConsumerOptions.ConsumersPerHost,
+                configuration
+            );
 
             AddStringConsumerBus<ChedReservationConsumer>(
                 smb,

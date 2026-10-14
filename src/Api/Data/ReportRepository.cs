@@ -1153,20 +1153,33 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
             .FirstOrDefaultAsync(cancellationToken);
 
+        var tracesChedTask = dbContext
+            .TracesCheds.Find(FilterDefinition<TracesChed>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
+            .FirstOrDefaultAsync(cancellationToken);
+
         var chedReservationTask = dbContext
             .ChedReservations.Find(FilterDefinition<ChedReservation>.Empty)
             .SortByDescending(x => x.Timestamp)
             .Project(x => new LastReceived(x.Timestamp, x.ResourceId))
             .FirstOrDefaultAsync(cancellationToken);
 
-        await Task.WhenAll(finalisationTask, requestTask, notificationTask, chedReservationTask);
+        await Task.WhenAll(finalisationTask, requestTask, notificationTask, tracesChedTask, chedReservationTask);
 
         var latestFinalisation = await finalisationTask;
         var latestRequest = await requestTask;
         var latestNotification = await notificationTask;
+        var latestTracesChed = await tracesChedTask;
         var latestChedReservation = await chedReservationTask;
 
-        return new LastReceivedSummary(latestFinalisation, latestRequest, latestNotification, latestChedReservation);
+        return new LastReceivedSummary(
+            latestFinalisation,
+            latestRequest,
+            latestNotification,
+            latestTracesChed,
+            latestChedReservation
+        );
     }
 
     public async Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken)

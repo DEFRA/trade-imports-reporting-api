@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Amazon.SQS.Model;
+using Defra.TradeImportsDataApi.Domain.Events;
+using Defra.TradeImportsReportingApi.Api.Utils;
 using SlimMessageBus;
 
 namespace Defra.TradeImportsReportingApi.Api.Extensions;
@@ -37,4 +39,11 @@ public static class ConsumerContextExtensions
         consumerContext.Headers.TryGetValue(MessageBusHeaders.ResourceId, out var value)
             ? value.ToString()!
             : string.Empty;
+
+    public static ResourceEvent<T> DeserializeResourceEvent<T>(
+        this IConsumerContext consumerContext,
+        string received
+    ) =>
+        MessageDeserializer.Deserialize<ResourceEvent<T>>(received, consumerContext.Headers.GetContentEncoding())
+        ?? throw new InvalidOperationException("Failed to deserialize message");
 }

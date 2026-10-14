@@ -2079,6 +2079,7 @@
           "finalisation",
           "clearanceRequest",
           "preNotification",
+          "tracesChed",
           "chedReservation"
         ],
         "type": "object",
@@ -2102,6 +2103,15 @@
             "nullable": true
           },
           "preNotification": {
+            "type": "object",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LastMessageResponse"
+              }
+            ],
+            "nullable": true
+          },
+          "tracesChed": {
             "type": "object",
             "oneOf": [
               {

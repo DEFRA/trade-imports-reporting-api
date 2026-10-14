@@ -4,5 +4,6 @@ public record LastReceivedSummary(
     LastReceived? Finalisation,
     LastReceived? Request,
     LastReceived? Notification,
+    LastReceived? TracesChed,
     LastReceived? ChedReservation
 );
