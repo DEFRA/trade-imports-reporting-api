@@ -29,6 +29,9 @@ public class TracesChedConsumer(IConsumerContext context, ILogger<TracesChedCons
             return;
         }
 
-        logger.LogInformation("Traces CHED ignored {NotificationType}", entityChed.NotificationType);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Traces CHED ignored {NotificationType}", entityChed.NotificationType);
+        }
     }
 }

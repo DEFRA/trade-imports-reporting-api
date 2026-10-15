@@ -950,9 +950,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await GetLatestStatusSummary(
             dbContext.Notifications,
             NotificationsMatch(from, to),
-            Fields.Notification.ReferenceNumber,
-            Fields.Notification.Timestamp,
-            Fields.Notification.NotificationType,
+            (Fields.Notification.ReferenceNumber, Fields.Notification.Timestamp, Fields.Notification.NotificationType),
             [
                 ("chedA", NotificationType.ChedA),
                 ("chedP", NotificationType.ChedP),
@@ -975,9 +973,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await GetLatestStatusSummary(
             dbContext.TracesCheds,
             TracesChedsMatch(from, to),
-            Fields.TracesChed.ReferenceNumber,
-            Fields.TracesChed.Timestamp,
-            Fields.TracesChed.NotificationType,
+            (Fields.TracesChed.ReferenceNumber, Fields.TracesChed.Timestamp, Fields.TracesChed.NotificationType),
             [
                 ("chedA", NotificationType.ChedA),
                 ("chedP", NotificationType.ChedP),
@@ -1000,9 +996,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return await GetLatestStatusSummary(
             dbContext.ChedReservations,
             ChedReservationsMatch(from, to),
-            Fields.ChedReservation.ResourceId,
-            Fields.ChedReservation.Timestamp,
-            Fields.ChedReservation.Status,
+            (Fields.ChedReservation.ResourceId, Fields.ChedReservation.Timestamp, Fields.ChedReservation.Status),
             [
                 ("unreserved", ReservationStatus.Unreserved),
                 ("reserved", ReservationStatus.Reserved),
@@ -1018,9 +1012,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     private static async Task<TSummary> GetLatestStatusSummary<TDocument, TSummary>(
         IMongoCollection<TDocument> collection,
         BsonDocument match,
-        string groupByIdField,
-        string timestampField,
-        string latestField,
+        (string GroupBy, string Timestamp, string Latest) fields,
         (string Name, BsonValue Value)[] counted,
         TSummary empty,
         CancellationToken cancellationToken
@@ -1033,7 +1025,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
         foreach (var (name, value) in counted)
         {
-            countFields.Add(FieldSum(name, latestField, value));
+            countFields.Add(FieldSum(name, fields.Latest, value));
             projection.Add(name, 1);
         }
 
@@ -1045,7 +1037,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             match,
             new BsonDocument(
                 "$group",
-                new BsonDocument { { "_id", $"${groupByIdField}" }, SortAndTakeLatest(timestampField, latestField) }
+                new BsonDocument { { "_id", $"${fields.GroupBy}" }, SortAndTakeLatest(fields.Timestamp, fields.Latest) }
             ),
             new BsonDocument("$group", countFields),
             new BsonDocument("$project", projection),
