@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Defra.TradeImportsDataApi.Domain.Traces;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Api.Utils;
@@ -74,6 +75,21 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
                 nameof(Entities.Notification.NotificationCreated)
             );
             public static readonly string NotificationType = Field(nameof(Entities.Notification.NotificationType));
+        }
+
+        public static class TracesChed
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.TracesChed.Timestamp));
+            public static readonly string ReferenceNumber = Field(nameof(Entities.TracesChed.ReferenceNumber));
+            public static readonly string ChedCreated = Field(nameof(Entities.TracesChed.ChedCreated));
+            public static readonly string NotificationType = Field(nameof(Entities.TracesChed.NotificationType));
+        }
+
+        public static class ChedReservation
+        {
+            public static readonly string Timestamp = Field(nameof(Entities.ChedReservation.Timestamp));
+            public static readonly string ResourceId = Field(nameof(Entities.ChedReservation.ResourceId));
+            public static readonly string Status = Field(nameof(Entities.ChedReservation.Status));
         }
     }
 
@@ -931,57 +947,107 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     {
         GuardUtc(from, to);
 
-        const string chedA = nameof(chedA);
-        const string chedP = nameof(chedP);
-        const string chedPP = nameof(chedPP);
-        const string chedD = nameof(chedD);
+        return await GetLatestStatusSummary(
+            dbContext.Notifications,
+            NotificationsMatch(from, to),
+            (Fields.Notification.ReferenceNumber, Fields.Notification.Timestamp, Fields.Notification.NotificationType),
+            [
+                ("chedA", NotificationType.ChedA),
+                ("chedP", NotificationType.ChedP),
+                ("chedPP", NotificationType.ChedPP),
+                ("chedD", NotificationType.ChedD),
+            ],
+            NotificationsSummary.Empty,
+            cancellationToken
+        );
+    }
+
+    public async Task<NotificationsSummary> GetTracesChedsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        return await GetLatestStatusSummary(
+            dbContext.TracesCheds,
+            TracesChedsMatch(from, to),
+            (Fields.TracesChed.ReferenceNumber, Fields.TracesChed.Timestamp, Fields.TracesChed.NotificationType),
+            [
+                ("chedA", NotificationType.ChedA),
+                ("chedP", NotificationType.ChedP),
+                ("chedPP", NotificationType.ChedPP),
+                ("chedD", NotificationType.ChedD),
+            ],
+            NotificationsSummary.Empty,
+            cancellationToken
+        );
+    }
+
+    public async Task<ChedReservationsSummary> GetChedReservationsSummary(
+        DateTime from,
+        DateTime to,
+        CancellationToken cancellationToken
+    )
+    {
+        GuardUtc(from, to);
+
+        return await GetLatestStatusSummary(
+            dbContext.ChedReservations,
+            ChedReservationsMatch(from, to),
+            (Fields.ChedReservation.ResourceId, Fields.ChedReservation.Timestamp, Fields.ChedReservation.Status),
+            [
+                ("unreserved", ReservationStatus.Unreserved),
+                ("reserved", ReservationStatus.Reserved),
+                ("consumed", ReservationStatus.Consumed),
+                ("unsuccessful", ReservationStatus.Unsuccessful),
+                ("deleted", BsonNull.Value),
+            ],
+            ChedReservationsSummary.Empty,
+            cancellationToken
+        );
+    }
+
+    private static async Task<TSummary> GetLatestStatusSummary<TDocument, TSummary>(
+        IMongoCollection<TDocument> collection,
+        BsonDocument match,
+        (string GroupBy, string Timestamp, string Latest) fields,
+        (string Name, BsonValue Value)[] counted,
+        TSummary empty,
+        CancellationToken cancellationToken
+    )
+    {
         const string total = nameof(total);
+
+        var countFields = new BsonDocument { { "_id", 1 } };
+        var projection = new BsonDocument { { "_id", 0 } };
+
+        foreach (var (name, value) in counted)
+        {
+            countFields.Add(FieldSum(name, fields.Latest, value));
+            projection.Add(name, 1);
+        }
+
+        countFields.Add(total, new BsonDocument("$sum", 1));
+        projection.Add(total, 1);
 
         var pipeline = new[]
         {
-            NotificationsMatch(from, to),
+            match,
             new BsonDocument(
                 "$group",
-                new BsonDocument
-                {
-                    { "_id", $"${Fields.Notification.ReferenceNumber}" },
-                    SortAndTakeLatest(Fields.Notification.Timestamp, Fields.Notification.NotificationType),
-                }
+                new BsonDocument { { "_id", $"${fields.GroupBy}" }, SortAndTakeLatest(fields.Timestamp, fields.Latest) }
             ),
-            new BsonDocument(
-                "$group",
-                new BsonDocument
-                {
-                    { "_id", 1 },
-                    FieldSum(chedA, Fields.Notification.NotificationType, NotificationType.ChedA),
-                    FieldSum(chedP, Fields.Notification.NotificationType, NotificationType.ChedP),
-                    FieldSum(chedPP, Fields.Notification.NotificationType, NotificationType.ChedPP),
-                    FieldSum(chedD, Fields.Notification.NotificationType, NotificationType.ChedD),
-                    { total, new BsonDocument("$sum", 1) },
-                }
-            ),
-            new BsonDocument(
-                "$project",
-                new BsonDocument
-                {
-                    { "_id", 0 },
-                    { chedA, 1 },
-                    { chedP, 1 },
-                    { chedPP, 1 },
-                    { chedD, 1 },
-                    { total, 1 },
-                }
-            ),
+            new BsonDocument("$group", countFields),
+            new BsonDocument("$project", projection),
         };
 
-        var aggregateTask = dbContext.Notifications.AggregateAsync<NotificationsSummary>(
-            pipeline,
-            cancellationToken: cancellationToken
-        );
+        var results = await (
+            await collection.AggregateAsync<TSummary>(pipeline, cancellationToken: cancellationToken)
+        ).ToListAsync(cancellationToken);
 
-        var results = await (await aggregateTask).ToListAsync(cancellationToken);
-
-        return results.FirstOrDefault() ?? NotificationsSummary.Empty;
+        return results.FirstOrDefault() ?? empty;
     }
 
     public async Task<IReadOnlyList<NotificationsBucket>> GetNotificationsIntervals(
@@ -1153,13 +1219,33 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
             .FirstOrDefaultAsync(cancellationToken);
 
-        await Task.WhenAll(finalisationTask, requestTask, notificationTask);
+        var tracesChedTask = dbContext
+            .TracesCheds.Find(FilterDefinition<TracesChed>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.ReferenceNumber))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var chedReservationTask = dbContext
+            .ChedReservations.Find(FilterDefinition<ChedReservation>.Empty)
+            .SortByDescending(x => x.Timestamp)
+            .Project(x => new LastReceived(x.Timestamp, x.ResourceId))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        await Task.WhenAll(finalisationTask, requestTask, notificationTask, tracesChedTask, chedReservationTask);
 
         var latestFinalisation = await finalisationTask;
         var latestRequest = await requestTask;
         var latestNotification = await notificationTask;
+        var latestTracesChed = await tracesChedTask;
+        var latestChedReservation = await chedReservationTask;
 
-        return new LastReceivedSummary(latestFinalisation, latestRequest, latestNotification);
+        return new LastReceivedSummary(
+            latestFinalisation,
+            latestRequest,
+            latestNotification,
+            latestTracesChed,
+            latestChedReservation
+        );
     }
 
     public async Task<LastSentSummary> GetLastSentSummary(CancellationToken cancellationToken)
@@ -1307,6 +1393,12 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
 
     private static BsonDocument NotificationsMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.Notification.NotificationCreated, from, to));
+
+    private static BsonDocument TracesChedsMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.TracesChed.ChedCreated, from, to));
+
+    private static BsonDocument ChedReservationsMatch(DateTime from, DateTime to) =>
+        new("$match", FromAndToMatch(Fields.ChedReservation.Timestamp, from, to));
 
     private static BsonDocument FromAndToMatch(string field, DateTime from, DateTime to) =>
         new(field, new BsonDocument { { "$gte", from }, { "$lt", to } });

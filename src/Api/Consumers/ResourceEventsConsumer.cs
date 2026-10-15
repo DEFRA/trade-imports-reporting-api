@@ -4,7 +4,6 @@ using Defra.TradeImportsReportingApi.Api.Data;
 using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Data.Extensions;
 using Defra.TradeImportsReportingApi.Api.Extensions;
-using Defra.TradeImportsReportingApi.Api.Utils;
 using MongoDB.Driver;
 using SlimMessageBus;
 
@@ -25,7 +24,7 @@ public class ResourceEventsConsumer(
         switch (resourceType)
         {
             case ResourceEventResourceTypes.CustomsDeclaration:
-                var customsDeclaration = DeserializeReceived<CustomsDeclarationEvent>(received);
+                var customsDeclaration = context.DeserializeResourceEvent<CustomsDeclarationEvent>(received);
                 await HandleCustomsDeclaration(customsDeclaration, cancellationToken);
                 switch (subResourceType)
                 {
@@ -139,7 +138,7 @@ public class ResourceEventsConsumer(
 
     private async Task HandleNotification(string received, CancellationToken cancellationToken)
     {
-        var importPreNotification = DeserializeReceived<ImportPreNotificationEvent>(received);
+        var importPreNotification = context.DeserializeResourceEvent<ImportPreNotificationEvent>(received);
         if (importPreNotification.Resource is null)
             throw new InvalidOperationException("Resource is null");
 
@@ -161,8 +160,4 @@ public class ResourceEventsConsumer(
             incomingNotification.ImportNotificationType
         );
     }
-
-    private ResourceEvent<T> DeserializeReceived<T>(string received) =>
-        MessageDeserializer.Deserialize<ResourceEvent<T>>(received, context.Headers.GetContentEncoding())
-        ?? throw new InvalidOperationException("Failed to deserialize message");
 }
