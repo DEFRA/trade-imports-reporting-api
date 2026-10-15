@@ -212,7 +212,8 @@ public class RequestTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         await SendClearanceRequest(messageSentAt.AddHours(17), mrn: mrn2, wait: false);
         await SendClearanceRequest(messageSentAt.AddHours(19), mrn: mrn2, wait: false);
         await WaitForRequestMrn(mrn2, count: 4);
-        await SendClearanceRequest(messageSentAt.AddHours(13).AddMinutes(10), mrn: mrn3);
+        await SendClearanceRequest(messageSentAt.AddHours(13).AddMinutes(10), mrn: mrn3, wait: false);
+        await WaitForRequestMrn(mrn3, count: 2);
 
         // Bucket 3 - empty
         var bucket3 = to.AddHours(-1);
