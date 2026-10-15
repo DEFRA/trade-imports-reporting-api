@@ -68,7 +68,9 @@ services:
     # WARNING: do not turn on authentication, otherwise will need to deal with generating key pairs and sharing them between
     # the replicaset nodes. For local development this is overkill, so just turn off auth and connect to Mongo without creds.
     image: mongo:6.0.13
-    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27017" ]
+    # The ttlMonitorEnabled=false is set because the tests insert documents dated 2025-09-03 against the app's 180-day TTL, so
+    # the TTL monitor deletes them mid-test.  Off locally, on when deployed.
+    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27017", "--setParameter", "ttlMonitorEnabled=false" ]
     ports:
       - "27017:27017"
     extra_hosts:
