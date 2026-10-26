@@ -8,6 +8,8 @@ public class CustomsDeclaration
     public required string Id { get; init; }
     public required DateTime MrnCreated { get; init; }
     public required DateTime Timestamp { get; init; }
+    public DateTime LastUpdated { get; init; }
+    public string? FinalState { get; set; }
     public bool? Match { get; set; }
     public bool? MatchLevel1 { get; set; }
     public bool? MatchLevel2 { get; set; }

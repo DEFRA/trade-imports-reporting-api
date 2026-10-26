@@ -18,6 +18,8 @@ public static class CustomsDeclarationExtensions
             Id = customsDeclarationEvent.Id,
             MrnCreated = customsDeclarationEvent.ClearanceRequest?.MessageSentAt ?? DateTime.MinValue,
             Timestamp = customsDeclarationEvent.Created,
+            LastUpdated = customsDeclarationEvent.Updated,
+            FinalState = customsDeclarationEvent.Finalisation?.FinalState,
             ReleaseType = customsDeclarationEvent.Finalisation switch
             {
                 { FinalState: CancelledAfterArrival or CancelledWhilePreLodged } => ReleaseType.Cancelled,
