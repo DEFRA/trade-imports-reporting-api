@@ -23,6 +23,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
 {
     public required IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; set; }
     public required IMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification> ImportPreNotifications { get; set; }
+    public required IMongoCollection<TracesChed> TracesCheds { get; set; }
     public required IMongoCollection<Finalisation> Finalisations { get; set; }
     public required IMongoCollection<Decision> Decisions { get; set; }
     public required IMongoCollection<Request> Requests { get; set; }
@@ -39,6 +40,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
         ImportPreNotifications = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>();
+        TracesCheds = GetMongoCollection<TracesChed>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
@@ -51,6 +53,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         await ImportPreNotifications.DeleteManyAsync(
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>.Empty
         );
+        await TracesCheds.DeleteManyAsync(FilterDefinition<TracesChed>.Empty);
 
         JsonVerifySettings = new VerifySettings();
         JsonVerifySettings.UseStrictJson();
@@ -135,6 +138,15 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Dictionary<string, MessageAttributeValue>? messageAttributes = null
     ) =>
         await sqsTestFixture.ResourceEventsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            messageAttributes
+        );
+
+    protected async Task SendTracesChedMessage(
+        ResourceEvent<TracesChedEvent> resourceEvent,
+        Dictionary<string, MessageAttributeValue>? messageAttributes = null
+    ) =>
+        await sqsTestFixture.TracesChedEventsQueue.SendMessage(
             JsonSerializer.Serialize(resourceEvent),
             messageAttributes
         );

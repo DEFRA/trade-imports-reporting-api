@@ -1,7 +1,7 @@
 ﻿{
   Id: CHEDA.GB.2025.1234567,
-  NotificationCreated: 2025-07-03 13:42 Utc,
-  Timestamp: 2025-07-03 14:42 Utc,
+  Created: 2025-07-03 13:42 Utc,
+  Updated: 2025-07-03 14:42 Utc,
   NotificationType: ChedA,
   Status: SUBMITTED,
   Commodities: [

@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.4",
   "info": {
     "title": "Trade Imports Reporting API",
@@ -387,6 +387,14 @@
             "in": "query",
             "schema": {
               "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ],
               "format": "int32"
             }
           },
@@ -1146,6 +1154,192 @@
         }
       }
     },
+    "/extracts/ipaffs-cheds": {
+      "get": {
+        "tags": [
+          "Extracts"
+        ],
+        "summary": "Get IPAFFS CHEDs extract",
+        "description": "Searchable period is the last 122 days. Returns one row per commodity for records last updated within the date range. Set the Accept header to text/csv for a CSV response.",
+        "operationId": "IpaffsChedsExtract",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/extracts/traces-cheds": {
+      "get": {
+        "tags": [
+          "Extracts"
+        ],
+        "summary": "Get TRACES CHEDs extract",
+        "description": "Searchable period is the last 122 days. Returns one row per commodity for records last updated within the date range. Set the Accept header to text/csv for a CSV response.",
+        "operationId": "TracesChedsExtract",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/extracts/customs-declarations": {
+      "get": {
+        "tags": [
+          "Extracts"
+        ],
+        "summary": "Get customs declarations extract",
+        "description": "Searchable period is the last 122 days. Returns one row per commodity for records last updated within the date range. Set the Accept header to text/csv for a CSV response.",
+        "operationId": "CustomsDeclarationsExtract",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/dlq/resource-events/redrive": {
       "post": {
         "tags": [
@@ -1585,6 +1779,226 @@
           }
         }
       }
+    },
+    "/admin/dlq/traces-ched-events/redrive": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates redrive of messages from the dead letter queue",
+        "description": "Redrives all messages on the resource events dead letter queue",
+        "operationId": "Redrive_traces-ched-events",
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/traces-ched-events/remove-message": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates removal of message from the dead letter queue",
+        "description": "Attempts to find and remove a message on the resource events dead letter queue by message ID",
+        "operationId": "RemoveMessage_traces-ched-events",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/traces-ched-events/drain": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Initiates drain of all messages from the dead letter queue",
+        "description": "Drains all messages on the resource events dead letter queue",
+        "operationId": "Drain_traces-ched-events",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dlq/traces-ched-events/count": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Gets the count of messages on the resource events dead letter queue",
+        "description": "Gets the count of messages on the resource events dead letter queue",
+        "operationId": "Count_traces-ched-events",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1598,10 +2012,26 @@
         "properties": {
           "unique": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           }
         }
@@ -1644,6 +2074,14 @@
         "properties": {
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "eu": {
@@ -1666,13 +2104,17 @@
             "format": "date-time"
           },
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ClearanceRequestsSummaryResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1688,13 +2130,17 @@
             "format": "date-time"
           },
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/MatchesSummaryResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1710,13 +2156,17 @@
             "format": "date-time"
           },
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/NotificationsSummaryResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1732,13 +2182,17 @@
             "format": "date-time"
           },
           "summary": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/ReleasesSummaryResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1828,13 +2282,17 @@
         "type": "object",
         "properties": {
           "decision": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1863,31 +2321,43 @@
         "type": "object",
         "properties": {
           "finalisation": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "clearanceRequest": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ],
-            "nullable": true
+            ]
           },
           "preNotification": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1898,13 +2368,17 @@
         "type": "object",
         "properties": {
           "decision": {
-            "type": "object",
             "oneOf": [
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              },
               {
                 "$ref": "#/components/schemas/LastMessageResponse"
               }
-            ],
-            "nullable": true
+            ]
           }
         }
       },
@@ -1919,18 +2393,50 @@
         "properties": {
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "level1": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "level2": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "level3": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           }
         }
@@ -1946,18 +2452,50 @@
         "properties": {
           "level1": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "level2": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "level3": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           }
         }
@@ -1972,14 +2510,38 @@
         "properties": {
           "match": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "noMatch": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           }
         }
@@ -2012,22 +2574,62 @@
         "properties": {
           "chedA": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "chedP": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "chedPp": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "chedD": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           }
         }
@@ -2045,6 +2647,20 @@
           },
           "status": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              }
+            ],
             "format": "int32",
             "nullable": true
           },
@@ -2068,6 +2684,14 @@
         "properties": {
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "match": {
@@ -2104,14 +2728,38 @@
         "properties": {
           "automatic": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "manual": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           },
           "total": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "format": "int32"
           }
         }
@@ -2178,6 +2826,9 @@
     },
     {
       "name": "Status Information"
+    },
+    {
+      "name": "Extracts"
     },
     {
       "name": "Admin"
