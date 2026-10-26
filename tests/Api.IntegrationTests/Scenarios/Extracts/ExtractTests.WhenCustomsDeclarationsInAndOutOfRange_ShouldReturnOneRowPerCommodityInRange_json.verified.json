@@ -1,0 +1,38 @@
+﻿{
+  "data": [
+    {
+      "mrn": "25GB0XX00XXXXX0001",
+      "mrnCreated": "2025-09-03T15:58:00Z",
+      "lastUpdated": "2025-09-03T16:08:00Z",
+      "releaseType": "Automatic",
+      "finalState": "0",
+      "dispatchCountryCode": "IT",
+      "itemNumber": 1,
+      "commodityCode": "0101210000",
+      "description": "Horses",
+      "quantityOrWeight": 175,
+      "chedReferences": "GBCHD2025.0000001",
+      "authorities": "AHVLA",
+      "checkCodes": "H221",
+      "decisions": "C03",
+      "match": "Yes"
+    },
+    {
+      "mrn": "25GB0XX00XXXXX0001",
+      "mrnCreated": "2025-09-03T15:58:00Z",
+      "lastUpdated": "2025-09-03T16:08:00Z",
+      "releaseType": "Automatic",
+      "finalState": "0",
+      "dispatchCountryCode": "IT",
+      "itemNumber": 2,
+      "commodityCode": "0102291000",
+      "description": "Cattle",
+      "quantityOrWeight": 50,
+      "chedReferences": "GBCHD2025.0000002",
+      "authorities": "AHVLA",
+      "checkCodes": "H221",
+      "decisions": "X00",
+      "match": "No"
+    }
+  ]
+}
