@@ -39,7 +39,8 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Notifications = GetMongoCollection<Notification>();
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
-        ImportPreNotifications = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>();
+        ImportPreNotifications =
+            GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>();
         TracesCheds = GetMongoCollection<TracesChed>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);

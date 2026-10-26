@@ -19,10 +19,12 @@ public class ExtractTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     [Fact]
     public async Task WhenIpaffsChedsInAndOutOfRange_ShouldReturnOneRowPerCommodityInRange()
     {
-        await ImportPreNotifications.InsertManyAsync([
-            CreateImportPreNotification("CHEDA.GB.2025.0000001", s_updated),
-            CreateImportPreNotification("CHEDA.GB.2025.0000002", s_to.AddMinutes(1)),
-        ]);
+        await ImportPreNotifications.InsertManyAsync(
+            [
+                CreateImportPreNotification("CHEDA.GB.2025.0000001", s_updated),
+                CreateImportPreNotification("CHEDA.GB.2025.0000002", s_to.AddMinutes(1)),
+            ]
+        );
 
         await VerifyExtract(Testing.Endpoints.Extracts.IpaffsCheds(Query()));
     }
@@ -30,10 +32,12 @@ public class ExtractTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     [Fact]
     public async Task WhenTracesChedsInAndOutOfRange_ShouldReturnOneRowPerCommodityInRange()
     {
-        await TracesCheds.InsertManyAsync([
-            CreateTracesChed("CHEDA.GB.2025.0000003", s_updated),
-            CreateTracesChed("CHEDA.GB.2025.0000004", s_from.AddMinutes(-1)),
-        ]);
+        await TracesCheds.InsertManyAsync(
+            [
+                CreateTracesChed("CHEDA.GB.2025.0000003", s_updated),
+                CreateTracesChed("CHEDA.GB.2025.0000004", s_from.AddMinutes(-1)),
+            ]
+        );
 
         await VerifyExtract(Testing.Endpoints.Extracts.TracesCheds(Query()));
     }
@@ -41,10 +45,12 @@ public class ExtractTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
     [Fact]
     public async Task WhenCustomsDeclarationsInAndOutOfRange_ShouldReturnOneRowPerCommodityInRange()
     {
-        await CustomsDeclarations.InsertManyAsync([
-            CreateCustomsDeclaration("25GB0XX00XXXXX0001", s_updated),
-            CreateCustomsDeclaration("25GB0XX00XXXXX0002", s_to.AddMinutes(1)),
-        ]);
+        await CustomsDeclarations.InsertManyAsync(
+            [
+                CreateCustomsDeclaration("25GB0XX00XXXXX0001", s_updated),
+                CreateCustomsDeclaration("25GB0XX00XXXXX0002", s_to.AddMinutes(1)),
+            ]
+        );
 
         await VerifyExtract(Testing.Endpoints.Extracts.CustomsDeclarations(Query()));
     }

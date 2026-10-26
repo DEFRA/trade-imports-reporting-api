@@ -30,8 +30,7 @@ public static class Endpoints
 
         public static string TracesCheds(EndpointQuery? query = null) => $"{Root}/traces-cheds{query}";
 
-        public static string CustomsDeclarations(EndpointQuery? query = null) =>
-            $"{Root}/customs-declarations{query}";
+        public static string CustomsDeclarations(EndpointQuery? query = null) => $"{Root}/customs-declarations{query}";
     }
 
     public static class Matches

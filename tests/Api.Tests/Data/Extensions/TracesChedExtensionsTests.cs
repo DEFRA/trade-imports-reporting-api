@@ -47,10 +47,7 @@ public class TracesChedExtensionsTests
     [InlineData(null, null)]
     public void ToTracesChed_Status_ShouldBeAsExpected(string? documentStatusCode, string? expected)
     {
-        CreateEvent("CHEDA.GB.2025.1234567", documentStatusCode)
-            .ToTracesChed("ched")
-            .Status.Should()
-            .Be(expected);
+        CreateEvent("CHEDA.GB.2025.1234567", documentStatusCode).ToTracesChed("ched").Status.Should().Be(expected);
     }
 
     [Fact]
