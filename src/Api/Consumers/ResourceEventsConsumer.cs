@@ -143,6 +143,14 @@ public class ResourceEventsConsumer(
         if (importPreNotification.Resource is null)
             throw new InvalidOperationException("Resource is null");
 
+        var snapshot = importPreNotification.Resource.ToImportPreNotification(importPreNotification.ResourceId);
+        await dbContext.ImportPreNotifications.ReplaceOneAsync(
+            Builders<ImportPreNotification>.Filter.Eq(x => x.Id, snapshot.Id),
+            snapshot,
+            new ReplaceOptions { IsUpsert = true },
+            cancellationToken: cancellationToken
+        );
+
         var incomingNotification = importPreNotification.Resource.ImportPreNotification;
         var entityNotification = incomingNotification.ToNotification(
             importPreNotification.ResourceId,

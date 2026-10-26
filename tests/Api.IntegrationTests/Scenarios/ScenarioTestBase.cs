@@ -15,12 +15,14 @@ using CommodityCheck = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.Commo
 using CustomsDeclaration = Defra.TradeImportsReportingApi.Api.Data.Entities.CustomsDeclaration;
 using Decision = Defra.TradeImportsReportingApi.Api.Data.Entities.Decision;
 using Finalisation = Defra.TradeImportsReportingApi.Api.Data.Entities.Finalisation;
+using ImportPreNotification = Defra.TradeImportsDataApi.Domain.Ipaffs.ImportPreNotification;
 
 namespace Defra.TradeImportsReportingApi.Api.IntegrationTests.Scenarios;
 
 public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsyncLifetime
 {
     public required IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; set; }
+    public required IMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification> ImportPreNotifications { get; set; }
     public required IMongoCollection<Finalisation> Finalisations { get; set; }
     public required IMongoCollection<Decision> Decisions { get; set; }
     public required IMongoCollection<Request> Requests { get; set; }
@@ -36,6 +38,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Notifications = GetMongoCollection<Notification>();
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
+        ImportPreNotifications = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
@@ -45,6 +48,9 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
         );
         await CustomsDeclarations.DeleteManyAsync(FilterDefinition<CustomsDeclaration>.Empty);
+        await ImportPreNotifications.DeleteManyAsync(
+            FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>.Empty
+        );
 
         JsonVerifySettings = new VerifySettings();
         JsonVerifySettings.UseStrictJson();

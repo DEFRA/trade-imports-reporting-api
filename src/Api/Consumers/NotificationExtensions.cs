@@ -19,16 +19,19 @@ public static class NotificationExtensions
             Timestamp = notificationUpdated,
             ReferenceNumber = referenceNumber,
             NotificationCreated = notificationCreated,
-            NotificationType = notification.ImportNotificationType switch
-            {
-                ImportPreNotificationType.CVEDA => NotificationType.ChedA,
-                ImportPreNotificationType.CVEDP => NotificationType.ChedP,
-                ImportPreNotificationType.CHEDPP => NotificationType.ChedPP,
-                ImportPreNotificationType.CED => NotificationType.ChedD,
-                _ => NotificationType.Unknown,
-            },
+            NotificationType = notification.ImportNotificationType.ToNotificationType(),
         };
     }
+
+    public static string ToNotificationType(this string? importNotificationType) =>
+        importNotificationType switch
+        {
+            ImportPreNotificationType.CVEDA => NotificationType.ChedA,
+            ImportPreNotificationType.CVEDP => NotificationType.ChedP,
+            ImportPreNotificationType.CHEDPP => NotificationType.ChedPP,
+            ImportPreNotificationType.CED => NotificationType.ChedD,
+            _ => NotificationType.Unknown,
+        };
 
     public static bool ShouldBeStored(this Notification notification) =>
         notification.NotificationType is not NotificationType.Unknown;

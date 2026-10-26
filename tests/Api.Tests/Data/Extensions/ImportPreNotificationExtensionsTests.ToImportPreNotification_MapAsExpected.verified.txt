@@ -1,0 +1,17 @@
+﻿{
+  Id: CHEDA.GB.2025.1234567,
+  NotificationCreated: 2025-07-03 13:42 Utc,
+  Timestamp: 2025-07-03 14:42 Utc,
+  NotificationType: ChedA,
+  Status: SUBMITTED,
+  Commodities: [
+    {
+      CommodityCode: 0101210000,
+      Description: Horses
+    },
+    {
+      CommodityCode: 0102291000,
+      Description: Cattle
+    }
+  ]
+}
