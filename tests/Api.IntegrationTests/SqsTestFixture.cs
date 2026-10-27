@@ -31,6 +31,8 @@ public class SqsTestFixture : IAsyncLifetime
     public Task DisposeAsync()
     {
         _resourceEventsQueue?.Dispose();
+        _activityEventsQueue?.Dispose();
+        _tracesChedEventsQueue?.Dispose();
 
         return Task.CompletedTask;
     }
