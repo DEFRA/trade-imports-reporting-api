@@ -16,17 +16,17 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Snappier" Version="1.3.1" />
-    <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.42.0" />
+    <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.50.0" />
     <PackageReference Include="Defra.TradeImports.SQS.Endpoints" Version="0.1.3" />
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="9.0.0" />
     <PackageReference Include="Elastic.Serilog.Enrichers.Web" Version="9.0.0" />
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation" Version="12.2.0" />
     <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation" Version="10.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     <!-- Override vulnerable transitive dependency Microsoft.OpenApi -->
-    <PackageReference Include="Microsoft.OpenApi" Version="2.9.0" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
@@ -37,13 +37,13 @@
     <PackageReference Include="SlimMessageBus.Host.AmazonSQS" Version="3.5.0" />
     <PackageReference Include="SlimMessageBus.Host.Serialization.SystemTextJson" Version="3.5.0" />
     <PackageReference Include="Amazon.CloudWatch.EMF" Version="2.2.0" />
-    <PackageReference Include="MongoDB.Driver.Authentication.AWS" Version="3.10.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.10.0" />
+    <PackageReference Include="MongoDB.Driver.Authentication.AWS" Version="3.13.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.13.0" />
     <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.2.3" />
-    <PackageReference Include="AWSSDK.Core" Version="4.0.100.7" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.100.5" />
-    <PackageReference Include="AWSSDK.SQS" Version="4.0.100.5" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.102.13" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.102.6" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.100.20" />
     <!-- Override vulnerable transitive dependency SharpCompress -->
     <PackageReference Include="SharpCompress" Version="0.50.0" />
   </ItemGroup>

@@ -24,4 +24,10 @@ public class MongoDbContext(IMongoDatabase database) : IDbContext
 
     public IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; } =
         database.GetCollection<CustomsDeclaration>(typeof(CustomsDeclaration).DataEntityName());
+
+    public IMongoCollection<ImportPreNotification> ImportPreNotifications { get; } =
+        database.GetCollection<ImportPreNotification>(typeof(ImportPreNotification).DataEntityName());
+
+    public IMongoCollection<TracesChed> TracesCheds { get; } =
+        database.GetCollection<TracesChed>(typeof(TracesChed).DataEntityName());
 }

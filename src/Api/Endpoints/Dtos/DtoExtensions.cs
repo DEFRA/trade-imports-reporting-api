@@ -107,6 +107,18 @@ public static class DtoExtensions
         return writer.ToString();
     }
 
+    public static string ToCsvResponse<TRow, TMap>(this IReadOnlyList<TRow> data)
+        where TMap : CsvHelper.Configuration.ClassMap<TRow>
+    {
+        using var writer = new StringWriter();
+        using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+        csv.Context.RegisterClassMap<TMap>();
+        csv.WriteRecords(data);
+
+        return writer.ToString();
+    }
+
     public static string ToCsvResponse(this IReadOnlyList<Finalisation> finalisations)
     {
         var csv = new StringBuilder();
