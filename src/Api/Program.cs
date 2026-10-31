@@ -18,6 +18,8 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using Log = Serilog.Log;
 
+const string TAGS_ADMIN = "Admin";
+
 Log.Logger = new LoggerConfiguration().WriteTo.Console(new EcsTextFormatter()).CreateBootstrapLogger();
 
 try
@@ -110,7 +112,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         resourceEventsOptions.Value.DeadLetterQueueName,
         policyName: PolicyNames.Execute,
         pattern: "admin/dlq/resource-events",
-        tags: "Admin"
+        tags: TAGS_ADMIN
     );
     var activityEventsOptions = app.Services.GetRequiredService<IOptions<ActivityEventsConsumerOptions>>();
     app.MapDeadLetterQueueEndpoints(
@@ -119,7 +121,27 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         policyName: PolicyNames.Execute,
         pattern: "admin/dlq/activity-events",
         nameSuffix: "activity-events",
-        tags: "Admin"
+        tags: TAGS_ADMIN
+    );
+    var chedReservationsOptions = app.Services.GetRequiredService<
+        IOptions<ChedReservationsResourceEventsConsumerOptions>
+    >();
+    app.MapDeadLetterQueueEndpoints(
+        chedReservationsOptions.Value.QueueName,
+        chedReservationsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/ched-reservations",
+        nameSuffix: "ched-reservations",
+        tags: TAGS_ADMIN
+    );
+    var tracesChedsOptions = app.Services.GetRequiredService<IOptions<TracesChedsResourceEventsConsumerOptions>>();
+    app.MapDeadLetterQueueEndpoints(
+        tracesChedsOptions.Value.QueueName,
+        tracesChedsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/traces-cheds",
+        nameSuffix: "traces-cheds",
+        tags: TAGS_ADMIN
     );
     app.UseOpenApi();
 

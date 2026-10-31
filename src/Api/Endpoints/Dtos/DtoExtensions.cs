@@ -24,6 +24,16 @@ public static class DtoExtensions
     public static NotificationsSummaryResponse ToResponse(this NotificationsSummary summary) =>
         new(summary.ChedA, summary.ChedP, summary.ChedPP, summary.ChedD, summary.Total);
 
+    public static ChedReservationsSummaryResponse ToResponse(this ChedReservationsSummary summary) =>
+        new(
+            summary.Unreserved,
+            summary.Reserved,
+            summary.Consumed,
+            summary.Unsuccessful,
+            summary.Deleted,
+            summary.Total
+        );
+
     public static IntervalsResponse<IntervalResponse<ReleasesSummaryResponse>> ToResponse(
         this IReadOnlyList<ReleasesBucket> buckets
     ) =>
@@ -79,6 +89,15 @@ public static class DtoExtensions
                 : null,
             lastReceived.Notification is not null
                 ? new LastMessageResponse(lastReceived.Notification.Timestamp, lastReceived.Notification.Reference)
+                : null,
+            lastReceived.TracesChed is not null
+                ? new LastMessageResponse(lastReceived.TracesChed.Timestamp, lastReceived.TracesChed.Reference)
+                : null,
+            lastReceived.ChedReservation is not null
+                ? new LastMessageResponse(
+                    lastReceived.ChedReservation.Timestamp,
+                    lastReceived.ChedReservation.Reference
+                )
                 : null
         );
 

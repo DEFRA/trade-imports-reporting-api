@@ -17,6 +17,13 @@ public class SummaryTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsT
         var ched = Guid.NewGuid().ToString();
         await SendNotification(utcDate, ched, utcDate.AddMinutes(1));
 
+        var tracesChed = Guid.NewGuid().ToString();
+        await SendTracesChed(utcDate, tracesChed, utcDate.AddMinutes(1), type: "CHEDP");
+
+        var reservationChed = Guid.NewGuid().ToString();
+        var reservationMrn = Guid.NewGuid().ToString();
+        await SendChedReservation(utcDate, reservationChed, reservationMrn);
+
         var from = utcDate.AddHours(-1);
         var to = utcDate.AddHours(1);
         var response = await DefaultClient.GetAsync(
