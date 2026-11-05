@@ -22,6 +22,17 @@ public static class Endpoints
         public static string Data(EndpointQuery? query = null) => $"{Root}/data{query}";
     }
 
+    public static class Extracts
+    {
+        private const string Root = "/extracts";
+
+        public static string IpaffsCheds(EndpointQuery? query = null) => $"{Root}/ipaffs-cheds{query}";
+
+        public static string TracesCheds(EndpointQuery? query = null) => $"{Root}/traces-cheds{query}";
+
+        public static string CustomsDeclarations(EndpointQuery? query = null) => $"{Root}/customs-declarations{query}";
+    }
+
     public static class Matches
     {
         private const string Root = "/matches";
@@ -122,6 +133,21 @@ public static class Endpoints
             public static class DeadLetterQueue
             {
                 private const string SubRoot = $"{Root}/dlq/activity-events";
+
+                public static string Redrive() => $"{SubRoot}/redrive";
+
+                public static string RemoveMessage(string? messageId = null) =>
+                    $"{SubRoot}/remove-message?messageId={messageId}";
+
+                public static string Drain() => $"{SubRoot}/drain";
+            }
+        }
+
+        public static class TracesChedEvents
+        {
+            public static class DeadLetterQueue
+            {
+                private const string SubRoot = $"{Root}/dlq/traces-ched-events";
 
                 public static string Redrive() => $"{SubRoot}/redrive";
 

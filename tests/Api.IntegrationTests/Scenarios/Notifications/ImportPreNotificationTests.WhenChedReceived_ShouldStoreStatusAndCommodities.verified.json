@@ -1,0 +1,17 @@
+﻿{
+  "Id": "{Scrubbed}",
+  "Created": "2025-09-03 16:08 Utc",
+  "Updated": "2025-09-03 16:09 Utc",
+  "NotificationType": "ChedA",
+  "Status": "SUBMITTED",
+  "Commodities": [
+    {
+      "CommodityCode": "0101210000",
+      "Description": "Horses"
+    },
+    {
+      "CommodityCode": "0102291000",
+      "Description": "Cattle"
+    }
+  ]
+}

@@ -86,6 +86,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
 
     builder.Services.AddDbContext(builder.Configuration, integrationTest);
     builder.Services.AddTransient<IReportRepository, ReportRepository>();
+    builder.Services.AddTransient<IExtractRepository, ExtractRepository>();
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)
@@ -104,6 +105,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.MapClearanceRequestEndpoints();
     app.MapNotificationEndpoints();
     app.MapGeneralEndpoints();
+    app.MapExtractEndpoints();
     var resourceEventsOptions = app.Services.GetRequiredService<IOptions<ResourceEventsConsumerOptions>>();
     app.MapDeadLetterQueueEndpoints(
         resourceEventsOptions.Value.QueueName,
@@ -119,6 +121,15 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
         policyName: PolicyNames.Execute,
         pattern: "admin/dlq/activity-events",
         nameSuffix: "activity-events",
+        tags: "Admin"
+    );
+    var tracesChedEventsOptions = app.Services.GetRequiredService<IOptions<TracesChedEventsConsumerOptions>>();
+    app.MapDeadLetterQueueEndpoints(
+        tracesChedEventsOptions.Value.QueueName,
+        tracesChedEventsOptions.Value.DeadLetterQueueName,
+        policyName: PolicyNames.Execute,
+        pattern: "admin/dlq/traces-ched-events",
+        nameSuffix: "traces-ched-events",
         tags: "Admin"
     );
     app.UseOpenApi();

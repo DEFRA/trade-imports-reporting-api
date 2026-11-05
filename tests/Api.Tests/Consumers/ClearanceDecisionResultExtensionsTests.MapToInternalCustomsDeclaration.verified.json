@@ -1,6 +1,7 @@
 ﻿{
   "Id": "newest",
   "MrnCreated": "DateTime_1",
+  "LastUpdated": "DateTime_2",
   "Match": false,
   "MatchLevel1": false,
   "ReleaseType": "Unknown",

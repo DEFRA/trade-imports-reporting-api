@@ -1,0 +1,3 @@
+﻿MRN,MRN created,Last updated,Release type,Final state,Dispatch country code,Item number,Commodity code,Description,Quantity/Weight,CHED references,Authorities,Check codes,Decisions,Match
+25GB0XX00XXXXX0001,2025-09-03T15:58:00Z,2025-09-03T16:08:00Z,Automatic,0,IT,1,0101210000,Horses,175,GBCHD2025.0000001,AHVLA,H221,C03,Yes
+25GB0XX00XXXXX0001,2025-09-03T15:58:00Z,2025-09-03T16:08:00Z,Automatic,0,IT,2,0102291000,Cattle,50,GBCHD2025.0000002,AHVLA,H221,X00,No
