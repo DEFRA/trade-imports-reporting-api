@@ -50,6 +50,10 @@ public static class ServiceCollectionExtensions
             .AddValidateOptions<ActivityEventsConsumerOptions>(ActivityEventsConsumerOptions.SectionName)
             .Get();
 
+        var tracesChedEventsConsumerOptions = services
+            .AddValidateOptions<TracesChedEventsConsumerOptions>(TracesChedEventsConsumerOptions.SectionName)
+            .Get();
+
         // The order of interceptors is important here!
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(TraceContextInterceptor<>));
         services.AddSingleton(typeof(IConsumerInterceptor<>), typeof(LoggingInterceptor<>));
@@ -57,6 +61,7 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<ResourceEventsConsumer>();
         services.AddTransient<BtmsToCdsActivityConsumer>();
+        services.AddTransient<TracesChedEventsConsumer>();
 
         services.AddSlimMessageBus(smb =>
         {
@@ -119,6 +124,41 @@ public static class ServiceCollectionExtensions
                                 x.WithConsumer<BtmsToCdsActivityConsumer>()
                                     .Queue(activityEventsConsumerOptions.QueueName)
                                     .Instances(activityEventsConsumerOptions.ConsumersPerHost)
+                            );
+                    }
+                );
+            }
+
+            if (tracesChedEventsConsumerOptions.AutoStartConsumers)
+            {
+                smb.AddChildBus(
+                    "SQS_TracesChedEvents",
+                    mbb =>
+                    {
+                        mbb.WithProviderAmazonSQS(cfg =>
+                        {
+                            cfg.TopologyProvisioning.Enabled = false;
+                            cfg.SqsClientProviderFactory = _ => new CdpCredentialsSqsClientProvider(
+                                cfg.SqsClientConfig,
+                                configuration
+                            );
+                        });
+
+                        mbb.RegisterSerializer<ToStringSerializer>(s =>
+                        {
+                            s.TryAddSingleton(_ => new ToStringSerializer());
+                            s.TryAddSingleton<IMessageSerializer<string>>(svp =>
+                                svp.GetRequiredService<ToStringSerializer>()
+                            );
+                        });
+
+                        mbb.WithSerializer<ToStringSerializer>();
+
+                        mbb.AutoStartConsumersEnabled(tracesChedEventsConsumerOptions.AutoStartConsumers)
+                            .Consume<string>(x =>
+                                x.WithConsumer<TracesChedEventsConsumer>()
+                                    .Queue(tracesChedEventsConsumerOptions.QueueName)
+                                    .Instances(tracesChedEventsConsumerOptions.ConsumersPerHost)
                             );
                     }
                 );

@@ -1,0 +1,22 @@
+﻿{
+  "data": [
+    {
+      "chedReference": "CHEDA.GB.2025.1234567",
+      "chedType": "ChedA",
+      "status": "SUBMITTED",
+      "created": "2025-09-03T15:10:00Z",
+      "updated": "2025-09-03T15:20:00Z",
+      "commodityCode": "0101210000",
+      "description": "Horses, \"live\""
+    },
+    {
+      "chedReference": "CHEDA.GB.2025.1234567",
+      "chedType": "ChedA",
+      "status": "SUBMITTED",
+      "created": "2025-09-03T15:10:00Z",
+      "updated": "2025-09-03T15:20:00Z",
+      "commodityCode": "0102291000",
+      "description": "Cattle"
+    }
+  ]
+}

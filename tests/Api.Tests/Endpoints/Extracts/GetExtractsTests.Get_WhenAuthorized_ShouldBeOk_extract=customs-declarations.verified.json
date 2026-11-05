@@ -1,0 +1,21 @@
+﻿{
+  "data": [
+    {
+      "mrn": "25GB0XX00XXXXX0000",
+      "mrnCreated": "2025-09-03T15:10:00Z",
+      "lastUpdated": "2025-09-03T15:20:00Z",
+      "releaseType": "Automatic",
+      "finalState": "0",
+      "dispatchCountryCode": "IT",
+      "itemNumber": 1,
+      "commodityCode": "0101210000",
+      "description": "Horses",
+      "quantityOrWeight": 175,
+      "chedReferences": "GBCHD2025.1; GBCHD2025.2",
+      "authorities": "AHVLA",
+      "checkCodes": "H221",
+      "decisions": "C03; X00",
+      "match": "No"
+    }
+  ]
+}

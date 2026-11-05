@@ -1,0 +1,36 @@
+﻿[
+  {
+    Mrn: 25GB0XX00XXXXX0000,
+    MrnCreated: 2025-07-03 13:42 Utc,
+    LastUpdated: 2025-07-03 14:42 Utc,
+    ReleaseType: Automatic,
+    FinalState: 0,
+    DispatchCountryCode: IT,
+    ItemNumber: 1,
+    CommodityCode: 0101,
+    Description: Commodity 1,
+    QuantityOrWeight: 10.0,
+    ChedReferences: GBCHD2025.1; GBCHD2025.2,
+    Authorities: AHVLA,
+    CheckCodes: H221,
+    Decisions: C03; X00,
+    Match: No
+  },
+  {
+    Mrn: 25GB0XX00XXXXX0000,
+    MrnCreated: 2025-07-03 13:42 Utc,
+    LastUpdated: 2025-07-03 14:42 Utc,
+    ReleaseType: Automatic,
+    FinalState: 0,
+    DispatchCountryCode: IT,
+    ItemNumber: 2,
+    CommodityCode: 0102,
+    Description: Commodity 2,
+    QuantityOrWeight: 20.0,
+    ChedReferences: GBCHD2025.3,
+    Authorities: AHVLA,
+    CheckCodes: H221,
+    Decisions: C03,
+    Match: Yes
+  }
+]
