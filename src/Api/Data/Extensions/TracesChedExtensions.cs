@@ -59,10 +59,14 @@ public static class TracesChedExtensions
                 !string.IsNullOrEmpty(x.ClassCode?.Value)
             );
 
+            // TRACES includes a consignment totals and summary line that has no classification, so is not a commodity
+            if (classification is null)
+                continue;
+
             yield return new ImportPreNotificationCommodity
             {
-                CommodityCode = classification?.ClassCode?.Value,
-                Description = classification?.ClassName?.FirstOrDefault(),
+                CommodityCode = classification.ClassCode?.Value,
+                Description = classification.ClassName?.FirstOrDefault(),
             };
         }
     }

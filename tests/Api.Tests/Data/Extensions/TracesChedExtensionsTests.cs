@@ -57,6 +57,26 @@ public class TracesChedExtensionsTests
     }
 
     [Fact]
+    public void ToTracesChed_WhenLineHasNoCommodityCode_ExcludesLineFromCommodities()
+    {
+        var @event = CreateEventWithLines(
+            "CHEDP.XI.2026.0001043",
+            null,
+            new TradeLineItem { ApplicableClassification = null },
+            new TradeLineItem { ApplicableClassification = [new ApplicableClassification { ClassCode = null }] },
+            CreateLine("03025110", "Fish")
+        );
+
+        var commodities = @event.ToTracesChed("CHEDP.XI.2026.0001043").Commodities;
+
+        commodities
+            .Should()
+            .ContainSingle()
+            .Which.Should()
+            .BeEquivalentTo(new ImportPreNotificationCommodity { CommodityCode = "03025110", Description = "Fish" });
+    }
+
+    [Fact]
     public void TracesChed_HasIdenticalFieldsToImportPreNotification()
     {
         static IEnumerable<(string, Type)> Fields(Type type) =>
@@ -69,6 +89,30 @@ public class TracesChedExtensionsTests
         string identifier,
         string? documentStatusCode,
         params (string Code, string Description)[] commodities
+    ) =>
+        CreateEventWithLines(
+            identifier,
+            documentStatusCode,
+            [.. commodities.Select(x => CreateLine(x.Code, x.Description))]
+        );
+
+    private static TradeLineItem CreateLine(string code, string description) =>
+        new()
+        {
+            ApplicableClassification =
+            [
+                new ApplicableClassification
+                {
+                    ClassCode = new CodedValue { Value = code },
+                    ClassName = [description],
+                },
+            ],
+        };
+
+    private static TracesChedEvent CreateEventWithLines(
+        string identifier,
+        string? documentStatusCode,
+        params TradeLineItem[] tradeLineItems
     ) =>
         new()
         {
@@ -84,26 +128,7 @@ public class TracesChedExtensionsTests
                 },
                 SpecifiedConsignment = new Consignment
                 {
-                    IncludedConsignmentItem =
-                    [
-                        new ConsignmentItem
-                        {
-                            IncludedTradeLineItem =
-                            [
-                                .. commodities.Select(x => new TradeLineItem
-                                {
-                                    ApplicableClassification =
-                                    [
-                                        new ApplicableClassification
-                                        {
-                                            ClassCode = new CodedValue { Value = x.Code },
-                                            ClassName = [x.Description],
-                                        },
-                                    ],
-                                }),
-                            ],
-                        },
-                    ],
+                    IncludedConsignmentItem = [new ConsignmentItem { IncludedTradeLineItem = [.. tradeLineItems] }],
                 },
             },
         };
