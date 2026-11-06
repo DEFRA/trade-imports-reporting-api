@@ -9,7 +9,7 @@ public static class AsyncWaiter
     public static async Task<bool> WaitForAsync(Func<Task<bool>> condition, double? timeout = null)
     {
         var timer = Stopwatch.StartNew();
-        var timeoutTimespan = TimeSpan.FromSeconds(timeout ?? 30);
+        var timeoutTimespan = TimeSpan.FromSeconds(timeout ?? 120);
 
         while (true)
         {

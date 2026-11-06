@@ -1,0 +1,10 @@
+{
+  "finalisation": null,
+  "clearanceRequest": null,
+  "preNotification": null,
+  "tracesChed": null,
+  "chedReservation": {
+    "timestamp": "2025-09-03T16:08:10Z",
+    "reference": "ched1_mrn1"
+  }
+}

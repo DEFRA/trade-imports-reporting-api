@@ -23,6 +23,7 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
         await CreateCustomDeclarationsIndexes(cancellationToken);
         await CreateImportPreNotificationIndexes(cancellationToken);
         await CreateTracesChedIndexes(cancellationToken);
+        await CreateChedReservationIndexes(cancellationToken);
     }
 
     private async Task CreateTracesChedIndexes(CancellationToken cancellationToken)
@@ -40,6 +41,16 @@ public class MongoIndexService(IMongoDatabase database, ILogger<MongoIndexServic
         await CreateTtlIndex(
             TimestampIdx,
             Builders<ImportPreNotification>.IndexKeys.Ascending(x => x.Updated),
+            expireAfter: TimeSpan.FromDays(180),
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private async Task CreateChedReservationIndexes(CancellationToken cancellationToken)
+    {
+        await CreateTtlIndex(
+            TimestampIdx,
+            Builders<ChedReservation>.IndexKeys.Ascending(x => x.Timestamp),
             expireAfter: TimeSpan.FromDays(180),
             cancellationToken: cancellationToken
         );

@@ -1,0 +1,9 @@
+{
+  Id: {Scrubbed},
+  Timestamp: 2025-09-03 16:08 Utc,
+  ResourceId: ched1_mrn1,
+  Operation: Created,
+  ChedId: ched1,
+  Mrn: mrn1,
+  Status: Reserved
+}

@@ -40,7 +40,11 @@ public class SqsQueueClient(string queueName) : IDisposable
 
     public Task<GetQueueAttributesResponse> GetQueueAttributes() =>
         _sqsClient.GetQueueAttributesAsync(
-            new GetQueueAttributesRequest { AttributeNames = ["ApproximateNumberOfMessages"], QueueUrl = _queueUrl },
+            new GetQueueAttributesRequest
+            {
+                AttributeNames = ["ApproximateNumberOfMessages", "ApproximateNumberOfMessagesNotVisible"],
+                QueueUrl = _queueUrl,
+            },
             CancellationToken.None
         );
 
@@ -62,6 +66,20 @@ public class SqsQueueClient(string queueName) : IDisposable
                 var approximateNumberOfMessages = (await GetQueueAttributes()).ApproximateNumberOfMessages;
 
                 return approximateNumberOfMessages == 0;
+            })
+        );
+    }
+
+    // ponytail: approximate counts are eventually consistent, so this is strong evidence of consumption, not proof
+    public async Task WaitForEmpty()
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var attributes = await GetQueueAttributes();
+
+                return attributes.ApproximateNumberOfMessages == 0
+                    && attributes.ApproximateNumberOfMessagesNotVisible == 0;
             })
         );
     }
