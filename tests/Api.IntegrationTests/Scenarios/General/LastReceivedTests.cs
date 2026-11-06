@@ -55,7 +55,8 @@ public class LastReceivedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase
 
         await SendTracesChed(issued, ched, wait: false);
         await SendTracesChed(issued, ched, issued.AddSeconds(10), wait: false);
-        await WaitForTracesChed(ched, count: 2);
+        await WaitForTracesChedQueueEmpty();
+        await WaitForTracesChed(ched);
 
         var response = await DefaultClient.GetAsync(Testing.Endpoints.LastReceived.Get());
 

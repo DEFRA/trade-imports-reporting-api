@@ -254,9 +254,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Assert.True(
             await AsyncWaiter.WaitForAsync(async () =>
             {
-                var tracesCheds = await TracesCheds.FindAsync(
-                    Builders<TracesChed>.Filter.Eq(x => x.Id, ched)
-                );
+                var tracesCheds = await TracesCheds.FindAsync(Builders<TracesChed>.Filter.Eq(x => x.Id, ched));
 
                 return (await tracesCheds.ToListAsync()).Count == count;
             })

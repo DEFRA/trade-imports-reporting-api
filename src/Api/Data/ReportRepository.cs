@@ -4,6 +4,7 @@ using Defra.TradeImportsReportingApi.Api.Data.Entities;
 using Defra.TradeImportsReportingApi.Api.Endpoints.Dtos;
 using Defra.TradeImportsReportingApi.Api.Utils;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -71,17 +72,27 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         {
             public static readonly string Timestamp = Field(nameof(Entities.Notification.Timestamp));
             public static readonly string ReferenceNumber = Field(nameof(Entities.Notification.ReferenceNumber));
+
             public static readonly string NotificationCreated = Field(
                 nameof(Entities.Notification.NotificationCreated)
             );
+
             public static readonly string NotificationType = Field(nameof(Entities.Notification.NotificationType));
         }
 
         public static class TracesChed
         {
             public static readonly string Updated = Field(nameof(Entities.TracesChed.Updated));
+
             public static readonly string Created = Field(nameof(Entities.TracesChed.Created));
-            public static readonly string Id = Field(nameof(Entities.TracesChed.Id));
+
+            // TracesChed has an Id unlike all the other entities which use Mrn/ReferenceNumber etc
+            // So we have to do this
+            public static readonly string Id = BsonClassMap
+                .LookupClassMap(typeof(Entities.TracesChed))
+                .GetMemberMap(nameof(Entities.TracesChed.Id))
+                .ElementName;
+
             public static readonly string NotificationType = Field(nameof(Entities.TracesChed.NotificationType));
         }
 
@@ -1394,8 +1405,21 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
     private static BsonDocument NotificationsMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.Notification.NotificationCreated, from, to));
 
-    private static BsonDocument TracesChedsMatch(DateTime from, DateTime to) =>
-        new("$match", FromAndToMatch(Fields.TracesChed.Created, from, to));
+    private static BsonDocument TracesChedsMatch(DateTime from, DateTime to)
+    {
+        var match = FromAndToMatch(Fields.TracesChed.Created, from, to);
+        match.Add(
+            Fields.TracesChed.NotificationType,
+            new BsonDocument(
+                "$in",
+                new BsonArray( // There is also a NotificationType.Unknown - we don't want them
+                    [NotificationType.ChedA, NotificationType.ChedP, NotificationType.ChedPP, NotificationType.ChedD]
+                )
+            )
+        );
+
+        return new("$match", match);
+    }
 
     private static BsonDocument ChedReservationsMatch(DateTime from, DateTime to) =>
         new("$match", FromAndToMatch(Fields.ChedReservation.Timestamp, from, to));

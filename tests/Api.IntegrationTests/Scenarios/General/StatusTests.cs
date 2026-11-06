@@ -31,7 +31,7 @@ public class StatusTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(sqsTe
 
         await SendTracesChed(issued1, tracesChed1, wait: false);
         await SendTracesChed(issued1, tracesChed1, issued1.AddSeconds(10), wait: false);
-        await WaitForTracesChed(tracesChed1, count: 2);
+        await WaitForTracesChed(tracesChed1);
 
         var mrn3 = Guid.NewGuid().ToString();
         var mrnCreated1 = new DateTime(2025, 9, 6, 16, 8, 0, DateTimeKind.Utc);

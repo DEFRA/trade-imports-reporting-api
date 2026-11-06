@@ -15,7 +15,7 @@ public class TracesChedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(s
 
         await SendTracesChed(s_issued, ched, wait: false);
         await SendTracesChed(s_issued, ched, s_issued.AddMinutes(1), wait: false);
-        await WaitForTracesChed(ched, count: 2);
+        await WaitForTracesChed(ched);
 
         await VerifyJson(await GetSummary(), JsonVerifySettings);
     }
@@ -34,7 +34,7 @@ public class TracesChedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(s
     }
 
     [Fact]
-    public async Task WhenUnknownTracesChedType_ShouldNotBeStored()
+    public async Task WhenUnknownTracesChedType_ShouldNotBeCountedInSummary()
     {
         var unknownChed = Guid.NewGuid().ToString();
         var knownChed = Guid.NewGuid().ToString();
@@ -45,8 +45,13 @@ public class TracesChedTests(SqsTestFixture sqsTestFixture) : ScenarioTestBase(s
         await WaitForTracesChedQueueEmpty();
 
         Assert.Equal(
-            0,
-            await TracesCheds.CountDocumentsAsync(Builders<TracesChed>.Filter.Eq(x => x.Id, unknownChed))
+            1,
+            await TracesCheds.CountDocumentsAsync(
+                Builders<TracesChed>.Filter.And(
+                    Builders<TracesChed>.Filter.Eq(x => x.Id, unknownChed),
+                    Builders<TracesChed>.Filter.Eq(x => x.NotificationType, NotificationType.Unknown)
+                )
+            )
         );
 
         await VerifyJson(await GetSummary(), JsonVerifySettings);
