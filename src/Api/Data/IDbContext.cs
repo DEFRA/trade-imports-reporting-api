@@ -13,4 +13,5 @@ public interface IDbContext
     IMongoCollection<CustomsDeclaration> CustomsDeclarations { get; }
     IMongoCollection<ImportPreNotification> ImportPreNotifications { get; }
     IMongoCollection<TracesChed> TracesCheds { get; }
+    IMongoCollection<ChedReservation> ChedReservations { get; }
 }

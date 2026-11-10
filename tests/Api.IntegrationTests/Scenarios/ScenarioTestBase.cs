@@ -9,6 +9,7 @@ using Defra.TradeImportsReportingApi.Api.Extensions;
 using Defra.TradeImportsReportingApi.Api.Models;
 using MongoDB.Driver;
 using SlimMessageBus.Host;
+using Trade.Gateway.Api.Contract.Certificate;
 using Assert = Xunit.Assert;
 using BtmsToCdsActivity = Defra.TradeImportsDataApi.Domain.Events.BtmsToCdsActivity;
 using CommodityCheck = Defra.TradeImportsDataApi.Domain.CustomsDeclaration.CommodityCheck;
@@ -29,6 +30,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     public required IMongoCollection<Request> Requests { get; set; }
     public required IMongoCollection<Notification> Notifications { get; set; }
     public required IMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity> BtmsToCdsActivities { get; set; }
+    public required IMongoCollection<ChedReservation> ChedReservations { get; set; }
     public required VerifySettings JsonVerifySettings { get; set; }
 
     public async Task InitializeAsync()
@@ -37,16 +39,20 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         Decisions = GetMongoCollection<Decision>();
         Requests = GetMongoCollection<Request>();
         Notifications = GetMongoCollection<Notification>();
+        TracesCheds = GetMongoCollection<TracesChed>();
         BtmsToCdsActivities = GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>();
         CustomsDeclarations = GetMongoCollection<CustomsDeclaration>();
         ImportPreNotifications =
             GetMongoCollection<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>();
-        TracesCheds = GetMongoCollection<TracesChed>();
+        ChedReservations = GetMongoCollection<ChedReservation>();
+
+        await WaitForReportsToSettle();
 
         await Finalisations.DeleteManyAsync(FilterDefinition<Finalisation>.Empty);
         await Decisions.DeleteManyAsync(FilterDefinition<Decision>.Empty);
         await Requests.DeleteManyAsync(FilterDefinition<Request>.Empty);
         await Notifications.DeleteManyAsync(FilterDefinition<Notification>.Empty);
+        await TracesCheds.DeleteManyAsync(FilterDefinition<TracesChed>.Empty);
         await BtmsToCdsActivities.DeleteManyAsync(
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
         );
@@ -54,7 +60,7 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         await ImportPreNotifications.DeleteManyAsync(
             FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.ImportPreNotification>.Empty
         );
-        await TracesCheds.DeleteManyAsync(FilterDefinition<TracesChed>.Empty);
+        await ChedReservations.DeleteManyAsync(FilterDefinition<ChedReservation>.Empty);
 
         JsonVerifySettings = new VerifySettings();
         JsonVerifySettings.UseStrictJson();
@@ -63,6 +69,32 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
+
+    private async Task WaitForReportsToSettle()
+    {
+        var previous = -1L;
+
+        for (var i = 0; i < 40; i++)
+        {
+            var total =
+                await Finalisations.CountDocumentsAsync(FilterDefinition<Finalisation>.Empty)
+                + await Decisions.CountDocumentsAsync(FilterDefinition<Decision>.Empty)
+                + await Requests.CountDocumentsAsync(FilterDefinition<Request>.Empty)
+                + await Notifications.CountDocumentsAsync(FilterDefinition<Notification>.Empty)
+                + await TracesCheds.CountDocumentsAsync(FilterDefinition<TracesChed>.Empty)
+                + await ChedReservations.CountDocumentsAsync(FilterDefinition<ChedReservation>.Empty)
+                + await BtmsToCdsActivities.CountDocumentsAsync(
+                    FilterDefinition<Defra.TradeImportsReportingApi.Api.Data.Entities.BtmsToCdsActivity>.Empty
+                )
+                + await CustomsDeclarations.CountDocumentsAsync(FilterDefinition<CustomsDeclaration>.Empty);
+
+            if (total == previous)
+                return;
+
+            previous = total;
+            await Task.Delay(250);
+        }
+    }
 
     protected static Dictionary<string, MessageAttributeValue> CreateMessageAttributes<T>(
         ResourceEvent<T> resourceEvent
@@ -217,6 +249,20 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
         );
     }
 
+    protected async Task WaitForTracesChed(string ched, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var tracesCheds = await TracesCheds.FindAsync(Builders<TracesChed>.Filter.Eq(x => x.Id, ched));
+
+                return (await tracesCheds.ToListAsync()).Count == count;
+            })
+        );
+    }
+
+    protected Task WaitForTracesChedQueueEmpty() => sqsTestFixture.TracesChedEventsQueue.WaitForEmpty();
+
     protected async Task WaitForActivity(string mrn, int count = 1)
     {
         Assert.True(
@@ -276,6 +322,46 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
 
         if (wait)
             await WaitForNotificationChed(ched);
+    }
+
+    protected async Task SendTracesChed(
+        DateTime issued,
+        string? ched = null,
+        DateTime? lastUpdated = null,
+        string type = "CHEDA",
+        bool wait = true
+    )
+    {
+        ched ??= Guid.NewGuid().ToString();
+
+        var resourceEvent = CreateResourceEvent(
+            ched,
+            "TracesChed",
+            new TracesChedEvent
+            {
+                Id = ched,
+                Created = issued,
+                Updated = lastUpdated ?? issued,
+                Ched = new DefraUNVTDCHEDProfile
+                {
+                    LastUpdated = lastUpdated ?? issued,
+                    ExchangedDocument = new ExchangedDocument
+                    {
+                        Identifier = $"{type}.GB.2025.{ched}",
+                        IssueDateTime = issued,
+                    },
+                    SpecifiedConsignment = new Consignment(),
+                },
+            }
+        );
+
+        await sqsTestFixture.TracesChedEventsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            CreateMessageAttributes(resourceEvent)
+        );
+
+        if (wait)
+            await WaitForTracesChed(ched);
     }
 
     protected async Task SendClearanceRequest(DateTime messageSentAt, string? mrn = null, bool wait = true)
@@ -509,5 +595,76 @@ public class ScenarioTestBase(SqsTestFixture sqsTestFixture) : SqsTestBase, IAsy
 
         if (wait)
             await WaitForActivity(mrn);
+    }
+
+    protected async Task SendChedReservation(
+        DateTime timestamp,
+        string chedId,
+        string mrn,
+        bool wait = true,
+        string status = "Reserved"
+    )
+    {
+        var resourceId = $"{chedId}_{mrn}";
+
+        var resourceEvent = CreateResourceEvent(
+            resourceId,
+            ResourceEventResourceTypes.ChedReservation,
+            new ChedReservationEvent
+            {
+                Id = resourceId,
+                Reservation = new Defra.TradeImportsDataApi.Domain.Traces.Reservation
+                {
+                    ChedId = chedId,
+                    Mrn = mrn,
+                    Status = status,
+                    Timestamp = timestamp,
+                    Commodities = [],
+                },
+            }
+        ) with
+        {
+            Timestamp = timestamp,
+        };
+
+        await sqsTestFixture.ChedReservationsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            CreateMessageAttributes(resourceEvent)
+        );
+
+        if (wait)
+            await WaitForChedReservation(resourceId);
+    }
+
+    protected async Task SendChedReservationDeleted(DateTime timestamp, string chedId, string mrn)
+    {
+        var resourceId = $"{chedId}_{mrn}";
+
+        var resourceEvent = new ResourceEvent<ChedReservationEvent>
+        {
+            ResourceId = resourceId,
+            ResourceType = ResourceEventResourceTypes.ChedReservation,
+            Operation = ResourceEventOperations.Deleted,
+            Timestamp = timestamp,
+        };
+
+        await sqsTestFixture.ChedReservationsQueue.SendMessage(
+            JsonSerializer.Serialize(resourceEvent),
+            CreateMessageAttributes(resourceEvent)
+        );
+    }
+
+    protected async Task WaitForChedReservation(string resourceId, int count = 1)
+    {
+        Assert.True(
+            await AsyncWaiter.WaitForAsync(async () =>
+            {
+                var reservations = await ChedReservations.FindAsync(
+                    Builders<ChedReservation>.Filter.Eq(x => x.ResourceId, resourceId)
+                );
+
+                return (await reservations.ToListAsync()).Count == count;
+            })
+        );
     }
 }
