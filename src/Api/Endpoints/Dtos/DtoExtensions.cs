@@ -67,6 +67,8 @@ public static class DtoExtensions
 
     public static DatumResponse<MatchResponse> ToResponse(this IReadOnlyList<MatchResponse> data) => new(data);
 
+    public static DatumResponse<ReleaseResponse> ToResponse(this IReadOnlyList<ReleaseResponse> data) => new(data);
+
     public static LastReceivedResponse ToResponse(this LastReceivedSummary lastReceived) =>
         new(
             lastReceived.Finalisation is not null
@@ -105,6 +107,9 @@ public static class DtoExtensions
 
     public static string ToCsvResponse(this IReadOnlyList<MatchResponse> data) =>
         data.ToCsvResponse<MatchResponse, MatchResponse.MatchResponseMap>();
+
+    public static string ToCsvResponse(this IReadOnlyList<ReleaseResponse> data) =>
+        data.ToCsvResponse<ReleaseResponse, ReleaseResponse.ReleaseResponseMap>();
 
     public static string ToCsvResponse<TRow, TMap>(this IReadOnlyList<TRow> data)
         where TMap : CsvHelper.Configuration.ClassMap<TRow>

@@ -42,7 +42,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
             .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new MatchResponse()
+                    new ReleaseResponse()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
@@ -55,7 +55,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                         Decision = "X00",
                         Description = "description1",
                     },
-                    new MatchResponse()
+                    new ReleaseResponse()
                     {
                         Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),
@@ -98,7 +98,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
             .GetReleases(from, to, ReleaseType.Automatic, Arg.Any<CancellationToken>())
             .Returns(
                 [
-                    new MatchResponse()
+                    new ReleaseResponse()
                     {
                         Number = 1,
                         Timestamp = new DateTime(2025, 9, 15, 16, 31, 5, DateTimeKind.Utc),
@@ -111,7 +111,7 @@ public class GetReleasesDataTests(ApiWebApplicationFactory factory, ITestOutputH
                         Decision = "X00",
                         Description = "description1",
                     },
-                    new MatchResponse()
+                    new ReleaseResponse()
                     {
                         Number = 2,
                         Timestamp = new DateTime(2025, 9, 15, 16, 41, 5, DateTimeKind.Utc),

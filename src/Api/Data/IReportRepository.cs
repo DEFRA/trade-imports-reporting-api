@@ -14,7 +14,7 @@ public interface IReportRepository
         CancellationToken cancellationToken
     );
 
-    Task<IReadOnlyList<MatchResponse>> GetReleases(
+    Task<IReadOnlyList<ReleaseResponse>> GetReleases(
         DateTime from,
         DateTime to,
         string releaseType,

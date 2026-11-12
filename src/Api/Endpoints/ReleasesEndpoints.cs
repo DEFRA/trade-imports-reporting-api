@@ -34,7 +34,7 @@ public static class ReleasesEndpoints
             .WithTags("Finalisations")
             .WithSummary("Get releases data")
             .WithDescription(Descriptions.SearchablePeriod)
-            .Produces<DatumResponse<MatchResponse>>()
+            .Produces<DatumResponse<ReleaseResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();

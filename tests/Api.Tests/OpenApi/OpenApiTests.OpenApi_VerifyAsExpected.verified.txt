@@ -194,7 +194,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DatumResponseOfMatchResponse"
+                  "$ref": "#/components/schemas/DatumResponseOfReleaseResponse"
                 }
               }
             }
@@ -2341,6 +2341,20 @@
           }
         }
       },
+      "DatumResponseOfReleaseResponse": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReleaseResponse"
+            }
+          }
+        }
+      },
       "DeclarationSummary": {
         "required": [
           "total",
@@ -3099,6 +3113,117 @@
           },
           "noMatch": {
             "$ref": "#/components/schemas/MatchesSummaryByLevel"
+          }
+        }
+      },
+      "ReleaseResponse": {
+        "required": [
+          "timestamp",
+          "mrn",
+          "itemNumber",
+          "chedReference",
+          "match",
+          "authority",
+          "checkCode"
+        ],
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mrn": {
+            "type": "string"
+          },
+          "itemNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "format": "int32"
+          },
+          "commodityCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantityOrWeight": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              }
+            ],
+            "format": "double",
+            "nullable": true
+          },
+          "chedReference": {
+            "type": "string"
+          },
+          "match": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "checkCode": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "nullable": true
+          },
+          "decisionReasons": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              }
+            ],
+            "format": "int32",
+            "nullable": true
+          },
+          "mode": {
+            "type": "string",
+            "nullable": true
+          },
+          "declarantId": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispatchCountryCode": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

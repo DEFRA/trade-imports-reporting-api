@@ -294,7 +294,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
         return AddEmptyIntervals(intervals, results, x => new ReleasesBucket(x, ReleasesSummary.Empty));
     }
 
-    public async Task<IReadOnlyList<MatchResponse>> GetReleases(
+    public async Task<IReadOnlyList<ReleaseResponse>> GetReleases(
         DateTime from,
         DateTime to,
         string releaseType,
@@ -310,7 +310,7 @@ public class ReportRepository(IDbContext dbContext) : IReportRepository
             .SelectMany(
                 match => match.Items,
                 (cd, item) =>
-                    new MatchResponse()
+                    new ReleaseResponse()
                     {
                         Mrn = cd.Id,
                         Timestamp = cd.Timestamp,
