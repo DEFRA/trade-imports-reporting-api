@@ -176,30 +176,16 @@ public static class MatchesEndpoints
         CancellationToken cancellationToken
     )
     {
-        if (matchRequest.UseV2.GetValueOrDefault())
-        {
-            var v2Data = await reportRepository.GetMatchesV2(
-                matchRequest.From,
-                matchRequest.To,
-                matchRequest.Match.GetValueOrDefault(),
-                matchRequest.MatchLevel,
-                cancellationToken
-            );
-
-            return Request.IsCsvRequired(httpContext)
-                ? Request.CsvResult(v2Data.ToCsvResponse())
-                : Results.Ok(v2Data.ToResponse());
-        }
-
-        var v1Data = await reportRepository.GetMatches(
+        var data = await reportRepository.GetMatches(
             matchRequest.From,
             matchRequest.To,
             matchRequest.Match.GetValueOrDefault(),
+            matchRequest.MatchLevel,
             cancellationToken
         );
 
         return Request.IsCsvRequired(httpContext)
-            ? Request.CsvResult(v1Data.ToCsvResponse())
-            : Results.Ok(v1Data.ToResponse());
+            ? Request.CsvResult(data.ToCsvResponse())
+            : Results.Ok(data.ToResponse());
     }
 }

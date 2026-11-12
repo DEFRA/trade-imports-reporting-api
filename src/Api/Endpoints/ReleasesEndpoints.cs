@@ -34,7 +34,7 @@ public static class ReleasesEndpoints
             .WithTags("Finalisations")
             .WithSummary("Get releases data")
             .WithDescription(Descriptions.SearchablePeriod)
-            .Produces<DatumResponse<ReleasesResponse>>()
+            .Produces<DatumResponse<MatchResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
@@ -93,7 +93,6 @@ public static class ReleasesEndpoints
     /// <param name="from" example="2025-09-10T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="to" example="2025-09-11T11:08:48Z">ISO 8609 UTC only</param>
     /// <param name="releaseType">"Automatic" or "Manual" or "Cancelled"</param>
-    /// <param name="useV2"></param>
     /// <param name="reportRepository"></param>
     /// <param name="httpContext"></param>
     /// <param name="cancellationToken"></param>
@@ -103,7 +102,6 @@ public static class ReleasesEndpoints
         [FromQuery] DateTime from,
         [FromQuery] DateTime to,
         [FromQuery] string releaseType,
-        [FromHeader] bool? useV2,
         [FromServices] IReportRepository reportRepository,
         HttpContext httpContext,
         CancellationToken cancellationToken
@@ -115,19 +113,10 @@ public static class ReleasesEndpoints
             return Results.ValidationProblem(errors);
         }
 
-        if (useV2.GetValueOrDefault())
-        {
-            var v2Data = await reportRepository.GetReleasesV2(from, to, releaseType, cancellationToken);
-
-            return Request.IsCsvRequired(httpContext)
-                ? Request.CsvResult(v2Data.ToCsvResponse())
-                : Results.Ok(v2Data.ToResponse());
-        }
-
-        var v1Data = await reportRepository.GetReleases(from, to, releaseType, cancellationToken);
+        var data = await reportRepository.GetReleases(from, to, releaseType, cancellationToken);
 
         return Request.IsCsvRequired(httpContext)
-            ? Request.CsvResult(v1Data.ToCsvResponse())
-            : Results.Ok(v1Data.ToResponse());
+            ? Request.CsvResult(data.ToCsvResponse())
+            : Results.Ok(data.ToResponse());
     }
 }

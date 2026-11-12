@@ -186,13 +186,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
-            "schema": {
-              "type": "boolean"
-            }
           }
         ],
         "responses": {
@@ -201,7 +194,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DatumResponseOfReleasesResponse"
+                  "$ref": "#/components/schemas/DatumResponseOfMatchResponse"
                 }
               }
             }
@@ -396,13 +389,6 @@
                 }
               ],
               "format": "int32"
-            }
-          },
-          {
-            "name": "useV2",
-            "in": "header",
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -2355,20 +2341,6 @@
           }
         }
       },
-      "DatumResponseOfReleasesResponse": {
-        "required": [
-          "data"
-        ],
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReleasesResponse"
-            }
-          }
-        }
-      },
       "DeclarationSummary": {
         "required": [
           "total",
@@ -2882,7 +2854,12 @@
       "MatchResponse": {
         "required": [
           "timestamp",
-          "reference"
+          "mrn",
+          "itemNumber",
+          "chedReference",
+          "match",
+          "authority",
+          "checkCode"
         ],
         "type": "object",
         "properties": {
@@ -2890,8 +2867,98 @@
             "type": "string",
             "format": "date-time"
           },
-          "reference": {
+          "mrn": {
             "type": "string"
+          },
+          "itemNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "format": "int32"
+          },
+          "commodityCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantityOrWeight": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              }
+            ],
+            "format": "double",
+            "nullable": true
+          },
+          "chedReference": {
+            "type": "string"
+          },
+          "match": {
+            "type": "string"
+          },
+          "authority": {
+            "type": "string"
+          },
+          "checkCode": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "nullable": true
+          },
+          "decisionReasons": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "nullable": true
+              }
+            ],
+            "format": "int32",
+            "nullable": true
+          },
+          "mode": {
+            "type": "string",
+            "nullable": true
+          },
+          "declarantId": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispatchCountryCode": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -3032,22 +3099,6 @@
           },
           "noMatch": {
             "$ref": "#/components/schemas/MatchesSummaryByLevel"
-          }
-        }
-      },
-      "ReleasesResponse": {
-        "required": [
-          "timestamp",
-          "reference"
-        ],
-        "type": "object",
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reference": {
-            "type": "string"
           }
         }
       },
