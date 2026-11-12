@@ -20,11 +20,6 @@ namespace Defra.TradeImportsReportingApi.Api.Endpoints.Dtos
         [FromQuery(Name = "matchLevel")]
         public int? MatchLevel { get; set; } = null;
 
-        /// <summary>Whether to opt in to version 2 of the API</summary>
-        /// <example>true</example>
-        [FromHeader(Name = "useV2")]
-        public bool? UseV2 { get; set; } = null;
-
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var validationResult = base.Validate(validationContext).ToList();
