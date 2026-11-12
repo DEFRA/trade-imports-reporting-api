@@ -46,8 +46,6 @@
     <PackageReference Include="AWSSDK.SQS" Version="4.0.100.20" />
     <!-- Override vulnerable transitive dependency SharpCompress -->
     <PackageReference Include="SharpCompress" Version="0.50.0" />
-    <!-- Override vulnerable transitive dependency Microsoft.AspNetCore.WebUtilities (via Serilog.Enrichers.ClientInfo) GHSA-6527-9fp8-r4x6 -->
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.14" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="SonarAnalyzer.CSharp" Version="10.29.0.143774" />
